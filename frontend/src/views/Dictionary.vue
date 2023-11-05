@@ -53,6 +53,7 @@ const handleSearch = () => {
   @import '@/assets/_variables.scss';
   .view-page{
     position:fixed;
+    z-index: 10;
     height: 100vh-$header-height;
     width: 94%-$header-width;
     left: $header-width;
@@ -62,6 +63,7 @@ const handleSearch = () => {
     justify-content: center;
     flex-direction: column;
     align-items: center;
+    
     .search-container {
     display: flex;
     align-items: center;
@@ -69,6 +71,7 @@ const handleSearch = () => {
     background-color: #f2f2f2;
     border-radius: 20px;
     padding: 3px;
+    z-index: 10;
       .search-input {
         border: none;
         outline: none;
@@ -76,6 +79,8 @@ const handleSearch = () => {
         border-radius: 20px 0 0 20px;
         background-color: #f2f2f2;
         width: 90%;
+        z-index: 10;
+        font-style: italic;
       }
 
       .search-button {
@@ -85,8 +90,10 @@ const handleSearch = () => {
         padding: 20px 15px;
         width: 9.5%;
         border-radius: 0 17px 17px 0;
-        cursor: pointer;
-
+        &:hover{
+          cursor: pointer;
+          scale: 1.18;
+        }
         i {
           font-size: 18px;
         }
@@ -97,6 +104,7 @@ const handleSearch = () => {
       display: flex;
       flex-direction: column;
       padding-top: 15px;
+      z-index: 10;
       div{
         display: flex;
         width: 100%;
@@ -114,9 +122,10 @@ const handleSearch = () => {
           margin-bottom: 5px;
           font-weight: bolder;
           
-        }:hover{
-          background-color: #38923b;
-          color: #f2f2f2;
+          &:hover{
+            background-color: #38923b;
+            color: #f2f2f2;
+          }
         }
       }
       hr{width:100%; size: 2px;}

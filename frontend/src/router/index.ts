@@ -1,6 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import ContactVue from '../views/Contact.vue'
+import DictionaryVue from '../views/Dictionary.vue'
+import GameVue from '../views/Game.vue'
 
 
 const router = createRouter({
@@ -17,12 +19,12 @@ const router = createRouter({
       // route level code-splitting
       // this generates a separate chunk (About.[hash].js) for this route
       // which is lazy-loaded when the route is visited.
-      component: () => import('../views/AboutView.vue')
+      component: GameVue
     },
     {
       path: '/dictionary',
       name: 'dictionary',
-      component: () => import('../views/Dictionary.vue')
+      component: DictionaryVue
     },
     {
       path: '/contact',

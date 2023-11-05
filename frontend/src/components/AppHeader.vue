@@ -1,6 +1,16 @@
 <script setup lang="ts">
 import Navigation from './Navigation.vue';
+import Login from './Login.vue';
 import { RouterLink } from 'vue-router'
+import { ref } from 'vue';
+
+const loggedIn = ref(false);
+const popupRef = ref<typeof Login | null>(null);
+const openLogin = () => {
+  if (popupRef.value) {
+    popupRef.value.openPopup();
+  }
+};
 </script>
 
 <template>
@@ -10,8 +20,17 @@ import { RouterLink } from 'vue-router'
       <h1>JaquaSchao</h1>
     </div>
     <Navigation/>
-    <RouterLink to="/account" class="accountbtn">Account</RouterLink>
-    <button class="headerbtn"> Collapse </button>
+    <template v-if="loggedIn">
+      <RouterLink to="/account" class="accountbtn">Account</RouterLink>
+    </template>
+    <template v-else >
+      <div class="btnaccLR">
+        <button @click="openLogin" class="accountbtnLR">Login</button>
+        <button @click="" class="accountbtnLR">Register</button>
+      </div>
+    </template>
+    <button class="headerbtn" @click=""> Collapse </button>
+    <Login ref="popupRef" />
   </div>
 </template>
 
@@ -30,6 +49,7 @@ import { RouterLink } from 'vue-router'
     padding: 12px 5% 5% 5%;
     flex-direction: column;
     align-items: center;
+    z-index: 9999;
     .logo_app{
       display: flex;
       flex-wrap: nowrap;
@@ -48,6 +68,11 @@ import { RouterLink } from 'vue-router'
         
       }
     }
+    button{
+      position: absolute;
+      bottom: 2%;
+      padding: 5px;
+    }
     .accountbtn{
       position: absolute;
       bottom: 8%;
@@ -60,11 +85,35 @@ import { RouterLink } from 'vue-router'
       color: #333;
       border-radius: 10px;
     }
-    button{
+
+    div.btnaccLR{
       position: absolute;
-      bottom: 2%;
-      padding: 5px;
+      width: 100%;
+      height: 18%;
+      bottom: 8%;
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      flex-wrap: wrap;
+      // padding: 70px;
+      .accountbtnLR{
+        position: relative;
+        width: 200px;
+        height: 30%;
+        padding: 10px 30px;
+        font-size: 18px;
+        font-weight:600;
+        text-decoration: none;
+        color: #333;
+        border: none;
+        background-color: transparent;
+        border-radius: 10px;
+        &:hover{
+          background-color: rgb(111, 223, 223);
+        }
+      }
     }
+    
   }
   
 </style>

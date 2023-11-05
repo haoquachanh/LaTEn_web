@@ -4,6 +4,6 @@ import TheWelcome from '../components/TheWelcome.vue'
 
 <template>
   <main>
-    <h1>Welcome</h1>
+    <h1>put your mail here first :> </h1>
   </main>
 </template>
