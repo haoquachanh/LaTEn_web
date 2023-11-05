@@ -1,25 +1,18 @@
 <script setup lang="ts">
 import Navigation from './Navigation.vue';
 import Login from './Login.vue';
-import { RouterLink } from 'vue-router';
+import { RouterLink } from 'vue-router'
 import { ref } from 'vue';
-import { defineComponent, onMounted } from 'vue';
+import { inject } from 'vue';
 
-const loggedIn = ref(false); // sửa inject thành ref
+const loggedIn = inject('loggedIn', false);
 
 const popupRef = ref<typeof Login | null>(null);
-
 const openLogin = () => {
   if (popupRef.value) {
     popupRef.value.openPopup();
   }
 };
-
-// Sử dụng onMounted để thực hiện logic sau khi component đã được mounted
-onMounted(() => {
-  // Kiểm tra xem popupRef có được set đúng hay không
-  console.log(popupRef.value);
-});
 </script>
 
 <template>
