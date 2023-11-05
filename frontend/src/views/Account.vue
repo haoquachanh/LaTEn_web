@@ -1,52 +1,9 @@
 <template>
-  <div class="view-page">
-    <PageHeader :pageName="'Dictionary'" :buttonArr="theObjectDictionary"></PageHeader>
-
-    <div class="search-container">
-      <input
-        type="text"
-        class="search-input"
-        placeholder="E n t e r   s o m e   w o r d s   h e r e . . ."
-      />
-      <button class="search-button">
-        <i class="fa fa-search"></i>
-      </button>
-    </div>
-    <div class="result-dict-search">
-      <div><h1> Sea{{ keySearch }} </h1>
-      <button>Add to MyFavorite</button></div>
-      <hr>
-      <h2>Biển{{ result }}</h2>
-      <h3>Các từ gần nghĩa, đồng nghĩa: </h3>
-      
-    </div>
-  </div>
+  <Login/>
 </template>
 
 <script setup lang="ts">
-import PageHeader from '@/components/PageHeader.vue';
-interface MyObject {
-  display: string;
-  button: boolean;
-  path: string;
-  function?: string;
-}
-
-let theObjectDictionary:MyObject[]=[
-  {display:"English To English", button: true, path:"/"},
-  {display:"English To Vietnamese", button: true,path:"/"},
-  // {display:"English To China", button: true,path:"/ko"}
-]
-
-let result:String
-let keySearch:String
-
-
-let searchQuery = '';
-const handleSearch = () => {
-  console.log('Perform search operation for:', searchQuery);
-};
-
+ import Login from "../components/Login.vue"
 </script>
 
 <style scoped lang="scss">

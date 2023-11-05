@@ -3,7 +3,11 @@ import TheWelcome from '../components/TheWelcome.vue'
 </script>
 
 <template>
-  <main>
-    <h1>Welcome</h1>
-  </main>
+    <h1>Game and game :)) </h1>
 </template>
+
+<style lang="scss" scoped>
+  h1{
+    color: #7b0c0c;
+  }
+</style>

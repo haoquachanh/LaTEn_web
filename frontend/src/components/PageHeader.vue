@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import { ref , onMounted} from 'vue';
-  interface MyObject {
+  export interface MyObject {
     display: string;
     button: boolean;
     path: string;
@@ -49,6 +49,7 @@
   // Định nghĩa biến
   @import '@/assets/_variables.scss';
   .wrapper {
+    z-index: 10!important;
     position: fixed;  
     left:$header-width;
     top:0;
@@ -67,6 +68,7 @@
     color: green;
     }
     .btnfts{
+      z-index: 10;
       padding: 20px;
       display: flex;
       width: 80%;
