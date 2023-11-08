@@ -1,38 +1,38 @@
 <script setup lang="ts">
-import Navigation from './Navigation.vue';
 import Login from './Login.vue';
+import Logout from './Logout.vue';
+import Register from './Register.vue';
 import { RouterLink } from 'vue-router'
 import { ref } from 'vue';
 import { inject } from 'vue';
-
-const loggedIn = inject('loggedIn', false);
-
-const popupRef = ref<typeof Login | null>(null);
-const openLogin = () => {
-  if (popupRef.value) {
-    popupRef.value.openPopup();
-  }
-};
+import Navigation from './Navigation.vue';
+    const loggedIn = inject('loggedIn', false);
+    // const logout = inject('logout');
+    // const login = inject('login');
 </script>
 
 <template>
   <div class="wrapper">
+
     <div class="logo_app">
       <img src="../../src/assets/logo.svg" alt="logo"/>
-      <h1>JaquaSchao</h1>
+      <!-- <h1>JaquaSchao</h1> -->
     </div>
-    <Navigation/>
+    <Navigation />
     <template v-if="loggedIn">
-      <RouterLink to="/account" class="accountbtn">Account</RouterLink>
+      <div class="btnaccLR">
+        <Logout />
+        <RouterLink to="/account" class="accountbtn">Account</RouterLink>
+      </div>
     </template>
     <template v-else >
       <div class="btnaccLR">
-        <button @click="openLogin" class="accountbtnLR">Login</button>
-        <button @click="" class="accountbtnLR">Register</button>
+        <Login />
+        <Register />
+        <!-- <button @click="" class="accountbtnLR">Login</button> -->
       </div>
     </template>
     <button class="headerbtn" @click=""> Collapse </button>
-    <Login ref="popupRef" />
   </div>
 </template>
 
@@ -48,15 +48,16 @@ const openLogin = () => {
     width: $header-width;
     display: flex;
     background-color: $background-color;
-    padding: 12px 5% 5% 5%;
     flex-direction: column;
     align-items: center;
+    padding-top: 15px;
     z-index: 9999;
     .logo_app{
       display: flex;
       flex-wrap: nowrap;
       justify-content: center;
       height: 100px;
+      width: 100%;
       img{
         height: 70px;
         width: 70px;
@@ -77,10 +78,12 @@ const openLogin = () => {
     }
     .accountbtn{
       position: absolute;
+      width: 80%;
       bottom: 8%;
       align-items: center;
       justify-content: center;
-      padding: 10px 60px;
+      text-align: center;
+      padding: 10px;
       font-size: 20px;
       font-weight:600;
       text-decoration: none;
@@ -95,13 +98,13 @@ const openLogin = () => {
       bottom: 8%;
       display: flex;
       flex-direction: row;
-      justify-content: center;
+      justify-content: space-around;
       flex-wrap: wrap;
       // padding: 70px;
       .accountbtnLR{
         position: relative;
-        width: 200px;
-        height: 35%;
+        width: 80%;
+        height: 32%;
         padding: 10px 30px;
         font-size: 18px;
         font-weight:600;
@@ -112,6 +115,7 @@ const openLogin = () => {
         border-radius: 10px;
         &:hover{
           background-color: rgb(111, 223, 223);
+          cursor: pointer;
         }
       }
     }

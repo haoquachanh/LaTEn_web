@@ -1,16 +1,20 @@
 <template>
-  <button @click="openLogin" class="theopen">Login</button>
-  <div class="popup-container" v-if="showPopup"   @keydown.esc="closeLogin" >
+  <button @click="openRegister" class="theopen">Register</button>
+  <div class="popup-container" v-if="showPopup"   @keydown.esc="closeRegister" >
     <div class="popup"  ref="popupContent" @click="clickOutside">
-      <h2>Login</h2> <hr>
-      <div class="loginform">
+      <h2>Register</h2> <hr>
+      <div class="registerform">
+        <input type="text" placeholder="Fullname"  />
         <input type="text" placeholder="Username or email"  />
         <input type="password" placeholder="Password"  />
-        <button @click="handleLogin(); closeLogin()" class="loginbtn">Login</button>
+        <input type="password" placeholder="Confirm password"  />
+
+        <!-- <input type="password" placeholder="Password"  /> -->
+        <button @click="handleRegister(); closeRegister()" class="registerbtn">Register</button>
       </div>
       <!-- <hr />
       <button @click="" class="register">Register</button> -->
-      <p>Click outside / Press ESC   to close Login</p>
+      <p>Click outside / Press ESC   to close Register</p>
 
     </div>
   </div>
@@ -25,28 +29,28 @@
 
   const showPopup = ref(false);
   const setFullname = inject("setFullname")
-  const login = inject("login")
+  const register = inject("register")
 
-  const openLogin=()=>{
+  const openRegister=()=>{
     event.stopPropagation();
     showPopup.value = true;
   };
 
-  const closeLogin = () => {
+  const closeRegister = () => {
     showPopup.value = false;
   };
 
   const clickOutside = (event) => {
     if (!event.target.closest(".popup")) {
-      closeLogin();
+      closeRegister();
     }
   };
 
-  const handleLogin = async() => {
-    // Handle login logic here
+  const handleRegister = async() => {
+    // Handle register logic here
     try {
-      // const response = await api.post("auth/login", {
-      const response = await axios.post("https://dummyjson.com/auth/login", {
+      // const response = await api.post("auth/register", {
+      const response = await axios.post("https://dummyjson.com/auth/register", {
         username: 'kminchelle',
         password: '0lelplR',  
         // username: this.localUsername,
@@ -55,10 +59,10 @@
 
       
       if (response.data?.token) {
-        login()
+        register()
         setFullname(response.data?.firstName)
         
-        store.dispatch('login',response.data.token)
+        store.dispatch('register',response.data.token)
       }
       console.log(response);
     } catch (error) {
@@ -66,14 +70,11 @@
     }
   };
 
-  const handleRegister = () => {
-    // Handle register logic here
-  };
 
   onMounted(() => {
     document.addEventListener('keydown', (event) => {
       if (event.key === 'Escape') {
-        closeLogin();
+        closeRegister();
       }
     });
     document.addEventListener('click', clickOutside);
@@ -133,7 +134,7 @@
       width: 80%;
       margin: 30px 0;
     }
-    .loginform{
+    .registerform{
     z-index: 999;
 
       padding: 20px 5px;
@@ -145,7 +146,7 @@
         font-size: 26px;
         margin: 20px;
       }
-      .loginbtn {
+      .registerbtn {
         margin: 50px 0;
         width: 80%;
         background-color: #4CAF50; /* Green */

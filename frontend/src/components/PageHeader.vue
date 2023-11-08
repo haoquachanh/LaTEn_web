@@ -16,7 +16,7 @@
     pageName: String,
     buttonArr: {
       type: Object as () => MyObject[],
-      required: true,
+      // required: true,
     },
   }); 
   onMounted(() => {

@@ -1,5 +1,6 @@
 <template>
   <div class="view-page">
+  <div class="view-content">
     <PageHeader :pageName="'Dictionary'" :buttonArr="theObjectDictionary"></PageHeader>
 
     <div class="search-container">
@@ -20,6 +21,7 @@
       <h3>Các từ gần nghĩa, đồng nghĩa: </h3>
       
     </div>
+  </div>
   </div>
 </template>
 
@@ -52,85 +54,94 @@ const handleSearch = () => {
 <style scoped lang="scss">
   @import '@/assets/_variables.scss';
   .view-page{
+    background-color: $bgCo1;
     position:fixed;
-    z-index: 10;
     height: 100vh-$header-height;
-    width: 94%-$header-width;
+    width: 100%-$header-width;
     left: $header-width;
     top: $header-height;
-    padding: 3%;
-    display: flex;
-    justify-content: center;
-    flex-direction: column;
-    align-items: center;
-    
-    .search-container {
-    display: flex;
-    align-items: center;
-    width: 50%;
-    background-color: #f2f2f2;
-    border-radius: 20px;
-    padding: 3px;
-    z-index: 10;
-      .search-input {
-        border: none;
-        outline: none;
-        padding: 15px;
-        border-radius: 20px 0 0 20px;
-        background-color: #f2f2f2;
-        width: 90%;
-        z-index: 10;
-        font-style: italic;
-      }
+    .view-content{
+      position: relative;
+      background-color: $bgCo2;
+      border-top-left-radius: 15px;
+      height: calc(100vh - $header-height);
+      display: flex;
+      // justify-content: center;
+      padding: 3%;
 
-      .search-button {
-        background-color: #4CAF50;
-        color: white;
-        border: none;
-        padding: 20px 15px;
-        width: 9.5%;
-        border-radius: 0 17px 17px 0;
-        &:hover{
-          cursor: pointer;
-          scale: 1.18;
-        }
-        i {
-          font-size: 18px;
-        }
-      }
-    }
-    .result-dict-search {
-      width: 100%;
       display: flex;
       flex-direction: column;
-      padding-top: 15px;
-      z-index: 10;
-      div{
+      // align-items: center;
+      .search-container {
+        margin: 0 22%;
         display: flex;
-        width: 100%;
-        justify-content: space-between;
-        align-items: flex-end;
-        h1{font-size: 36px; border-radius: 30%;}
-        button{
+        justify-content: center;
+        align-items: center;
+        width: 50%;
+        background-color: #f2f2f2;
+        border-radius: 20px;
+        padding: 3px;
+        z-index: 10;
+        .search-input {
           border: none;
-          height: 30px;
-          margin: 0;
-          padding: 10px 20px;
-          width: auto;
+          outline: none;
+          padding: 17px 15px;
+          border-radius: 20px 0 0 20px;
+          background-color: #f2f2f2;
+          width: 90%;
+          z-index: 10;
+          font-style: italic;
+        }
+  
+        .search-button {
           background-color: #4CAF50;
-          border-radius: 5px;
-          margin-bottom: 5px;
-          font-weight: bolder;
-          
+          color: white;
+          border: none;
+          padding: 20px 15px;
+          width: 9.5%;
+          border-radius: 0 17px 17px 0;
           &:hover{
-            background-color: #38923b;
-            color: #f2f2f2;
+            cursor: pointer;
+            scale: 1.1;
+          }
+          i {
+            font-size: 18px;
           }
         }
       }
-      hr{width:100%; size: 2px;}
-      h2{font-size: 30px;}
-      h3{font-size:25px}
+      .result-dict-search {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        padding-top: 15px;
+        z-index: 10;
+        div{
+          display: flex;
+          width: 100%;
+          justify-content: space-between;
+          align-items: flex-end;
+          h1{font-size: 36px; border-radius: 30%;}
+          button{
+            border: none;
+            height: 30px;
+            margin: 0;
+            padding: 10px 20px;
+            width: auto;
+            background-color: #4CAF50;
+            border-radius: 5px;
+            margin-bottom: 5px;
+            font-weight: bolder;
+            
+            &:hover{
+              background-color: #38923b;
+              color: #f2f2f2;
+            }
+          }
+        }
+        hr{width:100%; size: 2px;}
+        h2{font-size: 30px;}
+        h3{font-size:25px}
+      }
     }
     
   }

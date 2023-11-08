@@ -1,7 +1,7 @@
 <template>
   <div class="view-page">
     <div class="content-view">
-    <PageHeader :pageName="'Account Information'" />
+    <PageHeader :pageName="'Tips English for you'" />
     <h1>{{ fullname }}</h1>
     <h2>{{ token }}</h2>
     </div>
