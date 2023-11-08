@@ -3,6 +3,7 @@ import HomeView from '../views/HomeView.vue'
 import ContactVue from '../views/Contact.vue'
 import DictionaryVue from '../views/Dictionary.vue'
 import GameVue from '../views/Game.vue'
+import Tips from '../views/Tips.vue'
 
 
 const router = createRouter({
@@ -14,14 +15,6 @@ const router = createRouter({
       component: HomeView
     },
     {
-      path: '/about',
-      name: 'about',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
-      component: GameVue
-    },
-    {
       path: '/dictionary',
       name: 'dictionary',
       component: DictionaryVue
@@ -30,6 +23,11 @@ const router = createRouter({
       path: '/contact',
       name: 'contact',
       component: ContactVue
+    },
+    {
+      path: '/tips',
+      name: 'tips',
+      component: Tips
     },
     {
       path: '/game',

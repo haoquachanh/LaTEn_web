@@ -1,16 +1,17 @@
 <template>
-  <button @click="openLogin" class="theopen">Login</button>
-  <div class="popup-container" v-if="showPopup"   @keydown.esc="closeLogin" >
+  <button @click="openLogout" class="theopen">Logout</button>
+  <div class="popup-container" v-if="showPopup"   @keydown.esc="closeLogout" >
     <div class="popup"  ref="popupContent" @click="clickOutside">
-      <h2>Login</h2> <hr>
-      <div class="loginform">
-        <input type="text" placeholder="Username or email"  />
-        <input type="password" placeholder="Password"  />
-        <button @click="handleLogin(); closeLogin()" class="loginbtn">Login</button>
+      <h2>Do you want log out?</h2> <hr>
+      <div class="logoutform">
+        <button @click="closeLogout()" class="logoutbtnN">No</button>
+        <button @click="logout(); closeLogout();
+        //ts-ignore
+        $store.dispatch('logout')" class="logoutbtnY">Yes</button>
       </div>
       <!-- <hr />
       <button @click="" class="register">Register</button> -->
-      <p>Click outside / Press ESC   to close Login</p>
+      <p>Click outside / Press ESC   to close Logout</p>
 
     </div>
   </div>
@@ -22,58 +23,31 @@
   import api from '@/api';
   import axios from 'axios';
   import { inject } from 'vue';
+  import { RouterLink } from 'vue-router';
 
   const showPopup = ref(false);
   const setFullname = inject("setFullname")
-  const login = inject("login")
+  const logout = inject("logout")
 
-  const openLogin=()=>{
+  const openLogout=()=>{
     event.stopPropagation();
     showPopup.value = true;
   };
 
-  const closeLogin = () => {
+  const closeLogout = () => {
     showPopup.value = false;
   };
 
   const clickOutside = (event) => {
     if (!event.target.closest(".popup")) {
-      closeLogin();
+      closeLogout();
     }
-  };
-
-  const handleLogin = async() => {
-    // Handle login logic here
-    try {
-      // const response = await api.post("auth/login", {
-      const response = await axios.post("https://dummyjson.com/auth/login", {
-        username: 'kminchelle',
-        password: '0lelplR',  
-        // username: this.localUsername,
-        // password: this.localPassword,
-      });
-
-      
-      if (response.data?.token) {
-        login()
-        setFullname(response.data?.firstName)
-        
-        store.dispatch('login',response.data.token)
-      }
-      console.log(response);
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  const handleRegister = () => {
-    // Handle register logic here
   };
 
   onMounted(() => {
     document.addEventListener('keydown', (event) => {
       if (event.key === 'Escape') {
-        closeLogin();
+        closeLogout();
       }
     });
     document.addEventListener('click', clickOutside);
@@ -125,29 +99,30 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    width: 40%;
     h2{
       font-size: 39px;
       color: #000;
+      padding: 0;
     }
     hr{
       width: 80%;
-      margin: 30px 0;
+      margin: 0;
     }
-    .loginform{
-    z-index: 999;
-
+    .logoutform{
+      width: 100%;
       padding: 20px 5px;
       display: flex;
-      flex-direction: column;
-      align-items: center;
+      flex-direction: row;
+      justify-content: space-around;
       input{
         width: 100%;
         font-size: 26px;
         margin: 20px;
       }
-      .loginbtn {
-        margin: 50px 0;
-        width: 80%;
+      button {
+        margin: 20px 0;
+        width: 30%;
         background-color: #4CAF50; /* Green */
         border: none;
         color: white;
@@ -161,25 +136,15 @@
           background-color:rgb(16, 85, 16);
         }
       }
-      
-    }
-    .register{
-      margin: 20px 0;
-      width: 80%;
-      background-color: #6e4cb7; /* Green */
-      border: 3px solid rgb(115, 30, 136);
-      color: white;
-      padding: 15px 32px;
-      text-align: center;
-      font-size: 22px;
-      border-radius: 15px;
-      
-      &:hover{
-        background-color:rgb(77, 0, 128);
-        cursor: pointer;
+      .logoutbtnY{
+        background-color: #e91b1b;
+        border: 3px solid red;
+        &:hover{
+          background-color: #9a1919;
         }
+      }
+      
     }
-
     input {
       margin-bottom: 10px;
       padding: 10px;
