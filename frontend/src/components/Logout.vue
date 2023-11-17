@@ -2,12 +2,10 @@
   <button @click="openLogout" class="theopen">Logout</button>
   <div class="popup-container" v-if="showPopup"   @keydown.esc="closeLogout" >
     <div class="popup"  ref="popupContent" @click="clickOutside">
-      <h2>Do you want log out?</h2> <hr>
+      <h2>Do you want to log out?</h2> <hr>
       <div class="logoutform">
         <button @click="closeLogout()" class="logoutbtnN">No</button>
-        <button @click="logout(); closeLogout();
-        //ts-ignore
-        $store.dispatch('logout')" class="logoutbtnY">Yes</button>
+        <button @click="logout(); closeLogout();" class="logoutbtnY">Yes</button>
       </div>
       <!-- <hr />
       <button @click="" class="register">Register</button> -->
@@ -26,7 +24,7 @@
   import { RouterLink } from 'vue-router';
 
   const showPopup = ref(false);
-  const setFullname = inject("setFullname")
+  // const setFullname = inject("setFullname")
   const logout = inject("logout")
 
   const openLogout=()=>{

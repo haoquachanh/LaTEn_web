@@ -2,7 +2,7 @@
   <div class="view-page">
     <div class="content-view">
     <PageHeader :pageName="'Account Information'" />
-    <h1>{{ fullname }}</h1>
+    <h1></h1>
     <h2>{{ token }}</h2>
     </div>
   </div>
@@ -12,7 +12,7 @@
   import { inject } from 'vue';
   import PageHeader from '@/components/PageHeader.vue';
   // import jwt from 'jsonwebtoken';
-  const fullname = inject('fullname',"Your Name");
+  // const fullname = inject('fullname',"Your Name");
   const token = localStorage?.getItem('token') || "";
 
 </script>

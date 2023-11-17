@@ -6,9 +6,18 @@ import { RouterLink } from 'vue-router'
 import { ref } from 'vue';
 import { inject } from 'vue';
 import Navigation from './Navigation.vue';
-    const loggedIn = inject('loggedIn', false);
-    // const logout = inject('logout');
-    // const login = inject('login');
+interface User {
+  username: string;
+  age?: number;
+  id: number;
+  fullname: string;
+  avt: string;
+}
+  const loggedIn = inject('loggedIn', false);
+  // const logout = inject('logout');
+  // const getUser = inject('getUser');
+  // const user:User = getUser()
+  
 </script>
 
 <template>

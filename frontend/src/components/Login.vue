@@ -22,26 +22,23 @@
   import api from '@/api';
   import axios from 'axios';
   import { inject } from 'vue';
-
+  
   const showPopup = ref(false);
-  const setFullname = inject("setFullname")
+  // const setFullname = inject("setFullname")
   const login = inject("login")
 
   const openLogin=()=>{
     event.stopPropagation();
     showPopup.value = true;
   };
-
   const closeLogin = () => {
     showPopup.value = false;
   };
-
   const clickOutside = (event) => {
     if (!event.target.closest(".popup")) {
       closeLogin();
     }
   };
-
   const handleLogin = async() => {
     // Handle login logic here
     try {
@@ -53,23 +50,21 @@
         // password: this.localPassword,
       });
 
-      
-      if (response.data?.token) {
-        login()
-        setFullname(response.data?.firstName)
+      let data = response.data
+      if (data) {
+        login(data.token, data)
+        // setFullname(response.data?.firstName)
         
-        store.dispatch('login',response.data.token)
+        // store.dispatch('login',response.data.token)
       }
       console.log(response);
     } catch (error) {
       console.error(error);
     }
   };
-
   const handleRegister = () => {
     // Handle register logic here
   };
-
   onMounted(() => {
     document.addEventListener('keydown', (event) => {
       if (event.key === 'Escape') {
