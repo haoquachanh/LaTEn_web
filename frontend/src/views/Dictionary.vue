@@ -13,6 +13,7 @@
         <i class="fa fa-search"></i>
       </button>
     </div>
+    <h1 class="commingsoon">This feature is coming soon !</h1>
     <div class="result-dict-search">
       <div><h1> Sea{{ keySearch }} </h1>
       <button>Add to MyFavorite</button></div>
@@ -26,7 +27,7 @@
 </template>
 
 <script setup lang="ts">
-import PageHeader from '@/components/PageHeader.vue';
+import PageHeader from '../components/PageHeader.vue';
 interface MyObject {
   display: string;
   button: boolean;
@@ -72,6 +73,10 @@ const handleSearch = () => {
       display: flex;
       flex-direction: column;
       // align-items: center;
+      h1.commingsoon{
+        margin: 0 10%;
+        font-size: 80px;
+      }
       .search-container {
         margin: 0 22%;
         display: flex;

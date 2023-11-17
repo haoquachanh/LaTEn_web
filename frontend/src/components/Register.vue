@@ -28,8 +28,7 @@
   import { inject } from 'vue';
 
   const showPopup = ref(false);
-  const setFullname = inject("setFullname")
-  const register = inject("register")
+  // const setFullname = inject("setFullname")
 
   const openRegister=()=>{
     event.stopPropagation();
@@ -60,7 +59,7 @@
       
       if (response.data?.token) {
         register()
-        setFullname(response.data?.firstName)
+        // setFullname(response.data?.firstName)
         
         store.dispatch('register',response.data.token)
       }
