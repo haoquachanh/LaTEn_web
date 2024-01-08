@@ -14,7 +14,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-@Entity()
+@Entity('users')
 export class UserEntity {
   @PrimaryGeneratedColumn()
   id: number;
@@ -33,6 +33,21 @@ export class UserEntity {
   @IsEnum(UserRole)
   @Column({ type: 'simple-enum', enum: UserRole, default: UserRole.USER })
   role: UserRole;
+
+  @IsOptional()
+  @IsString()
+  @Column({nullable: true})
+  phone: string;
+
+  @IsOptional()
+  @IsString()
+  @Column({nullable: true})
+  fullname: string;
+
+  @IsOptional()
+  @IsString()
+  @Column({nullable: true})
+  birth: string;
 
   @IsEmpty()
   @CreateDateColumn()
