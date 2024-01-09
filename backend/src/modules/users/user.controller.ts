@@ -1,8 +1,12 @@
-import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, 
+  // UseGuards
+ } from '@nestjs/common';
 import { UserService } from './user.service';
 import { DeleteResult, UpdateResult } from 'typeorm';
 import { UserEntity } from '@entities/user.entity';
+// import { JwtAuthGuard } from '@common/security/jwt.auth.guard';
 
+// @UseGuards(JwtAuthGuard)
 @Controller('api/user')
 export class UserController {
   constructor (private readonly userService: UserService) {}
@@ -29,5 +33,10 @@ export class UserController {
   @Delete(':id')
   async delete(@Param('id') id:string): Promise<DeleteResult> {
     return this.userService.delete(id)
+  }
+
+  @Post(':id/favorite-words')
+  async favorite(@Body() body: {wordId: number}, @Param('id') userId: string): Promise<void> {
+    return this.userService.addToFavorite( parseInt(userId), body.wordId)
   }
 }

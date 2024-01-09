@@ -1,4 +1,4 @@
-import { UserRole } from '@common/typings/user-role.enum copy';
+import { WordType } from '@common/typings/word-type.enum';
 import {
   IsEmpty,
   IsEnum,
@@ -13,44 +13,40 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   ManyToMany,
-  JoinTable,
 } from 'typeorm';
-import { DictionaryEntity } from './dictionary.entity';
+import { UserEntity } from './user.entity';
 
-@Entity('users')
-export class UserEntity {
+@Entity('dictionary')
+export class DictionaryEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
   @IsNotEmpty()
   @IsString()
   @Column()
-  username: string;
-
+  word: string;
+  
   @IsNotEmpty()
   @IsString()
   @Column()
-  password: string;
+  definition: string;
 
-  @IsOptional()
-  @IsEnum(UserRole)
-  @Column({ type: 'simple-enum', enum: UserRole, default: UserRole.USER })
-  role: UserRole;
+  @IsNotEmpty()
+  @IsString()
+  @IsEnum(WordType)
+  @Column({type: 'simple-enum', enum: WordType, default: WordType.NONE})
+  type: string;
+
 
   @IsOptional()
   @IsString()
   @Column({nullable: true})
-  phone: string;
+  example: string;
 
   @IsOptional()
   @IsString()
   @Column({nullable: true})
-  fullname: string;
-
-  @IsOptional()
-  @IsString()
-  @Column({nullable: true})
-  birth: string;
+  source: string;
 
   @IsEmpty()
   @CreateDateColumn()
@@ -60,7 +56,6 @@ export class UserEntity {
   @UpdateDateColumn()
   updated: Date;
 
-  @ManyToMany(()=> DictionaryEntity, {cascade: true})
-  @JoinTable()
-  favoriteWords: DictionaryEntity[];
+  @ManyToMany(()=> UserEntity, user => user.favoriteWords)
+  favoriteBy: UserEntity[];
 }
