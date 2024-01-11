@@ -21,9 +21,9 @@ const mutations = {
 };
 
 const actions = {
-  login: async (username: string, password: string) => {
+  login: async (email: string, password: string) => {
     try {
-      const { accessToken, refreshToken } = await authService.login(username, password);
+      const { accessToken, refreshToken } = await authService.login(email, password);
       mutations.setTokens(accessToken, refreshToken);
     } catch (error) {
       console.error('Login failed', error);
@@ -38,6 +38,11 @@ const actions = {
       mutations.clearTokens();
     }
   },
+};
+
+const getters = {
+  isLoggedIn: (state) => state.isAuthenticated,
+  accessToken: (state) => state.accessToken,
 };
 
 export default {

@@ -25,7 +25,7 @@ export class UserEntity {
   @IsNotEmpty()
   @IsString()
   @Column()
-  username: string;
+  email: string;
 
   @IsNotEmpty()
   @IsString()

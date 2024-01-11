@@ -39,7 +39,7 @@
 
   const loginAction = async () => {
     try {
-      await store.dispatch('auth/login', { username: email.value, password: password.value });
+      await store.dispatch('auth/login', { email: email.value, password: password.value });
       // Đăng nhập thành công, bạn có thể thực hiện các hành động khác ở đây
       closeLogin();
     } catch (error) {
