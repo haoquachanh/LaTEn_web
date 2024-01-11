@@ -18,7 +18,6 @@
 <script setup>
   import { ref, onMounted, onBeforeUnmount } from 'vue';
   import store from '@/store';
-  import api from '@/api';
   import axios from 'axios';
   import { inject } from 'vue';
   import { RouterLink } from 'vue-router';
@@ -155,4 +154,4 @@
     }
   }
 }
-</style>
+</style>@/store/index-old

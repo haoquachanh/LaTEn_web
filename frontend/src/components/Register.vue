@@ -4,10 +4,10 @@
     <div class="popup"  ref="popupContent" @click="clickOutside">
       <h2>Register</h2> <hr>
       <div class="registerform">
-        <input type="text" placeholder="Fullname"  />
-        <input type="text" placeholder="Username or email"  />
-        <input type="password" placeholder="Password"  />
-        <input type="password" placeholder="Confirm password"  />
+        <input type="text" v-model="fullname" placeholder="Fullname"  />
+        <input type="text" v-model="email" placeholder="Email"  />
+        <input type="password" v-model="password" placeholder="Password"  />
+        <input type="password" v-model="passwordConfirm" placeholder="Confirm password"  />
 
         <!-- <input type="password" placeholder="Password"  /> -->
         <button @click="handleRegister(); closeRegister()" class="registerbtn">Register</button>
@@ -22,13 +22,14 @@
   
 <script setup>
   import { ref, onMounted, onBeforeUnmount } from 'vue';
-  import store from '@/store';
-  import api from '@/api';
-  import axios from 'axios';
-  import { inject } from 'vue';
+  import { useStore} from 'vuex';
 
+  const store = useStore();
   const showPopup = ref(false);
-  // const setFullname = inject("setFullname")
+  const fullname = ref('');
+  const email = ref('');
+  const password = ref('');
+  const passwordConfirm = ref('');
 
   const openRegister=()=>{
     event.stopPropagation();
@@ -46,29 +47,15 @@
   };
 
   const handleRegister = async() => {
-    // Handle register logic here
     try {
-      // const response = await api.post("auth/register", {
-      const response = await axios.post("https://dummyjson.com/auth/register", {
-        username: 'kminchelle',
-        password: '0lelplR',  
-        // username: this.localUsername,
-        // password: this.localPassword,
-      });
-
-      
-      if (response.data?.token) {
-        register()
-        // setFullname(response.data?.firstName)
-        
-        store.dispatch('register',response.data.token)
-      }
-      console.log(response);
+      await store.dispatch('auth/login', { username: username.value, password: password.value });
+      // Đăng nhập thành công, bạn có thể thực hiện các hành động khác ở đây
+      closeRegister();
     } catch (error) {
-      console.error(error);
+      console.error('Register failed', error);
+
     }
   };
-
 
   onMounted(() => {
     document.addEventListener('keydown', (event) => {
@@ -78,9 +65,17 @@
     });
     document.addEventListener('click', clickOutside);
     onBeforeUnmount(() => {
-      // document.removeEventListener('keydown');
       document.removeEventListener('click', clickOutside);
     });
+  });
+
+  onBeforeUnmount(() => {
+    document.removeEventListener('keydown', (event) => {
+      if (event.key === 'Escape') {
+        closeLogin();
+      }
+    });
+    document.removeEventListener('click', clickOutside);
   });
 </script>
 
@@ -192,4 +187,4 @@
     }
   }
 }
-</style>
+</style>@/store/index-old

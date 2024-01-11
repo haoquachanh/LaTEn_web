@@ -1,14 +1,30 @@
 {
+  "extends": "@vue/tsconfig/tsconfig.dom.json",
+  "include": [
+    "env.d.ts",
+    "src/**/*",
+    "src/**/*.vue",
+    "src/**/*.ts",
+    "src/components/*",
+    "vite.config.*",
+    "vitest.config.*",
+    "cypress.config.*",
+    "nightwatch.conf.*",
+    "playwright.config.*"
+  ],
+  "exclude": ["src/**/__tests__/*"],
+  "noImplicitAny": false,
+  "allowJs": true,
   "compilerOptions": {
+    "composite": true,
     "noImplicitAny": false,
-    "allowJs": true
-  },
-  "references": [
-    {
-      "path": "./tsconfig.node.json"
+    "allowJs": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
     },
-    {
-      "path": "./tsconfig.app.json"
-    }
-  ]
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "types": ["node"]
+  }
 }
