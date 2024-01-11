@@ -48,7 +48,7 @@
 
   const handleRegister = async() => {
     try {
-      await store.dispatch('auth/login', { username: username.value, password: password.value });
+      await store.dispatch('auth/login', { email: email.value, password: password.value });
       // Đăng nhập thành công, bạn có thể thực hiện các hành động khác ở đây
       closeRegister();
     } catch (error) {

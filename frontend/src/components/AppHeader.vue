@@ -7,7 +7,7 @@ import { ref } from 'vue';
 import { inject } from 'vue';
 import Navigation from './Navigation.vue';
 interface User {
-  username: string;
+  email: string;
   age?: number;
   id: number;
   fullname: string;
