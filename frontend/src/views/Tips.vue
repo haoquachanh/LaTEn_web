@@ -11,6 +11,7 @@
 <script setup lang="ts">
   import { inject } from 'vue';
   import PageHeader from '@/components/PageHeader.vue';
+  
   // import jwt from 'jsonwebtoken';
   // const fullname = inject('fullname',"Your Name");
   const token = localStorage?.getItem('token') || "";

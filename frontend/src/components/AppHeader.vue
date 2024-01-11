@@ -14,9 +14,6 @@ interface User {
   avt: string;
 }
   const loggedIn = inject('loggedIn', false);
-  // const logout = inject('logout');
-  // const getUser = inject('getUser');
-  // const user:User = getUser()
   
 </script>
 

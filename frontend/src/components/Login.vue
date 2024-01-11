@@ -1,70 +1,53 @@
 <template>
   <button @click="openLogin" class="theopen">Login</button>
-  <div class="popup-container" v-if="showPopup"   @keydown.esc="closeLogin" >
-    <div class="popup"  ref="popupContent" @click="clickOutside">
+  <div class="popup-container" v-if="showPopup" @keydown.esc="closeLogin">
+    <div class="popup" ref="popupContent" @click="clickOutside">
       <h2>Login</h2> <hr>
       <div class="loginform">
-        <input type="text" placeholder="Username or email"  />
-        <input type="password" placeholder="Password"  />
-        <button @click="handleLogin(); closeLogin()" class="loginbtn">Login</button>
+        <input type="text" v-model="email" placeholder="Email" />
+        <input type="password" v-model="password" placeholder="Password" />
+        <button @click="loginAction" class="loginbtn">Login</button>
       </div>
-      <!-- <hr />
-      <button @click="" class="register">Register</button> -->
-      <p>Click outside / Press ESC   to close Login</p>
-
+      <p>Click outside / Press ESC to close Login</p>
     </div>
   </div>
 </template>
   
 <script setup>
   import { ref, onMounted, onBeforeUnmount } from 'vue';
-  import store from '@/store';
-  import api from '@/api';
-  import axios from 'axios';
-  import { inject } from 'vue';
-  
-  const showPopup = ref(false);
-  // const setFullname = inject("setFullname")
-  const login = inject("login")
+  import { useStore } from 'vuex';
 
-  const openLogin=()=>{
+  const store = useStore();
+  const showPopup = ref(false);
+  const email = ref('');
+  const password = ref('');
+
+  const openLogin = () => {
     event.stopPropagation();
     showPopup.value = true;
   };
+
   const closeLogin = () => {
     showPopup.value = false;
   };
+
   const clickOutside = (event) => {
     if (!event.target.closest(".popup")) {
       closeLogin();
     }
   };
-  const handleLogin = async() => {
-    // Handle login logic here
-    try {
-      // const response = await api.post("auth/login", {
-      const response = await axios.post("https://dummyjson.com/auth/login", {
-        username: 'kminchelle',
-        password: '0lelplR',  
-        // username: this.localUsername,
-        // password: this.localPassword,
-      });
 
-      let data = response.data
-      if (data) {
-        login(data.token, data)
-        // setFullname(response.data?.firstName)
-        
-        // store.dispatch('login',response.data.token)
-      }
-      console.log(response);
+  const loginAction = async () => {
+    try {
+      await store.dispatch('auth/login', { username: email.value, password: password.value });
+      // Đăng nhập thành công, bạn có thể thực hiện các hành động khác ở đây
+      closeLogin();
     } catch (error) {
-      console.error(error);
+      console.error('Login failed', error);
+      // Xử lý khi đăng nhập thất bại
     }
   };
-  const handleRegister = () => {
-    // Handle register logic here
-  };
+
   onMounted(() => {
     document.addEventListener('keydown', (event) => {
       if (event.key === 'Escape') {
@@ -72,10 +55,15 @@
       }
     });
     document.addEventListener('click', clickOutside);
-    onBeforeUnmount(() => {
-      // document.removeEventListener('keydown');
-      document.removeEventListener('click', clickOutside);
+  });
+
+  onBeforeUnmount(() => {
+    document.removeEventListener('keydown', (event) => {
+      if (event.key === 'Escape') {
+        closeLogin();
+      }
     });
+    document.removeEventListener('click', clickOutside);
   });
 </script>
 
@@ -187,4 +175,4 @@
     }
   }
 }
-</style>
+</style>@/store/index-old
