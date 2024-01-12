@@ -21,7 +21,7 @@ const isLoggedIn = () => {
   <div class="wrapper">
 
     <div class="logo_app">
-      <img src="../../src/assets/logo.svg" alt="logo"/>
+      <img src="../../src/assets/LaTEn.png" alt="logo"/>
       <!-- <h1>JaquaSchao</h1> -->
     </div>
     <Navigation />
@@ -65,8 +65,8 @@ const isLoggedIn = () => {
       height: 100px;
       width: 100%;
       img{
-        height: 70px;
-        width: 70px;
+        height: 100px;
+        width: 100px;
       }
       h1 {
         // width: 100%;
