@@ -22,7 +22,7 @@
     top: 0;
     .content-view{
       position: relative;
-      background-color: rgb(141, 199, 157);
+      background-color: $bgCo3;
       border-top-left-radius: 15px;
       border-bottom-left-radius: 15px;
       height: 100vh;

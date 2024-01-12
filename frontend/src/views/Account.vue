@@ -2,18 +2,34 @@
   <div class="view-page">
     <div class="content-view">
     <PageHeader :pageName="'Account Information'" />
-    <h1></h1>
-    <h2>{{ token }}</h2>
+    <h1>OK</h1>
+    <div>
+      <h2>User Information</h2>
+      <p><strong>Full Name:</strong> {{ user.fullname }}</p>
+      <!-- <p><strong>Avatar:</strong> <img :src="user.avatar" alt="User Avatar"></p> -->
+      <p><strong>Birth Date:</strong> {{ user.birth }}</p>
+      <p><strong>Phone:</strong> {{ user.phone }}</p>
     </div>
   </div>
+  </div>
+  
 </template>
 
 <script setup lang="ts">
-  import { inject } from 'vue';
   import PageHeader from '@/components/PageHeader.vue';
-  // import jwt from 'jsonwebtoken';
-  // const fullname = inject('fullname',"Your Name");
-  const token = localStorage?.getItem('token') || "";
+  interface User {
+    fullname: string,
+    avatar: string,
+    birth: string,
+    phone: string,
+  }
+
+  const user: User = {
+    fullname: 'John Doe',
+    avatar: 'path/to/avatar.jpg',
+    birth: '1990-01-01',
+    phone: '+1234567890',
+};
 
 </script>
 
@@ -28,7 +44,7 @@
     top: $header-height;
     .content-view{
       position: relative;
-      background-color: $bgCo2;
+      background-color: $bgCo3;
       border-top-left-radius: 15px;
       height: calc(100vh - $header-height);
       padding: 3%;
@@ -38,7 +54,11 @@
       // align-items: center;
       h1{
         padding: 50px;
-        color: rgba(255, 255, 255, 0.8);
+        color: rgb(0, 0, 0);
+      }
+      h2{
+        padding: 50px;
+        color: rgb(0, 0, 0);
       }
     }
   }
