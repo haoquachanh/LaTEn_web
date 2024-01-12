@@ -60,7 +60,7 @@
     padding: 10px;
     flex-direction: column;
     align-items:start;
-      
+    justify-content: center;
     h1 {
     // width: 100%;
     font-size: 28px;
