@@ -1,52 +1,49 @@
-import { reactive } from 'vue';
-import { authService } from '../services/auth.service';
+// /src/store/auth.ts
+import { authService } from "@/services/auth.service";
 
-const state = reactive({
-  accessToken: '',
-  refreshToken: '',
-  isAuthenticated: false,
-});
+const state = {
+  accessToken: null,
+  loggedIn: false,
+};
 
 const mutations = {
-  setTokens: (accessToken: string, refreshToken: string) => {
+  setAccessToken(state, accessToken) {
     state.accessToken = accessToken;
-    state.refreshToken = refreshToken;
-    state.isAuthenticated = true;
   },
-  clearTokens: () => {
-    state.accessToken = '';
-    state.refreshToken = '';
-    state.isAuthenticated = false;
+
+  setLoggedIn(state, loggedIn) {
+    state.loggedIn = loggedIn;
+  },
+  logout(state) {
+    state.accessToken = null;
+    state.loggedIn = false;
+    localStorage.removeItem("access_token");
   },
 };
 
 const actions = {
-  login: async (email: string, password: string) => {
+  async login({ commit }, credentials) {
     try {
-      const { accessToken, refreshToken } = await authService.login(email, password);
-      mutations.setTokens(accessToken, refreshToken);
+      // Gọi API để đăng nhập và nhận về access_token
+      const access_token = await authService.login(credentials);
+      commit("setAccessToken", access_token);
+      commit("setLoggedIn", true);
+      localStorage.setItem("access_token", access_token);
     } catch (error) {
-      console.error('Login failed', error);
+      // Xử lý lỗi nếu cần
+      console.error("Error during login:", error);
     }
   },
-  refreshToken: async () => {
+  async logout({ commit }) {
     try {
-      const { accessToken, refreshToken } = await authService.refreshToken(state.refreshToken);
-      mutations.setTokens(accessToken, refreshToken);
+      commit("logout");
     } catch (error) {
-      console.error('Refresh token failed', error);
-      mutations.clearTokens();
+      console.error("Error during login:", error);
     }
   },
-};
-
-const getters = {
-  isLoggedIn: (state) => state.isAuthenticated,
-  accessToken: (state) => state.accessToken,
 };
 
 export default {
-  namespaced: true,
   state,
   mutations,
   actions,

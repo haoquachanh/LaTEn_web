@@ -4,7 +4,6 @@
 <template>
   <div class="view-page">
     <div class="content-view">
-    <PageHeader :pageName="'Account Information'" />
     <h1>Welcome to LaTEn Website!</h1>
     <hr/>
     <h2>Now, just say "Welcome!"</h2>

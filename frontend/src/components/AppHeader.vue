@@ -1,20 +1,18 @@
 <script setup lang="ts">
+import { RouterLink } from 'vue-router'
+import Navigation from './Navigation.vue';
 import Login from './Login.vue';
 import Logout from './Logout.vue';
 import Register from './Register.vue';
-import { RouterLink } from 'vue-router'
-import { ref } from 'vue';
-import { inject } from 'vue';
-import Navigation from './Navigation.vue';
-interface User {
-  email: string;
-  age?: number;
-  id: number;
-  fullname: string;
-  avt: string;
-}
-  const loggedIn = inject('loggedIn', false);
-  
+import { useStore } from "vuex";
+
+const store = useStore();
+
+const isLoggedIn = () => {
+  return store.state.auth.loggedIn;
+};
+
+
 </script>
 
 <template>
@@ -25,7 +23,7 @@ interface User {
       <!-- <h1>JaquaSchao</h1> -->
     </div>
     <Navigation />
-    <template v-if="loggedIn">
+    <template v-if="isLoggedIn()">
       <div class="btnaccLR">
         <Logout />
         <RouterLink to="/account" class="accountbtn">Account</RouterLink>

@@ -12,7 +12,7 @@
     </div>
   </div>
 </template>
-  
+
 <script setup>
   import { ref, onMounted, onBeforeUnmount } from 'vue';
   import { useStore } from 'vuex';
@@ -22,7 +22,7 @@
   const email = ref('');
   const password = ref('');
 
-  const openLogin = () => {
+  const openLogin = (event) => {
     event.stopPropagation();
     showPopup.value = true;
   };
@@ -39,11 +39,10 @@
 
   const loginAction = async () => {
     try {
-      await store.dispatch('auth/login', { email: email.value, password: password.value });
+      await store.dispatch('login', { email: email.value, password: password.value });
       // Đăng nhập thành công, bạn có thể thực hiện các hành động khác ở đây
       closeLogin();
     } catch (error) {
-      console.error('Login failed', error);
       // Xử lý khi đăng nhập thất bại
     }
   };
@@ -175,4 +174,4 @@
     }
   }
 }
-</style>@/store/index-old
+</style>
