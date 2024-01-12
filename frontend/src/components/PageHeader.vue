@@ -29,7 +29,8 @@
 
 <template>
   <div class="wrapper">
-      <h1>> {{ pageName }}</h1>
+    <div class="content">
+      <h1> {{ pageName }}</h1>
       <div v-if="buttonArr && buttonArr[0].button" class="btnfts">
           <button v-for="(item, index) in buttonArr" :key="index" @click="handleClick(index)" :class="{ 'btn': true, 'active': selected === index }">
           {{ item.display }}
@@ -40,6 +41,7 @@
               {{ item.display }}
           </RouterLink>
       </div>
+    </div>
   </div>
 </template>
 
@@ -57,42 +59,51 @@
     width:  calc(100vw - $header-width);
     display: flex;
     background-color: $bgCo1;
-    padding: 10px;
     flex-direction: column;
     align-items:start;
-    justify-content: center;
-    h1 {
-    // width: 100%;
-    font-size: 28px;
-    padding: 10px 0;
-    color: green;
-    }
-    .btnfts{
-      z-index: 10;
-      padding: 20px;
+    justify-content: start;
+    .content{
+      width:  calc(100vw - $header-width * 2);
+      height: $header-height;
       display: flex;
-      width: 80%;
+      background-color: $bgCo1;
+      flex-direction: column;
+      align-items:center;
       justify-content: center;
-      margin-left: 5%;
-      .btn {
-        background-color: rgb(52, 171, 52);
-        margin-left: 5%;
-        padding: 15px 5px;
-        flex-grow: 1;
-        flex-basis: 0;
-        color: white;
-        border: none;
-        border-radius: 8px;
-        
-      }:hover{
-          cursor: pointer;
-          scale: 1.01;
-        }
-      .btn.active {
-        font-weight: bold;
-        background-color: rgb(25, 84, 15);
+      h1 {
+      // width: 100%;
+      // justify-self: center;
+      font-size: 28px;
+      padding: 10px 0;
+      color: green;
       }
-  
+      .btnfts{
+        z-index: 10;
+        padding: 0 20px 10px 20px;
+        display: flex;
+        width: 60%;
+        align-items: center;
+        justify-content: center;
+        .btn {
+          background-color: rgb(52, 171, 52);
+          margin: 0 3%;
+          padding: 15px 5px;
+          flex-grow: 1;
+          flex-basis: 0;
+          color: white;
+          border: none;
+          border-radius: 8px;
+          
+        }:hover{
+            cursor: pointer;
+            scale: 1.01;
+          }
+        .btn.active {
+          font-weight: bold;
+          background-color: rgb(25, 84, 15);
+        }
+    
+      }
     }
   }
   

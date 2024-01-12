@@ -36,7 +36,7 @@ interface MyObject {
 }
 
 let theObjectDictionary:MyObject[]=[
-  {display:"English To English", button: true, path:"/"},
+  {display:"Vietnamese To English", button: true, path:"/"},
   {display:"English To Vietnamese", button: true,path:"/"},
   {display:"English To China", button: true,path:"/ko"}
 ]
