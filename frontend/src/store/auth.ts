@@ -22,6 +22,21 @@ const mutations = {
 };
 
 const actions = {
+  async checkLoginStatus({ commit }) {
+    const access_token = localStorage.getItem("access_token");
+    if (access_token) {
+      try {
+        // Gọi API hoặc thực hiện các bước cần thiết để xác minh access_token
+        // ...
+        // Nếu xác minh thành công, cập nhật store với thông tin đăng nhập
+        commit("setAccessToken", access_token);
+        commit("setLoggedIn", true);
+      } catch (error) {
+        // Xử lý lỗi nếu cần
+        return
+      }
+    }
+  },
   async login({ commit }, credentials) {
     try {
       // Gọi API để đăng nhập và nhận về access_token
@@ -31,6 +46,13 @@ const actions = {
       localStorage.setItem("access_token", access_token);
     } catch (error) {
       // Xử lý lỗi nếu cần
+      console.error("Error during login:", error);
+    }
+  },
+  async register({ commit }, credentials) {
+    try {
+      const access_token = await authService.register(credentials);
+    } catch (error) {
       console.error("Error during login:", error);
     }
   },

@@ -4,8 +4,10 @@
     <div class="popup" ref="popupContent" @click="clickOutside">
       <h2>Login</h2> <hr>
       <div class="loginform">
-        <input type="text" v-model="email" placeholder="Email" />
-        <input type="password" v-model="password" placeholder="Password" />
+        <label for="email">Email:</label>
+        <input type="text" v-model="email" placeholder="example" />
+        <label for="password">Password:</label>
+        <input type="password" v-model="password" placeholder="******" />
         <button @click="loginAction" class="loginbtn">Login</button>
       </div>
       <p>Click outside / Press ESC to close Login</p>
@@ -97,39 +99,51 @@
   z-index: 999 !important;
 
   .popup {
-    z-index: 999;
+    height: 80%;
+    width: 40%;
     background-color: #fff;
-    padding: 80px 50px;
     border-radius: 10px;
     text-align: center;
     position: relative;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: center;
     h2{
+      height: 10%;
       font-size: 39px;
       color: #000;
     }
     hr{
       width: 80%;
-      margin: 30px 0;
+      margin: 10px 0 20px 0;
     }
     .loginform{
-    z-index: 999;
-
-      padding: 20px 5px;
+      height: 70%;
+      width: 100%;
+      display: flex;
+      padding: 15px 5px;
       display: flex;
       flex-direction: column;
       align-items: center;
+      justify-content: center;
+      label{
+        margin-left: 20%;
+        margin-top: 20px;
+        align-self: start;
+        color: #000;
+        font-size: 16px;
+        font-style: italic;
+        font-weight: 500;
+      }
       input{
-        width: 100%;
-        font-size: 26px;
-        margin: 20px;
+        width: 60%;
+        font-size: 16px;
+        margin: 10px 0 20px 0;
       }
       .loginbtn {
-        margin: 50px 0;
-        width: 80%;
+        margin: 25px 0;
+        width: 30%;
         background-color: #4CAF50; /* Green */
         border: none;
         color: white;
@@ -163,12 +177,14 @@
     }
 
     input {
-      margin-bottom: 10px;
+      margin-bottom: 20px;
       padding: 10px;
       border-radius: 5px;
       border: 1px solid #ddd;
     }
     p{
+      height: 10%;
+      padding-top: 5%;
       color: rgba(82, 180, 204, 0.568);
       font-style: italic;
     }

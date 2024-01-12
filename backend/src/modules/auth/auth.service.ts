@@ -14,7 +14,7 @@ export class AuthService {
         private readonly jwtService: JwtService,
 
     ) {}
-    async singup(user: UserEntity): Promise<UserEntity> {
+    async register(user: UserEntity): Promise<UserEntity> {
         const salt = await bcrypt.genSalt();
         const hash = await bcrypt.hash(user.password, salt);
         user.password = hash;

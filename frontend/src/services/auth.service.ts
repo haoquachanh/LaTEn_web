@@ -5,9 +5,19 @@ const BASE_URL = "http://localhost:3000/api";
 
 export const authService = {
   login: async (info): Promise<string> => {
+    const response = await axios.post(`${BASE_URL}/auth/login`, {
+      email:info.email,
+      password:info.password,
+    });
+    console.log(response.data);
+    return response.data.access_token;
+  },
+  register: async (info): Promise<string> => {
     console.log(">>email: " + info.email);
     console.log(">>password: " + info.password);
-    const response = await axios.post(`${BASE_URL}/auth/login`, {
+
+    const response = await axios.post(`${BASE_URL}/auth/register`, {
+      
       email:info.email,
       password:info.password,
     });
