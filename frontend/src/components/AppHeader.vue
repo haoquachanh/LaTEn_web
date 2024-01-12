@@ -38,7 +38,7 @@ const isLoggedIn = () => {
         <!-- <button @click="" class="accountbtnLR">Login</button> -->
       </div>
     </template>
-    <button class="headerbtn" @click=""> Collapse </button>
+    <!-- <button class="headerbtn" @click=""> Collapse </button> -->
   </div>
 </template>
 

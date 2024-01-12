@@ -4,10 +4,10 @@ import { RouterLink } from 'vue-router'
 
 <template>
     <div><RouterLink to="/">Home</RouterLink></div>
-    <div><RouterLink to="/game">Game</RouterLink></div>
-    <div><RouterLink to="/contact">Contact</RouterLink></div>
+    <!-- <div><RouterLink to="/game">Game</RouterLink></div> -->
+    <!-- <div><RouterLink to="/contact">Contact</RouterLink></div> -->
     <div><RouterLink to="/dictionary">Dictionary</RouterLink></div>
-    <div><RouterLink to="/tips">Tips</RouterLink></div>
+    <!-- <div><RouterLink to="/tips">Tips</RouterLink></div> -->
 </template>
 
 <style lang="scss" scoped>
