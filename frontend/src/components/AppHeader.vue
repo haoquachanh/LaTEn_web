@@ -5,9 +5,11 @@ import Login from './Login.vue';
 import Logout from './Logout.vue';
 import Register from './Register.vue';
 import { useStore } from "vuex";
-
+import { onMounted } from 'vue';
 const store = useStore();
-
+onMounted(() => {
+  store.dispatch('checkLoginStatus');
+});
 const isLoggedIn = () => {
   return store.state.auth.loggedIn;
 };

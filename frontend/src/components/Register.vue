@@ -1,28 +1,32 @@
 <template>
   <button @click="openRegister" class="theopen">Register</button>
-  <div class="popup-container" v-if="showPopup"   @keydown.esc="closeRegister" >
-    <div class="popup"  ref="popupContent" @click="clickOutside">
-      <h2>Register</h2> <hr>
+  <div class="popup-container" v-if="showPopup" @keydown.esc="closeRegister">
+    <div class="popup" ref="popupContent" @click="clickOutside">
+      <h2>Register</h2> <hr />
       <div class="registerform">
-        <input type="text" v-model="fullname" placeholder="Fullname"  />
-        <input type="text" v-model="email" placeholder="Email"  />
-        <input type="password" v-model="password" placeholder="Password"  />
-        <input type="password" v-model="passwordConfirm" placeholder="Confirm password"  />
+        
+        <label for="fullname">Fullname:</label>
+        <input type="text" v-model="fullname" placeholder="Marty Byrde" id="fullname" />
 
-        <!-- <input type="password" placeholder="Password"  /> -->
+        <label for="email">Email:</label>
+        <input type="text" v-model="email" placeholder="example@gmail.com" id="email" />
+
+        <label for="password">Password:</label>
+        <input type="password" v-model="password" placeholder="******" id="password" />
+
+        <label for="passwordConfirm">Confirm password:</label>
+        <input type="password" v-model="passwordConfirm" placeholder="******" id="passwordConfirm" />
+
         <button @click="handleRegister(); closeRegister()" class="registerbtn">Register</button>
       </div>
-      <!-- <hr />
-      <button @click="" class="register">Register</button> -->
-      <p>Click outside / Press ESC   to close Register</p>
-
+      <p>Click outside / Press ESC to close Register</p>
     </div>
   </div>
 </template>
-  
+
 <script setup>
   import { ref, onMounted, onBeforeUnmount } from 'vue';
-  import { useStore} from 'vuex';
+  import { useStore } from 'vuex';
 
   const store = useStore();
   const showPopup = ref(false);
@@ -31,7 +35,7 @@
   const password = ref('');
   const passwordConfirm = ref('');
 
-  const openRegister=()=>{
+  const openRegister = () => {
     event.stopPropagation();
     showPopup.value = true;
   };
@@ -46,14 +50,18 @@
     }
   };
 
-  const handleRegister = async() => {
+  const handleRegister = async () => {
     try {
-      await store.dispatch('auth/login', { email: email.value, password: password.value });
-      // Đăng nhập thành công, bạn có thể thực hiện các hành động khác ở đây
+      // Check if password matches confirmation
+      if (password.value !== passwordConfirm.value) {
+        console.error('Password and Confirm password do not match');
+        return;
+      }
+      console.log("press")
+      await store.dispatch('register', { email: email.value, password: password.value, fullname: fullname.value });
       closeRegister();
     } catch (error) {
       console.error('Register failed', error);
-
     }
   };
 
@@ -72,12 +80,13 @@
   onBeforeUnmount(() => {
     document.removeEventListener('keydown', (event) => {
       if (event.key === 'Escape') {
-        closeLogin();
+        closeRegister();
       }
     });
     document.removeEventListener('click', clickOutside);
   });
 </script>
+
 
 <style lang="scss" scoped>
 @import '@/assets/_variables.scss';
@@ -110,39 +119,54 @@
   z-index: 999 !important;
 
   .popup {
-    z-index: 999;
+    height: 80%;
+    width: 40%;
     background-color: #fff;
-    padding: 80px 50px;
     border-radius: 10px;
     text-align: center;
     position: relative;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: space-between;
     align-items: center;
     h2{
+      height: 10%;
       font-size: 39px;
       color: #000;
     }
     hr{
       width: 80%;
-      margin: 30px 0;
+      margin: 10px 0 20px 0;
     }
     .registerform{
-    z-index: 999;
-
-      padding: 20px 5px;
+      width: 100%;
+      height: 70%;
+      display: flex;
+      padding: 15px 5px;
       display: flex;
       flex-direction: column;
       align-items: center;
+      justify-content: center;
+
+      label{
+        margin-left: 20%;
+        margin-top: 7px;
+        align-self: start;
+        color: #000;
+        font-size: 16px;
+        font-style: italic;
+        font-weight: 500;
+
+      }
+      
       input{
-        width: 100%;
-        font-size: 26px;
-        margin: 20px;
+        width: 60%;
+        font-size: 16px;
+        margin: 0 20px;
       }
       .registerbtn {
-        margin: 50px 0;
-        width: 80%;
+        margin: 25px 0;
+        width: 30%;
         background-color: #4CAF50; /* Green */
         border: none;
         color: white;
@@ -159,7 +183,7 @@
       
     }
     .register{
-      margin: 20px 0;
+      margin: 0px 0;
       width: 80%;
       background-color: #6e4cb7; /* Green */
       border: 3px solid rgb(115, 30, 136);
@@ -182,8 +206,11 @@
       border: 1px solid #ddd;
     }
     p{
+      height: 10%;
+      padding-top: 5%;
       color: rgba(82, 180, 204, 0.568);
       font-style: italic;
+      margin-bottom: 5px;
     }
   }
 }

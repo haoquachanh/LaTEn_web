@@ -10,9 +10,9 @@ export class AuthController {
   @Get('test')
   test():string { return "Auth module is available"}
   
-  @Post('signup')
-  async singup(@Body() user: UserEntity): Promise<UserEntity> {
-    return this.authService.singup(user);
+  @Post('register')
+  async register(@Body() user: UserEntity): Promise<UserEntity> {
+    return this.authService.register(user);
   }
 
   @UseGuards(LocalAuthGuard)
