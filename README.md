@@ -29,10 +29,11 @@ Running the backend:
 $ npm run start
 ```
 
+Open new Terminal window,
 Navigate to the frontend directory:
 
 ```bash
-$ cd ../frontend
+$ cd frontend
 ```
 
 Install dependencies:

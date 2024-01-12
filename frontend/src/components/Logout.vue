@@ -5,7 +5,7 @@
       <h2>Do you want to log out?</h2> <hr>
       <div class="logoutform">
         <button @click="closeLogout()" class="logoutbtnN">No</button>
-        <button @click="logout(); closeLogout();" class="logoutbtnY">Yes</button>
+        <button @click="logout();" class="logoutbtnY">Yes</button>
       </div>
       <!-- <hr />
       <button @click="" class="register">Register</button> -->
@@ -17,16 +17,12 @@
   
 <script setup>
   import { ref, onMounted, onBeforeUnmount } from 'vue';
-  import store from '@/store';
-  import axios from 'axios';
-  import { inject } from 'vue';
-  import { RouterLink } from 'vue-router';
+  import { useStore } from 'vuex';
 
+  const store = useStore();
   const showPopup = ref(false);
-  // const setFullname = inject("setFullname")
-  const logout = inject("logout")
 
-  const openLogout=()=>{
+  const openLogout=(event)=>{
     event.stopPropagation();
     showPopup.value = true;
   };
@@ -41,17 +37,31 @@
     }
   };
 
+  const logout = async () => {
+    try {
+      await store.dispatch('logout');
+      closeLogout();
+    } catch (error) {
+      closeLogout();
+    }
+  };
+
   onMounted(() => {
     document.addEventListener('keydown', (event) => {
       if (event.key === 'Escape') {
-        closeLogout();
+        closeLogin();
       }
     });
     document.addEventListener('click', clickOutside);
-    onBeforeUnmount(() => {
-      // document.removeEventListener('keydown');
-      document.removeEventListener('click', clickOutside);
+  });
+
+  onBeforeUnmount(() => {
+    document.removeEventListener('keydown', (event) => {
+      if (event.key === 'Escape') {
+        closeLogin();
+      }
     });
+    document.removeEventListener('click', clickOutside);
   });
 </script>
 
