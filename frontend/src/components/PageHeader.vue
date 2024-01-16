@@ -5,6 +5,7 @@
     button: boolean;
     path: string;
     function?: string;
+    value: string;
   }
   
   const selected = ref(-1);
