@@ -37,11 +37,12 @@ interface MyObject {
   button: boolean;
   path: string;
   function?: string;
+  value: string;
 }
 
 let theObjectDictionary:MyObject[]=[
-  {display:"Vietnamese To English", button: true, path:"/"},
-  {display:"English To Vietnamese", button: true,path:"/"},
+  {display:"Vietnamese To English", button: true, path:"/", value:"v2e"},
+  {display:"English To Vietnamese", button: true,path:"/", value: "e2v"},
   // {display:"English To China", button: true,path:"/ko"}
 ]
 
@@ -52,6 +53,7 @@ const word = ref('');
 let searchQuery = '';
 const handleSearch = async() => {
   try{
+    console.log("click")
     await store.dispatch('search');
 
   } catch (e) {return}

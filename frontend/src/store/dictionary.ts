@@ -7,9 +7,9 @@ const state = {
 };
 
 const actions = {  
-  async search({ commit }) {
+  async search({ commit }, key:{ word: string, language: string}) {
     try {
-      await dictionaryService.search(word)
+      await dictionaryService.search(key)
     } catch (error) {
       return
     }
