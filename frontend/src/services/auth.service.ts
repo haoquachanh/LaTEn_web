@@ -1,7 +1,6 @@
 //u can define info like: <UserLoginDTO> in //component/user/dto 
 import axios from "axios";
-
-const BASE_URL = "http://localhost:3000/api";
+const BASE_URL = import.meta.env.VITE_BASE_URL_API;
 
 export const authService = {
   login: async (info): Promise<string> => {
@@ -9,7 +8,6 @@ export const authService = {
       email:info.email,
       password:info.password,
     });
-    console.log(response.data);
     return response.data.access_token;
   },
   register: async (info): Promise<string> => {
@@ -21,7 +19,6 @@ export const authService = {
       email:info.email,
       password:info.password,
     });
-    console.log(response.data);
     return response.data.access_token;
   },
 };
