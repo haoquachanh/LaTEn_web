@@ -6,20 +6,20 @@
     <div class="search-container">
       <input
         type="text"
+        v-model="word"
         class="search-input"
         placeholder="E n t e r   s o m e   w o r d s   h e r e . . ."
       />
-      <button class="search-button">
+      <button @click="handleSearch()" class="search-button">
         <i class="fa fa-search"></i>
       </button>
     </div>
-    <h1 class="commingsoon">This feature is coming soon !</h1>
     <div class="result-dict-search">
       <div><h1> Sea{{ keySearch }} </h1>
       <button>Add to MyFavorite</button></div>
       <hr>
       <h2>Biển{{ result }}</h2>
-      <h3>Các từ gần nghĩa, đồng nghĩa: </h3>
+      <h3>Các từ gần nghĩa, đồng nghĩa:</h3>
       
     </div>
   </div>
@@ -28,26 +28,35 @@
 
 <script setup lang="ts">
 import PageHeader from '../components/PageHeader.vue';
+import {ref } from 'vue';
+import { useStore } from 'vuex';
+
+const store = useStore();
 interface MyObject {
   display: string;
   button: boolean;
   path: string;
   function?: string;
+  value: string;
 }
 
 let theObjectDictionary:MyObject[]=[
-  {display:"English To English", button: true, path:"/"},
-  {display:"English To Vietnamese", button: true,path:"/"},
+  {display:"Vietnamese To English", button: true, path:"/", value:"v2e"},
+  {display:"English To Vietnamese", button: true,path:"/", value: "e2v"},
   // {display:"English To China", button: true,path:"/ko"}
 ]
 
 let result:String
 let keySearch:String
 
-
+const word = ref('');
 let searchQuery = '';
-const handleSearch = () => {
-  console.log('Perform search operation for:', searchQuery);
+const handleSearch = async() => {
+  try{
+    console.log("click")
+    await store.dispatch('search');
+
+  } catch (e) {return}
 };
 
 </script>
@@ -56,7 +65,7 @@ const handleSearch = () => {
   @import '@/assets/_variables.scss';
   .view-page{
     background-color: $bgCo1;
-    position:fixed;
+    position: fixed;
     height: 100vh-$header-height;
     width: 100%-$header-width;
     left: $header-width;

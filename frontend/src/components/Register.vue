@@ -57,7 +57,6 @@
         console.error('Password and Confirm password do not match');
         return;
       }
-      console.log("press")
       await store.dispatch('register', { email: email.value, password: password.value, fullname: fullname.value });
       closeRegister();
     } catch (error) {
