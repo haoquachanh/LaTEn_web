@@ -5,8 +5,9 @@ Now, it is only available for computers.
 
 ## Technologies Used
 
-- **Frontend:** Vue.js
+- **Frontend:** NextJS
 - **Backend:** NestJS
+- with Typescript
 
 ## Installation & Running
 
