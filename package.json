@@ -1,0 +1,13 @@
+{
+  "name": "laten_web",
+  "version": "1.0.0",
+  "description": "This Website for Learning and Teaching English. Now, it is only available for computers.",
+  "main": "index.js",
+  "scripts": {
+    "frontend": "npm run --prefix frontend dev",
+    "backend": "npm run --prefix backend dev"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
