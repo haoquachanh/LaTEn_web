@@ -1,6 +1,8 @@
 {
   "extends": ["next/core-web-vitals", "plugin:prettier/recommended"],
   "rules": {
-    "@typescript-eslint/no-explicit-any": "off"
+    "@typescript-eslint/no-explicit-any": "off",
+    "css/at-rule-no-unknown": "off",
+    "css.lint.unknownAtRules": "ignore"
   }
 }
