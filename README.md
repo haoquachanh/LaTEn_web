@@ -2,11 +2,10 @@
 
 This Website for Learning and Teaching English.
 Now, it is only available for computers.
-This is Suspended for change tech - vue => next
 
 ## Technologies Used
 
-- **Frontend:** NextJS
+- **Frontend:** NestJS
 - **Backend:** NestJS
 - with Typescript
 
