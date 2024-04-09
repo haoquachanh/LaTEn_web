@@ -31,7 +31,7 @@ Running the backend:
 $ npm run start
 ```
 
-Open new Terminal window,
+Open new Terminal,
 Navigate to the frontend directory:
 
 ```bash
