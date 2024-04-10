@@ -1,6 +1,6 @@
 "use client";
 import { useContext } from "react";
-import { ThemeContext } from "@/app/contexts/ThemeContext";
+import { ThemeContext } from "@/contexts/ThemeContext";
 
 export default function NavBar() {
   const { changeTheme } = useContext(ThemeContext);
