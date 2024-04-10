@@ -6,7 +6,7 @@ import { menuIcons, socialIcons } from "@/helper/IconRender";
 export default function SideBar() {
   return (
     <div
-      className="drawer-side z-40 h-full"
+      className="z-40 h-full drawer-side"
       style={{ scrollBehavior: "smooth", scrollPaddingTop: "5rem" }}
     >
       <label
@@ -14,31 +14,31 @@ export default function SideBar() {
         className="drawer-overlay"
         aria-label="Close menu"
       />
-      <aside className="bg-base-100 min-h-screen w-80 border-e-2 border-spacing-8 border-black/10 h-screen flex flex-col py-4 fixed">
+      <aside className="fixed flex flex-col border-e-2 border-spacing-8 bg-base-100 py-4 border-black/10 w-80 h-screen min-h-screen">
         <div
           data-sveltekit-preload-data=""
-          className="bg-base-100 sticky top-0 z-20 items-center gap-2 bg-opacity-90 px-4 pt-2 backdrop-blur flex w-full justify-center"
+          className="top-0 z-20 sticky flex justify-center items-center gap-2 bg-base-100 bg-opacity-90 backdrop-blur px-4 pt-2 w-full"
         >
           <Link
             href="/"
             aria-current="page"
             aria-label="Homepage"
-            className="flex align-middle justify-center"
+            className="flex justify-center align-middle"
             data-svelte-h="svelte-nce89e"
           >
             <img
               src="/LaTEn.png"
-              className="h-24 w-auto !py-1"
+              className="!py-1 w-auto h-24"
               alt="Logo"
             ></img>
           </Link>
         </div>
         <div className="h-4" />
-        <div className="flex flex-col h-screen justify-between ">
-          <ul className="menu px-4">
+        <div className="flex flex-col justify-between h-screen">
+          <ul className="px-4 menu">
             {navLinks.map((item, index) => (
               <li key={index} className="my-2">
-                <Link href={item.href} className="group   ">
+                <Link href={item.href} className="group">
                   {menuIcons[index]}
                   <span>{item.name}</span>
                 </Link>
@@ -46,17 +46,17 @@ export default function SideBar() {
             ))}
             {/* Social links */}
           </ul>
-          <ul className="menu px-4">
+          <ul className="px-4 menu">
             <li />
             {socialLinks.map((item, index) => (
               <li key={index} className="my-2">
-                <Link href={item.href} target="_blank" className="group   ">
+                <Link href={item.href} target="_blank" className="group">
                   {socialIcons[index]}
                   <span>{item.name}</span>
                   <svg
                     width="12"
                     height="12"
-                    className="opacity-0 transition-opacity duration-300 ease-out group-hover:opacity-100"
+                    className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out"
                     viewBox="0 0 48 48"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
@@ -64,16 +64,16 @@ export default function SideBar() {
                     <path
                       d="M19 11H37V29"
                       stroke="currentColor"
-                      stroke-width="4"
-                      stroke-linecap="butt"
-                      stroke-linejoin="bevel"
+                      strokeWidth="4"
+                      strokeLinecap="butt"
+                      strokeLinejoin="bevel"
                     ></path>
                     <path
                       d="M11.5439 36.4559L36.9997 11"
                       stroke="currentColor"
-                      stroke-width="4"
-                      stroke-linecap="butt"
-                      stroke-linejoin="bevel"
+                      strokeWidth="4"
+                      strokeLinecap="butt"
+                      strokeLinejoin="bevel"
                     ></path>
                   </svg>
                 </Link>

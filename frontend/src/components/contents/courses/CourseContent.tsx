@@ -1,21 +1,21 @@
 export default function CourseContent() {
   return (
     <>
-      <div className="w-full m-auto  sm:rounded-xl h-auto pl-10 pr-10 pt-5 sm:pb-10 sm:pt-10 mt-3 mb-8 border-2 flex flex-col">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-10 ">
+      <div className="flex flex-col border-2 m-auto mt-3 mb-8 pt-5 sm:pt-10 pr-10 sm:pb-10 pl-10 sm:rounded-xl w-full h-auto">
+        <div className="gap-10 grid grid-cols-1 sm:grid-cols-2">
           <div>
             <div className="flex flex-row justify-center items-center">
-              <h1 className="text-3xl sm:text-4xl text-center font-bold mb-5">
+              <h1 className="mb-5 font-bold text-3xl text-center sm:text-4xl">
                 Market News
               </h1>
             </div>{" "}
-            <span className="sm:block text-md font-medium text-center flex justify-center items-center ">
+            <span className="sm:block flex justify-center items-center font-medium text-center text-md">
               Flush your stock worries away with our website's latest news!
             </span>
           </div>{" "}
-          <div className="hidden sm:block relative m-auto mb-5 mt-5 sm:mb-0 sm:mt-0">
+          <div className="sm:block relative hidden m-auto mt-5 sm:mt-0 mb-5 sm:mb-0">
             <svg
-              className="w-40 -my-5"
+              className="-my-5 w-40"
               viewBox="0 0 200 200"
               xmlns="http://www.w3.org/2000/svg"
             >
@@ -35,9 +35,9 @@ export default function CourseContent() {
                 filter="url(#glow)"
               />
             </svg>{" "}
-            <div className="z-1 absolute top-1 right-10">
+            <div className="top-1 right-10 z-1 absolute">
               <img
-                className="w-24 mr-1"
+                className="mr-1 w-24"
                 src="https://stocknear.com/_app/immutable/assets/news_logo.CNpM1h90.png"
                 alt="logo"
                 loading="lazy"
@@ -47,7 +47,7 @@ export default function CourseContent() {
         </div>
       </div>
 
-      <div className="card card-compact bg-base-100 shadow-xl col-start-2 col-span-5">
+      <div className="col-span-5 col-start-2 bg-base-100 shadow-xl card card-compact">
         <figure>
           <img
             src="https://daisyui.com/images/stock/photo-1606107557195-0e29a4b5b4aa.jpg"
@@ -57,12 +57,12 @@ export default function CourseContent() {
         <div className="card-body">
           <h2 className="card-title">Shoes!</h2>
           <p>If a dog chews shoes whose shoes does he choose?</p>
-          <div className="card-actions justify-end">
+          <div className="justify-end card-actions">
             <button className="btn btn-primary">Buy Now</button>
           </div>
         </div>
       </div>
-      <div className="card card-compact bg-base-100 shadow-xl  col-start-8 col-span-5">
+      <div className="col-span-5 col-start-8 bg-base-100 shadow-xl card card-compact">
         <figure>
           <img
             src="https://daisyui.com/images/stock/photo-1606107557195-0e29a4b5b4aa.jpg"
@@ -72,12 +72,12 @@ export default function CourseContent() {
         <div className="card-body">
           <h2 className="card-title">Shoes!</h2>
           <p>If a dog chews shoes whose shoes does he choose?</p>
-          <div className="card-actions justify-end">
+          <div className="justify-end card-actions">
             <button className="btn btn-primary">Buy Now</button>
           </div>
         </div>
       </div>
-      {/* <div className="card card-compact w-96 bg-base-100 shadow-xl">
+      {/* <div className="bg-base-100 shadow-xl w-96 card card-compact">
         <figure>
           <img
             src="https://daisyui.com/images/stock/photo-1606107557195-0e29a4b5b4aa.jpg"
@@ -87,12 +87,12 @@ export default function CourseContent() {
         <div className="card-body">
           <h2 className="card-title">Shoes!</h2>
           <p>If a dog chews shoes whose shoes does he choose?</p>
-          <div className="card-actions justify-end">
+          <div className="justify-end card-actions">
             <button className="btn btn-primary">Buy Now</button>
           </div>
         </div>
       </div>
-      <div className="card card-compact w-96 bg-base-100 shadow-xl">
+      <div className="bg-base-100 shadow-xl w-96 card card-compact">
         <figure>
           <img
             src="https://daisyui.com/images/stock/photo-1606107557195-0e29a4b5b4aa.jpg"
@@ -102,7 +102,7 @@ export default function CourseContent() {
         <div className="card-body">
           <h2 className="card-title">Shoes!</h2>
           <p>If a dog chews shoes whose shoes does he choose?</p>
-          <div className="card-actions justify-end">
+          <div className="justify-end card-actions">
             <button className="btn btn-primary">Buy Now</button>
           </div>
         </div>

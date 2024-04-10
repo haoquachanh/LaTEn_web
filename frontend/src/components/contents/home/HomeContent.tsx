@@ -1,14 +1,14 @@
 export default function HomeContent() {
   return (
     <>
-      <div className="hero min-h-screen bg-base-200">
-        <div className="hero-content flex-col lg:flex-row">
+      <div className="bg-base-200 min-h-screen hero">
+        <div className="lg:flex-row flex-col hero-content">
           <img
             src="https://daisyui.com/images/stock/photo-1635805737707-575885ab0820.jpg"
-            className="max-w-sm rounded-lg shadow-2xl"
+            className="shadow-2xl rounded-lg max-w-sm"
           />
           <div>
-            <h1 className="text-5xl font-bold">Box Office News!</h1>
+            <h1 className="font-bold text-5xl">Box Office News!</h1>
             <p className="py-6">
               Provident cupiditate voluptatem et in. Quaerat fugiat ut assumenda
               excepturi exercitationem quasi. In deleniti eaque aut repudiandae

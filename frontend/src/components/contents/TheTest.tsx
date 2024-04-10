@@ -74,7 +74,7 @@ const ParentComponent = () => {
   return (
     <ul
       tabIndex={0}
-      className="dropdown-content menu menu-sm bg-base-200 rounded-box mt-7 w-36 border border-white/5 p-2 shadow-2xl outline outline-1 outline-black/5"
+      className="border-white/5 bg-base-200 shadow-2xl mt-7 p-2 border rounded-box w-36 dropdown-content menu menu-sm outline outline-1 outline-black/5"
     >
       {renderMenuItems()}
     </ul>
