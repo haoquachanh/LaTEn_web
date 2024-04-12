@@ -11,7 +11,7 @@ import { DictionaryService } from './dictionary.service';
 import { DeleteResult, UpdateResult } from 'typeorm';
 import { DictionaryEntity } from '@entities/dictionary.entity';
 
-@Controller('api/dictionary')
+@Controller('dictionary')
 export class DictionaryController {
   constructor(private readonly dictionaryService: DictionaryService) {}
   @Get('test')
