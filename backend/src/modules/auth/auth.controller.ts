@@ -11,7 +11,7 @@ import { UserEntity } from '@entities/user.entity';
 import { LocalAuthGuard } from 'src/common/security/local.auth.guard';
 import { FormatData } from 'src/common/decorators/format-res.decorator';
 
-@Controller('api/auth')
+@Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 

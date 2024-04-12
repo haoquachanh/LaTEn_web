@@ -14,7 +14,7 @@ import { UserEntity } from '@entities/user.entity';
 // import { JwtAuthGuard } from '@common/security/jwt.auth.guard';
 
 // @UseGuards(JwtAuthGuard)
-@Controller('api/user')
+@Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
   @Get('test')
