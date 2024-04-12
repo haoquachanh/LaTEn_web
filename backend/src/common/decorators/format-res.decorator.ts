@@ -13,8 +13,8 @@ export const FormatData = createParamDecorator(
     }
     const formattedData = {
       err: result.err ?? 1,
-      mes: result.mes ?? "ok",
-      data: result
+      mes: result.mes ?? 'ok',
+      data: result,
     };
 
     return formattedData;
