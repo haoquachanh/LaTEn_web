@@ -5,9 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { DictionaryEntity } from '@entities/dictionary.entity';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([DictionaryEntity])
-  ],
+  imports: [TypeOrmModule.forFeature([DictionaryEntity])],
   providers: [DictionaryService],
   controllers: [DictionaryController],
 })

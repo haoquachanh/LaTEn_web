@@ -5,24 +5,24 @@ import { DictionaryEntity } from '@entities/dictionary.entity';
 
 @Injectable()
 export class DictionaryService {
-    constructor(
-        @InjectRepository(DictionaryEntity)
-        private readonly userRepository: Repository<DictionaryEntity>,
-    ) {}
+  constructor(
+    @InjectRepository(DictionaryEntity)
+    private readonly userRepository: Repository<DictionaryEntity>,
+  ) {}
 
-    async getAllDictionarys(): Promise<DictionaryEntity[]> {
-        return await this.userRepository.find();
-    }
+  async getAllDictionarys(): Promise<DictionaryEntity[]> {
+    return await this.userRepository.find();
+  }
 
-    async create(word: DictionaryEntity): Promise<DictionaryEntity>{
-        return await this.userRepository.save(word);
-    }
+  async create(word: DictionaryEntity): Promise<DictionaryEntity> {
+    return await this.userRepository.save(word);
+  }
 
-    async update(id: string, user: DictionaryEntity): Promise<UpdateResult>{
-        return await this.userRepository.update(id, user);
-    }
+  async update(id: string, user: DictionaryEntity): Promise<UpdateResult> {
+    return await this.userRepository.update(id, user);
+  }
 
-    async delete(id: string): Promise<DeleteResult>{
-        return await this.userRepository.delete(id);
-    }
+  async delete(id: string): Promise<DeleteResult> {
+    return await this.userRepository.delete(id);
+  }
 }

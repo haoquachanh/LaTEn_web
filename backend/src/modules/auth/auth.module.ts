@@ -10,12 +10,12 @@ import { LocalStrategy } from 'src/common/security/local.strategy';
 import { JwtStrategy } from 'src/common/security/jwt.strategy';
 
 @Module({
-   imports: [
-      PassportModule,
-      JwtModule.registerAsync(jwtConfig),
-      TypeOrmModule.forFeature([UserEntity]),
-   ],
-   providers: [AuthService, LocalStrategy, JwtStrategy],
-   controllers: [AuthController],
+  imports: [
+    PassportModule,
+    JwtModule.registerAsync(jwtConfig),
+    TypeOrmModule.forFeature([UserEntity]),
+  ],
+  providers: [AuthService, LocalStrategy, JwtStrategy],
+  controllers: [AuthController],
 })
 export class AuthModule {}
