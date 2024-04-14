@@ -19,17 +19,19 @@ import { RolesGuard } from '@common/security/role.guard';
 import { UserRole } from '@common/typings/user-role.enum';
 import { Roles } from '@common/decorators/roles.decorator';
 import { AuthGuard } from '@nestjs/passport';
+import { CreateUserDto } from './dtos/create-user.dto';
+import { UpdateUserDto } from './dtos/update-user.dto';
 // import { JwtAuthGuard } from '@common/security/jwt.auth.guard';
 // import { RolesGuard } from '@common/security/role.guard';
 
 @ApiTags('Users')
 @Controller('user')
-@UseGuards(AuthGuard('jwt'))
 // @UseGuards(RolesGuard)
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Get()
+  @UseGuards(AuthGuard('jwt'))
   @Roles(UserRole.ADMIN)
   @UseGuards(RolesGuard)
   async getAll(): Promise<any> {
@@ -44,13 +46,13 @@ export class UserController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  async create(@Body() user: UserEntity): Promise<UserEntity> {
+  async create(@Body() user: CreateUserDto): Promise<UserEntity> {
     return this.userService.create(user);
   }
 
   @Put(':id')
   async update(
-    @Body() user: UserEntity,
+    @Body() user: UpdateUserDto,
     @Param('id') id: string,
   ): Promise<UpdateResult> {
     return this.userService.update(id, user);
@@ -60,14 +62,5 @@ export class UserController {
   @HttpCode(HttpStatus.OK)
   async delete(@Param('id') id: string): Promise<DeleteResult> {
     return this.userService.delete(id);
-  }
-
-  @Post(':id/favorite-words')
-  @HttpCode(HttpStatus.OK)
-  async favorite(
-    @Body() body: { wordId: number },
-    @Param('id') userId: string,
-  ): Promise<void> {
-    return this.userService.addToFavorite(parseInt(userId), body.wordId);
   }
 }
