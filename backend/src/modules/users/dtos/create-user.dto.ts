@@ -1,5 +1,11 @@
 import { UserRole } from '@common/typings/user-role.enum';
-import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import {
+  IsEmpty,
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
 export class CreateUserDto {
   @IsNotEmpty()
@@ -10,8 +16,7 @@ export class CreateUserDto {
   @IsString()
   password: string;
 
-  @IsOptional()
-  @IsEnum(UserRole)
+  @IsEmpty()
   role?: UserRole;
 
   @IsOptional()

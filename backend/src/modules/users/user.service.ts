@@ -1,8 +1,15 @@
-import { Injectable } from '@nestjs/common';
+import {
+  HttpStatus,
+  Injectable,
+  UnprocessableEntityException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeleteResult, Repository, UpdateResult } from 'typeorm';
 import { UserEntity } from 'src/entities/user.entity';
 import { DictionaryEntity } from '@entities/dictionary.entity';
+import { CreateUserDto } from './dtos/create-user.dto';
+import * as bcrypt from 'bcrypt';
+import { UpdateUserDto } from './dtos/update-user.dto';
 
 @Injectable()
 export class UserService {
@@ -22,30 +29,46 @@ export class UserService {
     return await this.userRepository.findOneBy({ id: theId });
   }
 
-  async create(user: UserEntity): Promise<UserEntity> {
-    return await this.userRepository.save(user);
+  async create(user: CreateUserDto): Promise<UserEntity> {
+    const clonedPayload = { ...user };
+    if (clonedPayload.email) {
+      const userObject = await this.userRepository.findOne({
+        where: { email: clonedPayload.email },
+      });
+      if (userObject) {
+        throw new UnprocessableEntityException({
+          status: HttpStatus.UNPROCESSABLE_ENTITY,
+          errors: {
+            email: 'emailAlreadyExists',
+          },
+        });
+      }
+    }
+    if (clonedPayload.password) {
+      const salt = await bcrypt.genSalt();
+      clonedPayload.password = await bcrypt.hash(clonedPayload.password, salt);
+    }
+
+    const result = await this.userRepository.save(clonedPayload);
+    delete result.password;
+    return result;
   }
 
-  async update(id: string, user: UserEntity): Promise<UpdateResult> {
+  async update(id: string, user: UpdateUserDto): Promise<UpdateResult> {
+    const theId = parseInt(id);
+    const theUser = await this.userRepository.findOneBy({ id: theId });
+    if (!theUser) {
+      throw new UnprocessableEntityException({
+        status: HttpStatus.NOT_FOUND,
+        errors: {
+          id: 'userNotFound',
+        },
+      });
+    }
     return await this.userRepository.update(id, user);
   }
 
   async delete(id: string): Promise<DeleteResult> {
     return await this.userRepository.delete(id);
-  }
-
-  async addToFavorite(userId: number, wordId: number): Promise<void> {
-    const user = await this.userRepository
-      .createQueryBuilder('user')
-      .leftJoinAndSelect('user.favoriteWords', 'favoriteWords')
-      .where('user.id = :userId', { userId: userId })
-      .getOne();
-    const word = await this.dictionaryRepository.findOne({
-      where: { id: wordId },
-    });
-    if (user && word) {
-      user.favoriteWords.push(word);
-      await this.userRepository.save(user);
-    }
   }
 }
