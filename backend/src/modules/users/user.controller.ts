@@ -3,31 +3,47 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   Post,
   Put,
+  UseGuards,
   // UseGuards
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { DeleteResult, UpdateResult } from 'typeorm';
 import { UserEntity } from '@entities/user.entity';
+import { ApiTags } from '@nestjs/swagger';
+import { RolesGuard } from '@common/security/role.guard';
+import { UserRole } from '@common/typings/user-role.enum';
+import { Roles } from '@common/decorators/roles.decorator';
+import { AuthGuard } from '@nestjs/passport';
 // import { JwtAuthGuard } from '@common/security/jwt.auth.guard';
+// import { RolesGuard } from '@common/security/role.guard';
 
-// @UseGuards(JwtAuthGuard)
+@ApiTags('Users')
 @Controller('user')
+@UseGuards(AuthGuard('jwt'))
+// @UseGuards(RolesGuard)
 export class UserController {
   constructor(private readonly userService: UserService) {}
-  @Get('test')
-  test(): string {
-    return 'User api is available';
-  }
 
   @Get()
+  @Roles(UserRole.ADMIN)
+  @UseGuards(RolesGuard)
   async getAll(): Promise<any> {
     return this.userService.getAllUsers();
   }
 
+  @Get(':id')
+  @HttpCode(HttpStatus.OK)
+  async getById(@Param('id') id: string): Promise<UserEntity> {
+    return this.userService.getUserById(id);
+  }
+
   @Post()
+  @HttpCode(HttpStatus.CREATED)
   async create(@Body() user: UserEntity): Promise<UserEntity> {
     return this.userService.create(user);
   }
@@ -41,11 +57,13 @@ export class UserController {
   }
 
   @Delete(':id')
+  @HttpCode(HttpStatus.OK)
   async delete(@Param('id') id: string): Promise<DeleteResult> {
     return this.userService.delete(id);
   }
 
   @Post(':id/favorite-words')
+  @HttpCode(HttpStatus.OK)
   async favorite(
     @Body() body: { wordId: number },
     @Param('id') userId: string,
