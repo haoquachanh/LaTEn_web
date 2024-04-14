@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "frontend": "npm run --prefix frontend dev",
-    "backend": "npm run --prefix backend dev"
+    "backend": "npm run --prefix backend start:dev"
   },
   "keywords": [],
   "author": "",
