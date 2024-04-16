@@ -6,6 +6,7 @@ export default function ChangeTheme() {
   const themes = [
     "light",
     "dark",
+    "valentine",
     "cupcake",
     "bumblebee",
     "emerald",
