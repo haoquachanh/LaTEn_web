@@ -1,5 +1,11 @@
 "use client";
-import { createContext, ReactNode, useContext, useState } from "react";
+import {
+  createContext,
+  ReactNode,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 
 interface ThemeContextProps {
   theme: string;
@@ -16,11 +22,19 @@ const ThemeContext = createContext<ThemeContextProps>({
 
 const useTheme = () => useContext(ThemeContext).theme;
 function ThemeProvider({ children }: Props) {
-  const [theme, setTheme] = useState("dark");
+  const [theme, setTheme] = useState("light");
 
   const changeTheme = (x: string) => {
+    localStorage.setItem("theme", x);
     setTheme(x);
   };
+
+  useEffect(() => {
+    const theme = localStorage.getItem("theme");
+    if (theme) {
+      changeTheme(theme);
+    }
+  }, []);
 
   const value = {
     theme,

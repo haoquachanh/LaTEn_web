@@ -28,6 +28,7 @@ export default function TheAccount() {
                   <Link
                     href={"/"}
                     onClick={() => {
+                      localStorage.removeItem("access_token");
                       logout();
                     }}
                   >
