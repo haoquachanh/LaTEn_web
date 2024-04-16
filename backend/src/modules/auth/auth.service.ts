@@ -1,9 +1,14 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UserEntity } from 'src/entities/user.entity';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
+import { LoginDto } from './dtos/login.dto';
 // import { UserLoginDto } from '@modules/users/dtos/userlogin';
 
 @Injectable()
@@ -19,21 +24,28 @@ export class AuthService {
     user.password = hash;
     return await this.userRepository.save(user);
   }
-  async validateUser(email: string, password: string): Promise<any> {
-    const foundUser = await this.userRepository.findOneBy({ email });
+  async validateUser(credentials: LoginDto): Promise<UserEntity> {
+    const foundUser = await this.userRepository.findOneBy({
+      email: credentials.email,
+    });
     if (foundUser) {
-      if (await bcrypt.compare(password, foundUser.password)) {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { password, ...result } = foundUser;
-        return result;
+      console.log(foundUser);
+      if (await bcrypt.compare(credentials.password, foundUser.password)) {
+        return foundUser;
       }
-      return null;
+      throw new UnauthorizedException();
     }
     return null;
   }
 
-  async login(user: any): Promise<{ access_token: string }> {
-    const payload = { email: user.email, sub: user.id, role: user.role };
+  async login(credentials: LoginDto): Promise<{ access_token: string }> {
+    const foundUser = await this.validateUser(credentials);
+    if (!foundUser) throw new NotFoundException();
+    const payload = {
+      email: foundUser.email,
+      id: foundUser.id,
+      role: foundUser.role,
+    };
     return {
       access_token: this.jwtService.sign(payload),
     };
