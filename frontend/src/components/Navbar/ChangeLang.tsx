@@ -26,7 +26,7 @@ export default function ChangeLang() {
       <div
         tabIndex={0}
         role="button"
-        className="btn btn-ghost"
+        className="d-flex flex-nowrap btn btn-ghost"
         aria-label="Language"
       >
         <svg

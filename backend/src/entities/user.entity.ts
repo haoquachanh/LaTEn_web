@@ -16,6 +16,7 @@ import {
   JoinTable,
 } from 'typeorm';
 import { DictionaryEntity } from './dictionary.entity';
+import { Exclude } from 'class-transformer';
 
 @Entity('users')
 export class UserEntity {
@@ -29,6 +30,7 @@ export class UserEntity {
 
   @IsNotEmpty()
   @IsString()
+  @Exclude()
   @Column()
   password: string;
 

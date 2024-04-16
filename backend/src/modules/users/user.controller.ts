@@ -9,6 +9,7 @@ import {
   Post,
   Put,
   UseGuards,
+  ValidationPipe,
   // UseGuards
 } from '@nestjs/common';
 import { UserService } from './user.service';
@@ -21,6 +22,8 @@ import { Roles } from '@common/decorators/roles.decorator';
 import { AuthGuard } from '@nestjs/passport';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { UpdateUserDto } from './dtos/update-user.dto';
+import { Validate } from 'class-validator';
+import { Transform, TransformPlainToInstance } from 'class-transformer';
 // import { JwtAuthGuard } from '@common/security/jwt.auth.guard';
 // import { RolesGuard } from '@common/security/role.guard';
 
@@ -39,8 +42,7 @@ export class UserController {
   }
 
   @Get(':id')
-  @HttpCode(HttpStatus.OK)
-  async getById(@Param('id') id: string): Promise<UserEntity> {
+  async getById(@Param('id') id: string, req: Request): Promise<UserEntity> {
     return this.userService.getUserById(id);
   }
 

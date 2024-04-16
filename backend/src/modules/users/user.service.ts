@@ -50,7 +50,7 @@ export class UserService {
     }
 
     const result = await this.userRepository.save(clonedPayload);
-    delete result.password;
+    // delete result.password;
     return result;
   }
 

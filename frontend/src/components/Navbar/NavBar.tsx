@@ -1,11 +1,12 @@
-"use client";
-import TheAccount from "./AccountLogged";
-import TheAccountUnLogged from "./AccountUnLogged";
+import { useContext } from "react";
+import AfterLoggin from "./AfterLogin";
+import BeforeLogin from "./BeforeLogin";
 import ChangeLang from "./ChangeLang";
 import ChangeTheme from "./ChangeTheme";
+import { AuthContext } from "@/contexts/AuthContext";
 
 export default function NavBar() {
-  const logged = false;
+  const { loggedIn } = useContext(AuthContext);
   return (
     <>
       <div className="top-0 z-30 sticky flex justify-center bg-base-100 bg-opacity-90 backdrop-blur w-full h-16 text-base-content">
@@ -38,10 +39,10 @@ export default function NavBar() {
               </label>
             </span>
           </div>
-          <div className="flex-0">
+          <div className="flex-row flex-0">
             <ChangeTheme />
             <ChangeLang />
-            {logged ? <TheAccount /> : <TheAccountUnLogged />}
+            {loggedIn ? <AfterLoggin /> : <BeforeLogin />}
           </div>
         </nav>
       </div>
