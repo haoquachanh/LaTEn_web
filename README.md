@@ -5,7 +5,7 @@ Now, it is only available for computers.
 
 ## Technologies Used
 
-- **Frontend:** NestJS
+- **Frontend:** NextJS
 - **Backend:** NestJS
 - with Typescript
 
