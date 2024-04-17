@@ -3,6 +3,7 @@ import { ReactNode, useContext } from "react";
 import NavBar from "../Navbar/NavBar";
 import SideBar from "../Sidebar/SideBar";
 import { ThemeContext } from "@/contexts/ThemeContext";
+import FeedbackCom from "../feedback/FeedbackCom";
 type Props = {
   children: ReactNode;
 };
@@ -17,7 +18,10 @@ export default function AppLayout({ children }: Props) {
           <div className="drawer-content">
             <NavBar />
             <div className="flex flex-row lg:ml-80">
-              <div className="mx-auto lg:mx-20 lg:mr-64 w-full">{children}</div>
+              <div className="mx-5 lg:mx-20 xl:mr-64 w-full">
+                {children}
+                <FeedbackCom />
+              </div>
             </div>
           </div>
           <SideBar />

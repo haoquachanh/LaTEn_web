@@ -29,7 +29,6 @@ export class AuthService {
       email: credentials.email,
     });
     if (foundUser) {
-      console.log(foundUser);
       if (await bcrypt.compare(credentials.password, foundUser.password)) {
         return foundUser;
       }

@@ -8,6 +8,7 @@ import {
   Param,
   Post,
   Put,
+  Request,
   UseGuards,
   ValidationPipe,
   // UseGuards
@@ -24,6 +25,7 @@ import { CreateUserDto } from './dtos/create-user.dto';
 import { UpdateUserDto } from './dtos/update-user.dto';
 import { Validate } from 'class-validator';
 import { Transform, TransformPlainToInstance } from 'class-transformer';
+import { User } from '@common/decorators/user.decorator';
 // import { JwtAuthGuard } from '@common/security/jwt.auth.guard';
 // import { RolesGuard } from '@common/security/role.guard';
 
@@ -32,7 +34,11 @@ import { Transform, TransformPlainToInstance } from 'class-transformer';
 // @UseGuards(RolesGuard)
 export class UserController {
   constructor(private readonly userService: UserService) {}
-
+  @Get('/profile')
+  @UseGuards(AuthGuard('jwt'))
+  async getProfile(@User() user: { id: number }): Promise<any> {
+    return this.userService.getUserById(user.id);
+  }
   @Get()
   @UseGuards(AuthGuard('jwt'))
   @Roles(UserRole.ADMIN)
@@ -42,6 +48,9 @@ export class UserController {
   }
 
   @Get(':id')
+  @UseGuards(AuthGuard('jwt'))
+  @Roles(UserRole.ADMIN)
+  @UseGuards(RolesGuard)
   async getById(@Param('id') id: string, req: Request): Promise<UserEntity> {
     return this.userService.getUserById(id);
   }

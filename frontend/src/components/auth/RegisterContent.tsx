@@ -12,8 +12,6 @@ export default function RegisterContent() {
     const formData = new FormData(event.currentTarget);
     const email = formData.get("email");
     const password = formData.get("password");
-    console.log(email, password);
-    console.log(process.env.SERVER_URL);
     const response = await fetch(`http://localhost:3001/api/auth/login`, {
       // const response = await fetch(`${process.env.SERVER_URL}/auth/login`, {
       method: "POST",
@@ -22,7 +20,7 @@ export default function RegisterContent() {
     })
       .then((res) => res.json())
       .then((data) => {
-        localStorage.setItem("jwt_token_key", data.access_token);
+        localStorage.setItem("access_tokens", data.access_token);
         router.push("/");
       });
   }

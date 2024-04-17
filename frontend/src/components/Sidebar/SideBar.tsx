@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
-import { navLinks, socialLinks } from "@/helper/navLink";
-import { menuIcons, socialIcons } from "@/helper/IconRender";
+import { navLinks, socialLinks } from "@/utils/navLink";
+import { menuIcons, socialIcons } from "@/utils/IconRender";
 
 export default function SideBar() {
   return (
