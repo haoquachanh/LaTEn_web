@@ -24,9 +24,27 @@ export class UserService {
     return await this.userRepository.find();
   }
 
-  async getUserById(id: string): Promise<UserEntity> {
-    const theId = parseInt(id);
-    return await this.userRepository.findOneBy({ id: theId });
+  async getUserById(id: string | number): Promise<UserEntity> {
+    const theId = typeof id === 'string' ? parseInt(id) : id;
+    if (!theId) {
+      throw new UnprocessableEntityException({
+        status: HttpStatus.BAD_REQUEST,
+        errors: {
+          id: 'userIdMustBeNumber',
+        },
+      });
+    }
+    const theUser = await this.userRepository.findOneBy({ id: theId });
+    if (!theUser) {
+      throw new UnprocessableEntityException({
+        status: HttpStatus.NOT_FOUND,
+        errors: {
+          id: 'userNotFound',
+        },
+      });
+    }
+    delete theUser.password;
+    return theUser;
   }
 
   async create(user: CreateUserDto): Promise<UserEntity> {
