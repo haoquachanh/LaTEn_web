@@ -4,7 +4,7 @@ export default function FeedbackCom() {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLDivElement>(null);
 
-  const [showFeedback, setShowFeedback] = useState(true);
+  const [showFeedback, setShowFeedback] = useState(false);
   const [feedback, setFeedback] = useState("");
   const feedbackEmo = ["verygood", "good", "normal", "bad"];
   const feedbackIcons = [
