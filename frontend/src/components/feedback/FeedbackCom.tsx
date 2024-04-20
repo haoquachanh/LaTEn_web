@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 
 export default function FeedbackCom() {
-  const wrapperRef = useRef(null);
-  const [showFeedback, setShowFeedback] = useState(false);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLDivElement>(null);
+
+  const [showFeedback, setShowFeedback] = useState(true);
   const [feedback, setFeedback] = useState("");
   const feedbackEmo = ["verygood", "good", "normal", "bad"];
   const feedbackIcons = [
@@ -24,23 +26,25 @@ export default function FeedbackCom() {
   }, [showFeedback]);
 
   useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
+    const handleOutsideClick = (event: MouseEvent) => {
       if (
-        wrapperRef.current &&
-        !(wrapperRef.current as HTMLElement).contains(event.target as Node)
+        !wrapperRef.current?.contains(event.target as Node) &&
+        !buttonRef.current?.contains(event.target as Node)
       ) {
         setShowFeedback(false);
       }
-    }
-    window.addEventListener("click", handleClickOutside);
-    return () => {
-      window.removeEventListener("click", handleClickOutside);
     };
-  });
+    if (showFeedback) {
+      window.addEventListener("mouseup", handleOutsideClick);
+    }
+    return () => {
+      window.removeEventListener("mouseup", handleOutsideClick);
+    };
+  }, [showFeedback]);
+
   return (
     <>
       <div
-        id="feedbackInfo"
         className={`${
           showFeedback ? "flex" : "hidden"
         } fixed top-0 left-0 z-40 w-screen h-screen items-center justify-center`}
@@ -87,11 +91,12 @@ export default function FeedbackCom() {
       </div>
 
       <div
-        ref={wrapperRef}
-        className="fixed z-40 bottom-8 sm:bottom-10 right-8 sm:right-10"
-        onClick={() => {
+        id="feedbackInfo"
+        className="fixed z-50 bottom-8 sm:bottom-10 right-8 sm:right-10"
+        onClick={(e) => {
           setShowFeedback(!showFeedback);
         }}
+        ref={buttonRef}
       >
         <label
           htmlFor="feedbackInfo"
