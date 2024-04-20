@@ -14,7 +14,6 @@ export default function ChangeTheme() {
     "synthwave",
     "retro",
     "cyberpunk",
-    "valentine",
     "halloween",
     "garden",
     "forest",
