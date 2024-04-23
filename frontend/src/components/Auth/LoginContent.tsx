@@ -1,9 +1,9 @@
-"use client";
-import { FormEvent, useContext } from "react";
-import { useRouter } from "next/navigation";
+'use client';
+import { FormEvent, useContext } from 'react';
+import { useRouter } from 'next/navigation';
 
-import Link from "next/link";
-import { AuthContext } from "@/contexts/AuthContext";
+import Link from 'next/link';
+import { AuthContext } from '@/contexts/AuthContext';
 
 export default function LoginContent() {
   const { login } = useContext(AuthContext);
@@ -12,20 +12,20 @@ export default function LoginContent() {
     event.preventDefault();
 
     const formData = new FormData(event.currentTarget);
-    const email = formData.get("email");
-    const password = formData.get("password");
+    const email = formData.get('email');
+    const password = formData.get('password');
 
     await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/auth/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
     })
       .then((res) => res.json())
       .then((data) => {
         if (data.access_token) {
-          localStorage.setItem("access_token", data.access_token);
+          localStorage.setItem('access_token', data.access_token);
           login();
-          router.push("/");
+          router.push('/');
         } else {
         }
       });
@@ -42,13 +42,7 @@ export default function LoginContent() {
           <input type="text" name="email" placeholder="Email" required />
         </label>
         <label className="flex items-center gap-2 input-bordered w-11/12 input">
-          <input
-            className="w-11/12"
-            type="password"
-            name="password"
-            placeholder="Password"
-            required
-          />
+          <input className="w-11/12" type="password" name="password" placeholder="Password" required />
         </label>
         <button className="w-1/2 btn btn-outline" type="submit">
           Login

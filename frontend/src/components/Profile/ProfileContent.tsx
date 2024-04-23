@@ -1,7 +1,7 @@
-"use client";
-import { AuthContext } from "@/contexts/AuthContext";
-import { useContext, useEffect, useState } from "react";
-import { getApi } from "@/utils/axiosCofig.ts";
+'use client';
+import { AuthContext } from '@/contexts/AuthContext';
+import { useContext, useEffect, useState } from 'react';
+import { getApi } from '@/utils/axiosCofig.ts';
 
 interface UserData {
   fullname?: string;
@@ -22,8 +22,8 @@ export default function ProfileContent() {
   useEffect(() => {
     async function getInfo() {
       if (!access_token) return;
-      const data = await getApi("user/profile", access_token);
-      console.log("🚀 ~ ProfileContent ~ data:", data);
+      const data = await getApi('user/profile', access_token);
+      console.log('🚀 ~ ProfileContent ~ data:', data);
       setData(data);
     }
     getInfo();
@@ -31,9 +31,9 @@ export default function ProfileContent() {
   return (
     <div>
       <div className="card bg-base-100 from-base-200 not-prose outline-base-content/5 relative overflow-hidden bg-gradient-to-b font-sans shadow-lg outline -outline-offset-1 md:flex-row-reverse">
-        <div className="bg-accent -left-1/5 pointer-events-none absolute bottom-[-50%] aspect-square w-3/4 -translate-x-1/2 rounded-full opacity-20 blur-3xl"></div>{" "}
-        <div className="bg-primary pointer-events-none absolute bottom-[-120%] left-1/2 aspect-square w-full -translate-x-1/2 rounded-full opacity-20 blur-3xl"></div>{" "}
-        <div className="bg-base-100 pointer-events-none absolute -top-3/4 right-1/4 z-[3] aspect-square w-1/2 rounded-full opacity-60 blur-3xl"></div>{" "}
+        <div className="bg-accent -left-1/5 pointer-events-none absolute bottom-[-50%] aspect-square w-3/4 -translate-x-1/2 rounded-full opacity-20 blur-3xl"></div>{' '}
+        <div className="bg-primary pointer-events-none absolute bottom-[-120%] left-1/2 aspect-square w-full -translate-x-1/2 rounded-full opacity-20 blur-3xl"></div>{' '}
+        <div className="bg-base-100 pointer-events-none absolute -top-3/4 right-1/4 z-[3] aspect-square w-1/2 rounded-full opacity-60 blur-3xl"></div>{' '}
         <div className="card-body relative isolate z-[3]">
           <div className="flex flex-row items-center justify-center space-x-20">
             <div className="avatar">
@@ -49,13 +49,7 @@ export default function ProfileContent() {
         </div>
       </div>
       <div role="tablist" className="tabs tabs-bordered mt-12">
-        <input
-          type="radio"
-          name="my_tabs_1"
-          role="tab"
-          className="tab mx-5 px-5"
-          aria-label="Infomation"
-        />
+        <input type="radio" name="my_tabs_1" role="tab" className="tab mx-5 px-5" aria-label="Infomation" />
         <div role="tabpanel" className="tab-content p-10">
           <h1>John Doe</h1>
           <p>Web Developer</p>
@@ -63,25 +57,13 @@ export default function ProfileContent() {
           <p>John Doe is a web developer</p>
         </div>
 
-        <input
-          type="radio"
-          name="my_tabs_1"
-          role="tab"
-          className="tab mx-5 px-5"
-          aria-label="Setting"
-        />
+        <input type="radio" name="my_tabs_1" role="tab" className="tab mx-5 px-5" aria-label="Setting" />
         <div role="tabpanel" className="tab-content p-10">
           <button className="btn btn-warning">Change password</button>
           <button className="btn btn-error">Delete accout</button>
         </div>
 
-        <input
-          type="radio"
-          name="my_tabs_1"
-          role="tab"
-          className="tab mx-5 px-5"
-          aria-label="My Courses"
-        />
+        <input type="radio" name="my_tabs_1" role="tab" className="tab mx-5 px-5" aria-label="My Courses" />
         <div role="tabpanel" className="tab-content p-10">
           Comming soon!
         </div>

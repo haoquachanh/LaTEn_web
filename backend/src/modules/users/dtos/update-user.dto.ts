@@ -1,11 +1,5 @@
 import { UserRole } from '@common/typings/user-role.enum';
-import {
-  IsEmpty,
-  IsEnum,
-  IsNotEmpty,
-  IsOptional,
-  IsString,
-} from 'class-validator';
+import { IsEmpty, IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class UpdateUserDto {
   @IsEmpty({ message: "email can't be change" })

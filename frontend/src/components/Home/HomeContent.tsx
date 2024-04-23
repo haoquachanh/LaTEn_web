@@ -10,9 +10,8 @@ export default function HomeContent() {
           <div>
             <h1 className="font-bold text-5xl">Laten Website ! </h1>
             <p className="py-6">
-              Provident cupiditate voluptatem et in. Quaerat fugiat ut assumenda
-              excepturi exercitationem quasi. In deleniti eaque aut repudiandae
-              et a id nisi.
+              Provident cupiditate voluptatem et in. Quaerat fugiat ut assumenda excepturi exercitationem quasi. In
+              deleniti eaque aut repudiandae et a id nisi.
             </p>
           </div>
         </div>
@@ -24,9 +23,7 @@ export default function HomeContent() {
       <span className="loading loading-ring loading-lg"></span>
       <ul className="timeline timeline-vertical">
         <li>
-          <div className="timeline-start timeline-box">
-            First Macintosh computer
-          </div>
+          <div className="timeline-start timeline-box">First Macintosh computer</div>
           <hr />
         </li>
         <li>

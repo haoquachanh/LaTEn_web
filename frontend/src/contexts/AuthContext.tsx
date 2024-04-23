@@ -1,11 +1,5 @@
-"use client";
-import {
-  createContext,
-  useContext,
-  useState,
-  ReactNode,
-  useEffect,
-} from "react";
+'use client';
+import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 
 interface AuthContextType {
   access_token: string | undefined | null;
@@ -29,7 +23,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [loggedIn, setLoggedIn] = useState(false);
   const [access_token, setAccessToken] = useState<string | null>(null);
   useEffect(() => {
-    const token = localStorage.getItem("access_token");
+    const token = localStorage.getItem('access_token');
     if (token) {
       setLoggedIn(true);
     }
@@ -44,17 +38,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setLoggedIn(false);
   };
 
-  return (
-    <AuthContext.Provider value={{ access_token, loggedIn, login, logout }}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={{ access_token, loggedIn, login, logout }}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
+    throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
 };

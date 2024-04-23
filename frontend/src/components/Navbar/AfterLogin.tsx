@@ -1,8 +1,8 @@
-"use client";
-import { AuthContext } from "@/contexts/AuthContext";
-import Link from "next/link";
-import { useContext } from "react";
-import { RiAccountCircleFill } from "react-icons/ri";
+'use client';
+import { AuthContext } from '@/contexts/AuthContext';
+import Link from 'next/link';
+import { useContext } from 'react';
+import { RiAccountCircleFill } from 'react-icons/ri';
 
 export default function TheAccount() {
   const { logout } = useContext(AuthContext);
@@ -22,13 +22,13 @@ export default function TheAccount() {
             >
               <ul className="gap-1 menu menu-sm">
                 <li>
-                  <Link href={"/profile"}>Profile</Link>
+                  <Link href={'/profile'}>Profile</Link>
                 </li>
                 <li>
                   <Link
-                    href={"/"}
+                    href={'/'}
                     onClick={() => {
-                      localStorage.removeItem("access_token");
+                      localStorage.removeItem('access_token');
                       logout();
                     }}
                   >

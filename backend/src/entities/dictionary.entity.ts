@@ -1,19 +1,6 @@
 import { WordType } from 'src/common/typings/word-type.enum';
-import {
-  IsEmpty,
-  IsEnum,
-  IsNotEmpty,
-  IsOptional,
-  IsString,
-} from 'class-validator';
-import {
-  Entity,
-  Column,
-  PrimaryGeneratedColumn,
-  CreateDateColumn,
-  UpdateDateColumn,
-  ManyToMany,
-} from 'typeorm';
+import { IsEmpty, IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToMany } from 'typeorm';
 import { UserEntity } from './user.entity';
 
 @Entity('dictionary')
