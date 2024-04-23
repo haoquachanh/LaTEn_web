@@ -1,53 +1,46 @@
-import { ThemeContext } from "@/contexts/ThemeContext";
-import { useContext } from "react";
+import { ThemeContext } from '@/contexts/ThemeContext';
+import { useContext } from 'react';
 
 export default function ChangeTheme() {
   const { theme, changeTheme } = useContext(ThemeContext);
   const themes = [
-    "light",
-    "dark",
-    "valentine",
-    "cupcake",
-    "bumblebee",
-    "emerald",
-    "corporate",
-    "synthwave",
-    "retro",
-    "cyberpunk",
-    "halloween",
-    "garden",
-    "forest",
-    "aqua",
-    "lofi",
-    "pastel",
-    "fantasy",
-    "wireframe",
-    "black",
-    "luxury",
-    "dracula",
-    "cmyk",
-    "autumn",
-    "business",
-    "acid",
-    "lemonade",
-    "night",
-    "coffee",
-    "winter",
-    "dim",
-    "nord",
-    "sunset",
+    'light',
+    'dark',
+    'valentine',
+    'cupcake',
+    'bumblebee',
+    'emerald',
+    'corporate',
+    'synthwave',
+    'retro',
+    'cyberpunk',
+    'halloween',
+    'garden',
+    'forest',
+    'aqua',
+    'lofi',
+    'pastel',
+    'fantasy',
+    'wireframe',
+    'black',
+    'luxury',
+    'dracula',
+    'cmyk',
+    'autumn',
+    'business',
+    'acid',
+    'lemonade',
+    'night',
+    'coffee',
+    'winter',
+    'dim',
+    'nord',
+    'sunset',
   ];
 
   return (
-    <div
-      title="Change Theme"
-      className="[@supports(color:oklch(0%_0_0))]:block hidden dropdown dropdown-end"
-    >
-      <div
-        tabIndex={0}
-        role="button"
-        className="d-flex flex-nowrap btn btn-ghost"
-      >
+    <div title="Change Theme" className="[@supports(color:oklch(0%_0_0))]:block hidden dropdown dropdown-end">
+      <div tabIndex={0} role="button" className="d-flex flex-nowrap btn btn-ghost">
         <svg
           width={20}
           height={20}
@@ -84,7 +77,7 @@ export default function ChangeTheme() {
               <button
                 key={itheme}
                 className={`text-start outline-base-content outline-offset-4 ${
-                  theme == itheme ? "[&_svg]:visible" : ""
+                  theme == itheme ? '[&_svg]:visible' : ''
                 }`}
                 data-set-theme={itheme}
                 data-act-class="[&_svg]:visible"

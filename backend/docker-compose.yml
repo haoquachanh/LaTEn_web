@@ -7,20 +7,20 @@ services:
     restart: always
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: "578722"
+      POSTGRES_PASSWORD: '578722'
       POSTGRES_DB: postgres
     ports:
-      - "5432:5432"
+      - '5432:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
   nodejs:
     container_name: latenserver
     build:
       context: .
-      dockerfile: Dockerfile 
+      dockerfile: Dockerfile
     restart: always
     ports:
-      - "3000:3000"
+      - '3000:3000'
     depends_on:
       - postgres
 

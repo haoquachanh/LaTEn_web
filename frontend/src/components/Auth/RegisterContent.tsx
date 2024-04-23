@@ -1,7 +1,7 @@
-"use client";
-import { FormEvent } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
+'use client';
+import { FormEvent } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 export default function RegisterContent() {
   const router = useRouter();
@@ -10,18 +10,18 @@ export default function RegisterContent() {
     event.preventDefault();
 
     const formData = new FormData(event.currentTarget);
-    const email = formData.get("email");
-    const password = formData.get("password");
+    const email = formData.get('email');
+    const password = formData.get('password');
     const response = await fetch(`http://localhost:3001/api/auth/login`, {
       // const response = await fetch(`${process.env.SERVER_URL}/auth/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
     })
       .then((res) => res.json())
       .then((data) => {
-        localStorage.setItem("access_tokens", data.access_token);
-        router.push("/");
+        localStorage.setItem('access_tokens', data.access_token);
+        router.push('/');
       });
   }
 
@@ -34,27 +34,15 @@ export default function RegisterContent() {
         <h1 className="text-2xl">Sign in to Laten</h1>
         <label className="flex items-center gap-2 input-bordered w-11/12 input">
           <input type="text" name="fullname" placeholder="Fullname" required />
-        </label>{" "}
+        </label>{' '}
         <label className="flex items-center gap-2 input-bordered w-11/12 input">
           <input type="text" name="email" placeholder="Email" required />
         </label>
         <label className="flex items-center gap-2 input-bordered w-11/12 input">
-          <input
-            className="w-11/12"
-            type="password"
-            name="password"
-            placeholder="Password"
-            required
-          />
-        </label>{" "}
+          <input className="w-11/12" type="password" name="password" placeholder="Password" required />
+        </label>{' '}
         <label className="flex items-center gap-2 input-bordered w-11/12 input">
-          <input
-            className="w-11/12"
-            type="password"
-            name="password"
-            placeholder="Confirm Password"
-            required
-          />
+          <input className="w-11/12" type="password" name="password" placeholder="Confirm Password" required />
         </label>
         <button className="w-1/2 btn btn-outline" type="submit">
           Register

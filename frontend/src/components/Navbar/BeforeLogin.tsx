@@ -1,5 +1,5 @@
-import Link from "next/link";
-import { RiAccountCircleLine } from "react-icons/ri";
+import Link from 'next/link';
+import { RiAccountCircleLine } from 'react-icons/ri';
 
 export default function TheAccountUnLogged() {
   return (
@@ -18,10 +18,10 @@ export default function TheAccountUnLogged() {
             >
               <ul className="gap-1 menu menu-sm">
                 <li>
-                  <Link href={"/register"}>Sign up</Link>
+                  <Link href={'/register'}>Sign up</Link>
                 </li>
                 <li>
-                  <Link href={"/login"}>Login</Link>
+                  <Link href={'/login'}>Login</Link>
                 </li>
               </ul>
             </div>

@@ -1,12 +1,4 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Post,
-  Put,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
 import { DictionaryService } from './dictionary.service';
 import { DeleteResult, UpdateResult } from 'typeorm';
 import { DictionaryEntity } from '@entities/dictionary.entity';
@@ -30,10 +22,7 @@ export class DictionaryController {
   }
 
   @Put(':id')
-  async update(
-    @Body() user: DictionaryEntity,
-    @Param('id') id: string,
-  ): Promise<UpdateResult> {
+  async update(@Body() user: DictionaryEntity, @Param('id') id: string): Promise<UpdateResult> {
     return this.dictionaryService.update(id, user);
   }
 

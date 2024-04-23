@@ -5,20 +5,14 @@ export default function CourseContent() {
         <div className="gap-10 grid grid-cols-1 sm:grid-cols-2">
           <div>
             <div className="flex flex-row justify-center items-center">
-              <h1 className="mb-5 font-bold text-3xl text-center sm:text-4xl">
-                Market News
-              </h1>
-            </div>{" "}
+              <h1 className="mb-5 font-bold text-3xl text-center sm:text-4xl">Market News</h1>
+            </div>{' '}
             <span className="sm:block flex justify-center items-center font-medium text-center text-md">
               Flush your stock worries away with our website's latest news!
             </span>
-          </div>{" "}
+          </div>{' '}
           <div className="sm:block relative hidden m-auto mt-5 sm:mt-0 mb-5 sm:mb-0">
-            <svg
-              className="-my-5 w-40"
-              viewBox="0 0 200 200"
-              xmlns="http://www.w3.org/2000/svg"
-            >
+            <svg className="-my-5 w-40" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
               <defs>
                 <filter id="glow">
                   <feGaussianBlur stdDeviation={5} result="glow" />
@@ -34,7 +28,7 @@ export default function CourseContent() {
                 transform="translate(100 100)"
                 filter="url(#glow)"
               />
-            </svg>{" "}
+            </svg>{' '}
             <div className="top-1 right-10 z-1 absolute">
               <img
                 className="mr-1 w-24"
@@ -49,10 +43,7 @@ export default function CourseContent() {
 
       <div className="col-span-5 col-start-2 bg-base-100 shadow-xl card card-compact">
         <figure>
-          <img
-            src="https://daisyui.com/images/stock/photo-1606107557195-0e29a4b5b4aa.jpg"
-            alt="Shoes"
-          />
+          <img src="https://daisyui.com/images/stock/photo-1606107557195-0e29a4b5b4aa.jpg" alt="Shoes" />
         </figure>
         <div className="card-body">
           <h2 className="card-title">Shoes!</h2>
@@ -64,10 +55,7 @@ export default function CourseContent() {
       </div>
       <div className="col-span-5 col-start-8 bg-base-100 shadow-xl card card-compact">
         <figure>
-          <img
-            src="https://daisyui.com/images/stock/photo-1606107557195-0e29a4b5b4aa.jpg"
-            alt="Shoes"
-          />
+          <img src="https://daisyui.com/images/stock/photo-1606107557195-0e29a4b5b4aa.jpg" alt="Shoes" />
         </figure>
         <div className="card-body">
           <h2 className="card-title">Shoes!</h2>

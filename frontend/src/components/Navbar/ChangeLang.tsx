@@ -1,6 +1,6 @@
-import { usePathname, useRouter } from "@/navigation";
-import { useParams } from "next/navigation";
-import { useTransition } from "react";
+import { usePathname, useRouter } from '@/navigation';
+import { useParams } from 'next/navigation';
+import { useTransition } from 'react';
 
 export default function ChangeLang() {
   const router = useRouter();
@@ -17,22 +17,17 @@ export default function ChangeLang() {
         {
           locale: lang,
           scroll: false,
-        }
+        },
       );
     });
   }
   const langs = [
-    { short: "en", nation: "English" },
-    { short: "vi", nation: "Việt Nam" },
+    { short: 'en', nation: 'English' },
+    { short: 'vi', nation: 'Việt Nam' },
   ];
   return (
     <div title="Change Language" className="dropdown dropdown-end">
-      <div
-        tabIndex={0}
-        role="button"
-        className="d-flex flex-nowrap btn btn-ghost"
-        aria-label="Language"
-      >
+      <div tabIndex={0} role="button" className="d-flex flex-nowrap btn btn-ghost" aria-label="Language">
         <svg
           className="w-5 h-5 fill-current"
           xmlns="http://www.w3.org/2000/svg"
@@ -62,7 +57,7 @@ export default function ChangeLang() {
             <li key={lang.nation}>
               <button
                 onClick={() => handleChangeLang(lang.short)}
-                className={`${params.locale === lang.short ? "active" : ""}`}
+                className={`${params.locale === lang.short ? 'active' : ''}`}
               >
                 <span className="opacity-50 pt-px !pr-1 !pl-1.5 font-bold font-mono !text-[.6rem] tracking-widest badge badge-outline badge-sm">
                   {lang.short.toUpperCase()}

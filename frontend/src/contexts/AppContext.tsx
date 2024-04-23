@@ -1,6 +1,6 @@
-import { ReactNode } from "react";
-import { ThemeProvider } from "./ThemeContext";
-import { AuthProvider } from "./AuthContext";
+import { ReactNode } from 'react';
+import { ThemeProvider } from './ThemeContext';
+import { AuthProvider } from './AuthContext';
 
 type Props = {
   children: ReactNode;
