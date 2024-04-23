@@ -3,7 +3,7 @@ import { ReactNode, useContext } from "react";
 import NavBar from "../Navbar/NavBar";
 import SideBar from "../Sidebar/SideBar";
 import { ThemeContext } from "@/contexts/ThemeContext";
-import FeedbackCom from "../feedback/FeedbackCom";
+import FeedbackCom from "../Feedback/FeedbackCom";
 type Props = {
   children: ReactNode;
 };
