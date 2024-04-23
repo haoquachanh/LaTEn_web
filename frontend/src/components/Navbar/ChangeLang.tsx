@@ -21,6 +21,10 @@ export default function ChangeLang() {
       );
     });
   }
+  const langs = [
+    { short: "en", nation: "English" },
+    { short: "vi", nation: "Việt Nam" },
+  ];
   return (
     <div title="Change Language" className="dropdown dropdown-end">
       <div
@@ -54,22 +58,19 @@ export default function ChangeLang() {
         className="top-px border-white/5 bg-base-200 shadow-2xl mt-16 border rounded-box w-56 max-h-[calc(100vh-10rem)] text-base-content overflow-y-auto dropdown-content outline outline-1 outline-black/5"
       >
         <ul className="gap-1 menu menu-sm">
-          <li>
-            <button className="active" onClick={() => handleChangeLang("en")}>
-              <span className="opacity-50 pt-px !pr-1 !pl-1.5 font-bold font-mono !text-[.6rem] tracking-widest badge badge-outline badge-sm">
-                EN
-              </span>
-              <span className="font-[sans-serif]">English</span>
-            </button>
-          </li>
-          <li>
-            <button onClick={() => handleChangeLang("vi")}>
-              <span className="opacity-50 pt-px !pr-1 !pl-1.5 font-bold font-mono !text-[.6rem] tracking-widest badge badge-outline badge-sm">
-                VI
-              </span>
-              <span className="font-[sans-serif]">Vietnamese</span>
-            </button>
-          </li>
+          {langs.map((lang) => (
+            <li key={lang.nation}>
+              <button
+                onClick={() => handleChangeLang(lang.short)}
+                className={`${params.locale === lang.short ? "active" : ""}`}
+              >
+                <span className="opacity-50 pt-px !pr-1 !pl-1.5 font-bold font-mono !text-[.6rem] tracking-widest badge badge-outline badge-sm">
+                  {lang.short.toUpperCase()}
+                </span>
+                <span className="font-[sans-serif]">{lang.nation}</span>
+              </button>
+            </li>
+          ))}
         </ul>
       </div>
     </div>

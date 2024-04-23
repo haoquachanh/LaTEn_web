@@ -1,4 +1,4 @@
-import PageContent from "@/components/contents/courses/CourseContent";
+import PageContent from "@/components/Course/CourseContent";
 
 export default async function CoursePage() {
   return (

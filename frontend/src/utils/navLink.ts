@@ -25,13 +25,13 @@ export const navLinks = [
   },
 ];
 
-export const socialLinks = [
-  {
-    name: "GitHub",
-    href: "https://github.com/haoquachanh",
-  },
-  {
-    name: "Discord",
-    href: "https://discord.gg/6GqGKqG",
-  },
-];
+export const socialLinks = {
+  email: "address@yoursite.com",
+  github: "https://github.com",
+  facebook: "https://facebook.com",
+  youtube: "https://youtube.com",
+  linkedin: "https://linkedin.com",
+  twitter: "",
+  threads: "",
+  instagram: "",
+};

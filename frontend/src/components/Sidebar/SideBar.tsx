@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { navLinks, socialLinks } from "@/utils/navLink";
-import { menuIcons, socialIcons } from "@/utils/IconRender";
+import { SocialIcon } from "../Icons";
 
 export default function SideBar() {
   return (
@@ -39,48 +39,29 @@ export default function SideBar() {
             {navLinks.map((item, index) => (
               <li key={index} className="my-2">
                 <Link href={item.href} className="group">
-                  {menuIcons[index]}
                   <span>{item.name}</span>
                 </Link>
               </li>
             ))}
-            {/* Social links */}
           </ul>
-          <ul className="px-4 menu">
-            <li />
-            {socialLinks.map((item, index) => (
-              <li key={index} className="my-2">
-                <Link href={item.href} target="_blank" className="group">
-                  {socialIcons[index]}
-                  <span>{item.name}</span>
-                  <svg
-                    width="12"
-                    height="12"
-                    className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out"
-                    viewBox="0 0 48 48"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M19 11H37V29"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                      strokeLinecap="butt"
-                      strokeLinejoin="bevel"
-                    ></path>
-                    <path
-                      d="M11.5439 36.4559L36.9997 11"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                      strokeLinecap="butt"
-                      strokeLinejoin="bevel"
-                    ></path>
-                  </svg>
-                </Link>
-              </li>
-            ))}
-            {/* Social links */}
-          </ul>
+          <div className="px-4 menu flex flex-row justify-center space-x-5 mb-5">
+            <SocialIcon
+              kind="mail"
+              href={`mailto:${socialLinks.email}`}
+              size={6}
+            />
+            <SocialIcon kind="github" href={socialLinks.github} size={6} />
+            <SocialIcon kind="facebook" href={socialLinks.facebook} size={6} />
+            <SocialIcon kind="youtube" href={socialLinks.youtube} size={6} />
+            <SocialIcon kind="linkedin" href={socialLinks.linkedin} size={6} />
+            <SocialIcon kind="twitter" href={socialLinks.twitter} size={6} />
+            <SocialIcon
+              kind="instagram"
+              href={socialLinks.instagram}
+              size={6}
+            />
+            <SocialIcon kind="threads" href={socialLinks.threads} size={6} />
+          </div>
         </div>
       </aside>
     </div>

@@ -1,6 +1,4 @@
-import { FormEvent } from "react";
-import { useRouter } from "next/router";
-import LoginContent from "@/components/auth/LoginContent";
+import LoginContent from "@/components/Auth/LoginContent";
 
 export default function LoginPage() {
   return <LoginContent />;
