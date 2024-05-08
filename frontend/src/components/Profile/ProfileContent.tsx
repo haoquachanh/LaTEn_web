@@ -49,7 +49,14 @@ export default function ProfileContent() {
         </div>
       </div>
       <div role="tablist" className="tabs tabs-bordered mt-12">
-        <input type="radio" name="my_tabs_1" role="tab" className="tab mx-5 px-5" aria-label="Infomation" />
+        <input
+          type="radio"
+          name="my_tabs_1"
+          role="tab"
+          className="tab mx-5 px-5"
+          aria-label="Infomation"
+          defaultChecked
+        />
         <div role="tabpanel" className="tab-content p-10">
           <h1>John Doe</h1>
           <p>Web Developer</p>

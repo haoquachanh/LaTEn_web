@@ -44,7 +44,7 @@ export default function FeedbackCom() {
       <div
         className={`${
           showFeedback ? 'flex' : 'hidden'
-        } fixed top-0 left-0 z-40 w-screen h-screen items-center justify-center`}
+        } fixed top-0 left-0 z-15 w-screen h-screen items-center justify-center`}
       >
         <div className="modal-box w-full bg-[#000]" ref={wrapperRef}>
           <div className="flex flex-row items-center pt-5 justify-center">
@@ -79,7 +79,7 @@ export default function FeedbackCom() {
 
       <div
         id="feedbackInfo"
-        className="fixed z-50 bottom-8 sm:bottom-10 right-8 sm:right-10"
+        className="fixed z-15 bottom-8 sm:bottom-10 right-8 sm:right-10"
         onClick={(e) => {
           setShowFeedback(!showFeedback);
         }}
