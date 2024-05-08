@@ -1,4 +1,4 @@
-import { Mail, Github, Facebook, Youtube, Linkedin, Twitter, Mastodon, Threads, Instagram } from './icons';
+import { Mail, Github, Facebook, Youtube, Linkedin, Twitter, Mastodon, Threads, Instagram, Question } from './icons';
 
 const componentsSocialIcons = {
   mail: Mail,
@@ -13,15 +13,7 @@ const componentsSocialIcons = {
 };
 
 const components = {
-  mail: Mail,
-  github: Github,
-  facebook: Facebook,
-  youtube: Youtube,
-  linkedin: Linkedin,
-  twitter: Twitter,
-  mastodon: Mastodon,
-  threads: Threads,
-  instagram: Instagram,
+  question: Question,
 };
 
 type SocialIconProps = {
@@ -32,7 +24,7 @@ type SocialIconProps = {
 
 type Icons = {
   kind: keyof typeof components;
-  href: string | undefined;
+  href?: string | undefined;
   size?: number;
 };
 
@@ -50,10 +42,7 @@ export const SocialIcon = ({ kind, href, size = 8 }: SocialIconProps) => {
 };
 
 export const Icon = ({ kind, href, size = 8 }: Icons) => {
-  if (!href || (kind === 'mail' && !/^mailto:\w+([.-]?\w+)@\w+([.-]?\w+)(.\w{2,3})+$/.test(href))) return null;
-
   const IconSvg = components[kind];
-
   return (
     <a className="text-sm " target="_blank" rel="noopener noreferrer" href={href}>
       <span className="sr-only">{kind}</span>

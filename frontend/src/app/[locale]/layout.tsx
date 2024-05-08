@@ -14,6 +14,7 @@ export default function RootLayout({ children, params: { locale } }: Props) {
   return (
     <html lang={locale}>
       <head>
+        <title>LaTEn website</title>
         <link rel="icon" href="/favicon.svg" sizes="any" />
       </head>
       <SpeedInsights />

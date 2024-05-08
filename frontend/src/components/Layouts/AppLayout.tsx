@@ -18,12 +18,10 @@ export default function AppLayout({ children }: Props) {
           <div className="drawer-content">
             <NavBar />
             <div className="flex flex-row lg:ml-80">
-              <div className="mx-5 lg:mx-20 xl:mr-64 w-full">
-                {children}
-                <FeedbackCom />
-              </div>
+              <div className="mx-5 lg:mx-20 xl:mr-64 w-full">{children}</div>
             </div>
           </div>
+          <FeedbackCom />
           <SideBar />
         </div>
       </body>
