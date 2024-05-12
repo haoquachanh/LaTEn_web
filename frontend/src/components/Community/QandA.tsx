@@ -70,15 +70,15 @@ export default function QandA() {
           <button className="btn btn-primary">Publish</button>
         </div>
       </div>
-      {topics.map((topic) => (
-        <div className="collapse collapse-arrow bg-base-200 mb-8 overflow-y-hidden ">
+      {topics.map((topic, index) => (
+        <div className="collapse collapse-arrow bg-base-200 mb-8 overflow-y-hidden " key={index}>
           <input type="checkbox" className="peer" />
           <div className="collapse-title ">{topic.content}</div>
           <div className="collapse-content overflow-y-auto">
             {listPosts
               .filter((post) => post.topic === topic.index)
-              .map((post) => (
-                <div tabIndex={0} className="collapse bg-base-200">
+              .map((post, index) => (
+                <div tabIndex={0} className="collapse bg-base-200" key={index}>
                   {/* <input type="checkbox" className="peer" /> */}
                   <div className="collapse-title flex flex-row items-center">
                     <Icon kind="question" />
