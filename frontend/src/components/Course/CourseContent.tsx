@@ -25,13 +25,13 @@ export default function CourseContent() {
     <div className="flex flex-col">
       <div className="flex flex-col md:flex-row lg:justify-around">
         {packages.map((item, index) => (
-          <div className="border-t-2 rounded-xl bg-base-100 shadow-xl m-6">
+          <div className="border-t-2 rounded-xl bg-base-100 shadow-xl m-6" key={index}>
             <div className="flex items-center card-body">
               <h2 className="card-title">{item.name}</h2>
               <h3>${item.price}</h3>
               <div className="m-5">
                 {item.content.map((i) => (
-                  <p>{i}</p>
+                  <p key={i}>{i}</p>
                 ))}
               </div>
               <div>

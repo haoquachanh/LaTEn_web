@@ -15,6 +15,7 @@ export default function ProtectedRoute({ children }: { children: ReactNode }) {
     if (!jwtToken) {
       router.push('/login');
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   return <>{children}</>;
 }

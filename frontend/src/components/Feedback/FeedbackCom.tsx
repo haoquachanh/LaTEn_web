@@ -1,3 +1,5 @@
+/* eslint-disable @next/next/no-img-element */
+/* eslint-disable jsx-a11y/alt-text */
 import { useEffect, useRef, useState } from 'react';
 
 export default function FeedbackCom() {
