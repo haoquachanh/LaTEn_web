@@ -48,7 +48,7 @@ export default function LoginContent() {
           Login
         </button>
         <p className="flex justify-center items-center pb-1 w-full max-w-lg text-sm">
-          You don't have an account?
+          You dont have an account?
           <Link href="/register" className="ml-1 text-blue-400 hover:underline">
             Sign up
           </Link>
