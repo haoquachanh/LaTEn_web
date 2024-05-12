@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { RiAccountCircleLine } from 'react-icons/ri';
+import { Icon } from '../Icons';
 
 export default function TheAccountUnLogged() {
   return (
@@ -9,7 +9,7 @@ export default function TheAccountUnLogged() {
           <div className="dropdown dropdown-end">
             <div tabIndex={0} role="button">
               <div className="flex justify-center align-middle btn btn-circle btn-ghost">
-                <RiAccountCircleLine size={30} />
+                <Icon kind="account" size={30} />
               </div>
             </div>
             <div

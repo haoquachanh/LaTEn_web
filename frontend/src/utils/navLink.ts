@@ -12,10 +12,6 @@ export const navLinks = [
     href: '/calendar',
   },
   {
-    name: 'Dictionary',
-    href: '/dictionary',
-  },
-  {
     name: 'Community',
     href: '/community',
   },
