@@ -2,7 +2,7 @@
 import { AuthContext } from '@/contexts/AuthContext';
 import Link from 'next/link';
 import { useContext } from 'react';
-import { RiAccountCircleFill } from 'react-icons/ri';
+import { Icon } from '../Icons';
 
 export default function TheAccount() {
   const { logout } = useContext(AuthContext);
@@ -13,7 +13,7 @@ export default function TheAccount() {
           <div className="dropdown dropdown-end">
             <div tabIndex={0} role="button">
               <div className="flex justify-center align-middle btn btn-circle btn-ghost">
-                <RiAccountCircleFill size={30} />
+                <Icon kind="account" size={30} />
               </div>
             </div>
             <div

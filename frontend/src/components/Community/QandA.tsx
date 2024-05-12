@@ -1,3 +1,4 @@
+// import { useState } from 'react';
 import { Icon } from '../Icons';
 
 type QandA = {
@@ -9,6 +10,9 @@ export default function QandA() {
   const topics = [
     { index: 1, content: 'How it work' },
     { index: 2, content: 'What is Jetflix' },
+    { index: 3, content: 'What is Jetflix' },
+    { index: 4, content: 'What is Jetflix' },
+    { index: 5, content: 'What is Jetflix' },
   ];
   const listPosts: QandA[] = [
     {
@@ -22,23 +26,60 @@ export default function QandA() {
       answer: 'Click the button to watch on Jetflix app.',
     },
     {
+      topic: 1,
+      question: 'New movie is released ?',
+      answer: 'Click the button to watch on Jetflix app.',
+    },
+    {
       topic: 2,
-      question: 'New movie is released 2?',
+      question: 'Another question ?',
+      answer: 'Click the button to watch on Jetflix app.',
+    },
+    {
+      topic: 1,
+      question: 'New movie is released ?',
+      answer: 'Click the button to watch on Jetflix app.',
+    },
+    {
+      topic: 1,
+      question: 'Another question ?',
+      answer: 'Click the button to watch on Jetflix app.',
+    },
+    {
+      topic: 3,
+      question: 'New movie is released ?',
+      answer: 'Click the button to watch on Jetflix app.',
+    },
+    {
+      topic: 4,
+      question: 'Another question ?',
       answer: 'Click the button to watch on Jetflix app.',
     },
   ];
+
+  // const [topic, setTopic] = useState('1');
   return (
-    <div>
+    <div className="flex flex-col w-[80%] overflow-y-hidden">
+      <div className="flex flex-col space-y-3 w-full mb-5">
+        <span className="label-text">You have any question?</span>
+        <div className="flex w-full space-x-5">
+          <textarea
+            className="textarea textarea-bordered w-[80%] mx-5"
+            placeholder="Type your question here"
+          ></textarea>
+          <button className="btn btn-primary">Publish</button>
+        </div>
+      </div>
       {topics.map((topic) => (
-        <div className="collapse collapse-arrow bg-base-200 mb-8">
+        <div className="collapse collapse-arrow bg-base-200 mb-8 overflow-y-hidden ">
           <input type="checkbox" className="peer" />
           <div className="collapse-title ">{topic.content}</div>
-          <div className="collapse-content">
+          <div className="collapse-content overflow-y-auto">
             {listPosts
               .filter((post) => post.topic === topic.index)
               .map((post) => (
-                <div className="collapse bg-base-200">
-                  <input type="checkbox" className="peer" />
+                <div tabIndex={0} className="collapse bg-base-200">
+                  {/* <input type="checkbox" className="peer" /> */}
                   <div className="collapse-title flex flex-row items-center">
                     <Icon kind="question" />
                     <p className="ms-4">{post.question}</p>

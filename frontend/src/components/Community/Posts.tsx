@@ -21,12 +21,19 @@ export default function Post() {
       auth: 'auth',
       created: new Date(),
     },
+    {
+      title: 'New movie is released!',
+      content: 'Click the button to watch on Jetflix app.',
+      img: 'https://img.daisyui.com/images/stock/photo-1494232410401-ad00d5433cfa.jpg',
+      auth: 'auth',
+      created: new Date(),
+    },
   ];
   return (
-    <div>
+    <div className="flex flex-col w-[80%]">
       {listPosts.map((post) => (
-        <div className="flex flex-col border-2 rounded-3xl mb-6 lg:mb-16">
-          <div className="card-body">
+        <div className="flex flex-col border-2 rounded-3xl mb-6 lg:mb-16 w-full">
+          <div className="card-body w-full">
             <h2 className="card-title">{post.title}</h2>
             <p>{post.content}</p>
           </div>

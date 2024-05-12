@@ -1,29 +1,30 @@
+'use client';
+import { useState } from 'react';
 import Post from './Posts';
 import QandA from './QandA';
 
 export default function Community() {
+  const [topic, setTopic] = useState('posts');
   return (
     <>
-      <div className="flex flex-row w-full">
-        <div className="flex w-full align-middle justify-center">
-          <div role="tablist" className="tabs tabs-bordered w-full">
-            <input type="radio" name="my_tabs_1" role="tab" className="tab !w-32" aria-label="Posts" defaultChecked />
-            <div role="tabpanel" className="tab-content p-10">
-              <Post />
-              {/* Tab content 1 */}
-            </div>
-
-            <input type="radio" name="my_tabs_1" role="tab" className="tab !w-32" aria-label="Q & A" />
-            <div role="tabpanel" className="tab-content p-10">
-              <QandA />
-            </div>
-          </div>
+      <div className="flex flex-col w-full max-h-screen">
+        <div className="flex border-b-2 w-full space-x-3 mb-5">
+          <button
+            className={`btn rounded-b-none bg-none ml-3 ${topic === 'posts' ? 'btn-active' : ''} w-32`}
+            onClick={() => setTopic('posts')}
+          >
+            Posts
+          </button>
+          <button
+            onClick={() => setTopic('qanda')}
+            className={`btn rounded-b-none ${topic === 'qanda' ? 'btn-active' : ''} w-32`}
+          >
+            Q and A
+          </button>
         </div>
-        {/* <div className="flex w-1/5"> */}
-        {/* <div> */}
-        {/* <h2>About Community</h2> */}
-        {/* </div> */}
-        {/* </div> */}
+        <div className="flex p-5 w-full h-3/5 max-h-[calc(100vh-12rem)] overflow-y-auto justify-center">
+          {topic === 'posts' ? <Post /> : <QandA />}
+        </div>
       </div>
     </>
   );

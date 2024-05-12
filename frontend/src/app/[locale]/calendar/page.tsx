@@ -1,9 +1,9 @@
-import PageContent from '@/components/Course/CourseContent';
+import CalenderContent from '@/components/Calendar/CalendarContent';
 
 export default async function CoursePage() {
   return (
     <>
-      <PageContent />
+      <CalenderContent />
     </>
   );
 }
