@@ -1,5 +1,5 @@
 {
-  "extends": ["next/core-web-vitals", "plugin:prettier/recommended"],
+  "extends": ["next/core-web-vitals"],
   "rules": {
     "@typescript-eslint/no-explicit-any": "off",
     "css/at-rule-no-unknown": "off",
