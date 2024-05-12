@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 type Post = {
   title: string;
   content: string;
@@ -32,7 +33,7 @@ export default function Post() {
   return (
     <div className="flex flex-col w-[80%]">
       {listPosts.map((post) => (
-        <div className="flex flex-col border-2 rounded-3xl mb-6 lg:mb-16 w-full">
+        <div className="flex flex-col border-2 rounded-3xl mb-6 lg:mb-16 w-full" key={post.title}>
           <div className="card-body w-full">
             <h2 className="card-title">{post.title}</h2>
             <p>{post.content}</p>
