@@ -8,13 +8,13 @@ export default function BuyStep() {
   return (
     <>
       <div className="flex flex-col flex-wrap w-[80%] shadow-md m-6 mt-16 justify-center items-center">
-        <h1 className="text-xl mt-5 font-bold">Instructions for purchasing courses</h1>
-        <ul className="steps my-5">
+        <h1 className="text-md lg:text-2xl mt-5 font-bold">Instructions for purchasing courses</h1>
+        <ul className="steps mx-0 my-5">
           {steps.map((item, index) => (
             <li
               key={index}
               onClick={() => setStep(index + 1)}
-              className={`step sm:w-10 lg:w-44 ${step >= index + 1 ? 'step-primary' : 'step'} ${step === index + 1 ? 'font-bold' : ''}`}
+              className={`step w-6 lg:w-44 ${step >= index + 1 ? 'step-primary' : 'step'} ${step === index + 1 ? 'font-bold' : ''}`}
             >
               {item}
             </li>

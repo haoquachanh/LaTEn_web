@@ -1,4 +1,4 @@
-import {
+import Test, {
   Mail,
   Github,
   Facebook,
@@ -34,6 +34,7 @@ const components = {
   about: About,
   community: Community,
   course: Course,
+  exam: Test,
 };
 
 type SocialIconProps = {
