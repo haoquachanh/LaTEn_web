@@ -54,7 +54,6 @@ export default function LoginContent() {
           </Link>
         </p>
       </form>
-      <div className="my-8 divider">OR</div>
     </div>
   );
 }

@@ -11,8 +11,6 @@ export default function QandA() {
     { index: 1, content: 'How it work' },
     { index: 2, content: 'What is Jetflix' },
     { index: 3, content: 'What is Jetflix' },
-    { index: 4, content: 'What is Jetflix' },
-    { index: 5, content: 'What is Jetflix' },
   ];
   const listPosts: QandA[] = [
     {
@@ -26,7 +24,7 @@ export default function QandA() {
       answer: 'Click the button to watch on Jetflix app.',
     },
     {
-      topic: 1,
+      topic: 2,
       question: 'New movie is released ?',
       answer: 'Click the button to watch on Jetflix app.',
     },
@@ -59,19 +57,19 @@ export default function QandA() {
 
   // const [topic, setTopic] = useState('1');
   return (
-    <div className="flex flex-col w-[80%] overflow-y-hidden">
+    <div className="flex flex-col w-[80%] overflow-auto">
       <div className="flex flex-col space-y-3 w-full mb-5">
         <span className="label-text">You have any question?</span>
         <div className="flex w-full space-x-5">
           <textarea
-            className="textarea textarea-bordered w-[80%] mx-5"
+            className="textarea textarea-bordered w-[80%] mx-5 h-12 max-h-32"
             placeholder="Type your question here"
           ></textarea>
           <button className="btn btn-primary">Publish</button>
         </div>
       </div>
       {topics.map((topic, index) => (
-        <div className="collapse collapse-arrow bg-base-200 mb-8 overflow-y-hidden " key={index}>
+        <div className="collapse collapse-arrow bg-base-200 mb-8 overflow-hidden" key={index}>
           <input type="checkbox" className="peer" />
           <div className="collapse-title ">{topic.content}</div>
           <div className="collapse-content overflow-y-auto">

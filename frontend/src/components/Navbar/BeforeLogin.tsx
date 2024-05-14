@@ -18,10 +18,10 @@ export default function TheAccountUnLogged() {
             >
               <ul className="gap-1 menu menu-sm">
                 <li>
-                  <Link href={'/register'}>Sign up</Link>
+                  <Link href={'/login'}>Login</Link>
                 </li>
                 <li>
-                  <Link href={'/login'}>Login</Link>
+                  <Link href={'/register'}>Sign up</Link>
                 </li>
               </ul>
             </div>
