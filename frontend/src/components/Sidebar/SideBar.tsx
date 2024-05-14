@@ -2,7 +2,7 @@
 'use client';
 import Link from 'next/link';
 import { navLinks, socialLinks } from '@/utils/navLink';
-import { SocialIcon } from '../Icons';
+import { Icon, SocialIcon } from '../Icons';
 
 export default function SideBar() {
   return (
@@ -29,20 +29,21 @@ export default function SideBar() {
             {navLinks.map((item, index) => (
               <li key={index} className="my-2">
                 <Link href={item.href} className="group">
+                  <Icon kind={item.icon} size={12}></Icon>
                   <span>{item.name}</span>
                 </Link>
               </li>
             ))}
           </ul>
           <div className="px-4 menu flex flex-row justify-center space-x-5 mb-5">
-            <SocialIcon kind="mail" href={`mailto:${socialLinks.email}`} size={6} />
-            <SocialIcon kind="github" href={socialLinks.github} size={6} />
-            <SocialIcon kind="facebook" href={socialLinks.facebook} size={6} />
-            <SocialIcon kind="youtube" href={socialLinks.youtube} size={6} />
-            <SocialIcon kind="linkedin" href={socialLinks.linkedin} size={6} />
-            <SocialIcon kind="twitter" href={socialLinks.twitter} size={6} />
-            <SocialIcon kind="instagram" href={socialLinks.instagram} size={6} />
-            <SocialIcon kind="threads" href={socialLinks.threads} size={6} />
+            <SocialIcon kind="mail" href={`mailto:${socialLinks.email}`} size={5} />
+            <SocialIcon kind="github" href={socialLinks.github} size={5} />
+            <SocialIcon kind="facebook" href={socialLinks.facebook} size={5} />
+            <SocialIcon kind="youtube" href={socialLinks.youtube} size={5} />
+            <SocialIcon kind="linkedin" href={socialLinks.linkedin} size={5} />
+            <SocialIcon kind="twitter" href={socialLinks.twitter} size={5} />
+            <SocialIcon kind="instagram" href={socialLinks.instagram} size={5} />
+            <SocialIcon kind="threads" href={socialLinks.threads} size={5} />
           </div>
         </div>
       </aside>

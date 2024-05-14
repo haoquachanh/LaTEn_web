@@ -26,7 +26,7 @@ export default function RegisterContent() {
   }
 
   return (
-    <div className="flex flex-col justify-center items-center w-full h-auto">
+    <div className="flex flex-col justify-center items-center w-full h-full">
       <form
         onSubmit={handleSubmit}
         className="relative flex flex-col justify-center items-center space-y-8 w-full max-w-lg"
@@ -54,7 +54,6 @@ export default function RegisterContent() {
           </Link>
         </p>
       </form>
-      <div className="my-8 divider">OR</div>
     </div>
   );
 }

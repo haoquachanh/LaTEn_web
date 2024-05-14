@@ -1,22 +1,22 @@
-export const navLinks = [
-  {
-    name: 'Documentation',
-    href: '/docs',
-  },
+type NavLinks = {
+  name: string;
+  icon: 'course' | 'community' | 'about';
+  href: string;
+};
+export const navLinks: NavLinks[] = [
   {
     name: 'Courses',
+    icon: 'course',
     href: '/course',
   },
   {
-    name: 'Calendar',
-    href: '/calendar',
-  },
-  {
     name: 'Community',
+    icon: 'community',
     href: '/community',
   },
   {
     name: 'About',
+    icon: 'about',
     href: '/about',
   },
 ];

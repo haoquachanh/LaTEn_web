@@ -10,6 +10,9 @@ import {
   Instagram,
   Question,
   Account,
+  About,
+  Community,
+  Course,
 } from './icons';
 
 const componentsSocialIcons = {
@@ -24,9 +27,13 @@ const componentsSocialIcons = {
   instagram: Instagram,
 };
 
+//add the new icon which is defined in ./icons
 const components = {
   question: Question,
   account: Account,
+  about: About,
+  community: Community,
+  course: Course,
 };
 
 type SocialIconProps = {
@@ -54,12 +61,7 @@ export const SocialIcon = ({ kind, href, size = 8 }: SocialIconProps) => {
   );
 };
 
-export const Icon = ({ kind, href, size = 8 }: Icons) => {
+export const Icon = ({ kind, href, size = 12 }: Icons) => {
   const IconSvg = components[kind];
-  return (
-    <a className="text-sm " target="_blank" rel="noopener noreferrer" href={href}>
-      <span className="sr-only">{kind}</span>
-      <IconSvg className={`fill-current h-${size} w-${size}`} />
-    </a>
-  );
+  return <IconSvg className={`fill-current h-${size} !w-${size}`} />;
 };
