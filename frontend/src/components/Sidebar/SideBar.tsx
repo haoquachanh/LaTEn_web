@@ -27,10 +27,10 @@ export default function SideBar() {
         <div className="flex flex-col justify-between h-screen">
           <ul className="px-4 menu">
             {navLinks.map((item, index) => (
-              <li key={index} className="my-2">
+              <li key={index} className="my-2 ml-5">
                 <Link href={item.href} className="group">
-                  <Icon kind={item.icon} size={12}></Icon>
-                  <span>{item.name}</span>
+                  <Icon kind={item.icon} size={20}></Icon>
+                  <span className="ml-2">{item.name}</span>
                 </Link>
               </li>
             ))}
