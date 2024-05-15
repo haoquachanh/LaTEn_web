@@ -13,6 +13,8 @@ import Test, {
   About,
   Community,
   Course,
+  App,
+  CloseBox,
 } from './icons';
 
 const componentsSocialIcons = {
@@ -35,6 +37,8 @@ const components = {
   community: Community,
   course: Course,
   exam: Test,
+  app: App,
+  closebox: CloseBox,
 };
 
 type SocialIconProps = {
@@ -64,5 +68,5 @@ export const SocialIcon = ({ kind, href, size = 8 }: SocialIconProps) => {
 
 export const Icon = ({ kind, href, size = 12 }: Icons) => {
   const IconSvg = components[kind];
-  return <IconSvg className={`fill-current h-${size} !w-${size}`} />;
+  return <IconSvg className={`fill-current`} height={size} width={size} />;
 };

@@ -15,10 +15,10 @@ export default function AppLayout({ children }: Props) {
       <body className="w-full h-full" data-theme={theme}>
         <div className="bg-base-100 drawer lg:drawer-open w-full max-w-screen h-full min-h-screen">
           <input id="drawer" type="checkbox" className="drawer-toggle" />
-          <div className="drawer-content">
+          <div className="drawer-content h-full">
             <NavBar />
-            <div className="flex flex-row lg:ml-80">
-              <div className="mx-5 lg:mx-20 xl:mr-64 w-full">{children}</div>
+            <div className="flex flex-row lg:ml-80 h-[calc(100vh-4rem)]">
+              <div className="mx-5 lg:mx-20 xl:mr-64 w-full h-full">{children}</div>
             </div>
           </div>
           <FeedbackCom />
