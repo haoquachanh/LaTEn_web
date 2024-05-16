@@ -20,7 +20,7 @@ export default function MultipChoice({ questions }: Props) {
   // };
 
   return (
-    <div className="flex flex-col space-y-8 w-[95%] h-full justify-start my-8">
+    <div className="flex flex-col space-y-8 w-full lg:w-[95%] h-full justify-start my-8">
       {questions.map(
         (item, index) =>
           index >= page * 3 &&
@@ -28,7 +28,8 @@ export default function MultipChoice({ questions }: Props) {
             <div className="flex flex-col items-center w-full" key={index}>
               <div className="flex flex-col items-start space-y-2 w-full">
                 <h1 className="text-xl ml-5">
-                  Question {index + 1}: {item.question}
+                  <em className="mr-5">Question {index + 1}:</em>
+                  {item.question}
                 </h1>
                 {item.answers?.map((answer, answerIndex) => (
                   <div key={answerIndex} className="flex justify-center items-center ml-14">
@@ -38,6 +39,7 @@ export default function MultipChoice({ questions }: Props) {
                       name={item.id}
                       value={answer}
                       onChange={(e) => handleChange(e, item.id)}
+                      checked={answers[item.id] === answer}
                     />
                     <label className="text-lg">{answer}</label>
                   </div>

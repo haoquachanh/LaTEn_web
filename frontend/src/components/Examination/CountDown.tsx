@@ -1,13 +1,16 @@
-import React, { useState, useEffect } from 'react';
-const Countdown = ({ initialTime = 900 }: { initialTime: number }) => {
-  const [time, setTime] = useState(initialTime);
+import { ExaminationContext } from '@/contexts/ExaminationContext';
+import React, { useState, useEffect, useContext } from 'react';
+const Countdown = () => {
+  const { time } = useContext(ExaminationContext);
 
-  useEffect(() => {
-    if (time > 0) {
-      const timerId = setTimeout(() => setTime(time - 1), 1000);
-      return () => clearTimeout(timerId);
-    }
-  }, [time]);
+  // const [time, setTime] = useState(initialTime);
+
+  // useEffect(() => {
+  //   if (time > 0) {
+  //     const timerId = setTimeout(() => setTime(time - 1), 1000);
+  //     return () => clearTimeout(timerId);
+  //   }
+  // }, [time]);
 
   return (
     <div className="flex justify-end">

@@ -10,13 +10,13 @@ interface Props {
   readonly children: ReactNode;
 }
 const ThemeContext = createContext<ThemeContextProps>({
-  theme: 'dark',
+  theme: 'valentine',
   changeTheme: (x: string) => {},
 });
 
 const useTheme = () => useContext(ThemeContext).theme;
 function ThemeProvider({ children }: Props) {
-  const [theme, setTheme] = useState('light');
+  const [theme, setTheme] = useState('valentine');
 
   const changeTheme = (x: string) => {
     localStorage.setItem('theme', x);
