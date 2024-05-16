@@ -1,3 +1,6 @@
+'use client';
+import FeedbackCom from '../Feedback/FeedbackCom';
+
 /* eslint-disable @next/next/no-img-element */
 export default function HomeContent() {
   return (
@@ -11,6 +14,7 @@ export default function HomeContent() {
           </div>
         </div>
       </div>
+      <FeedbackCom />
     </>
   );
 }

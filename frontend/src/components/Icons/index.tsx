@@ -15,6 +15,8 @@ import Test, {
   Course,
   App,
   CloseBox,
+  Tick,
+  QuestionNoBox,
 } from './icons';
 
 const componentsSocialIcons = {
@@ -39,6 +41,8 @@ const components = {
   exam: Test,
   app: App,
   closebox: CloseBox,
+  tick: Tick,
+  questionnobox: QuestionNoBox,
 };
 
 type SocialIconProps = {
@@ -51,6 +55,7 @@ type Icons = {
   kind: keyof typeof components;
   href?: string | undefined;
   size?: number;
+  color?: string;
 };
 
 export const SocialIcon = ({ kind, href, size = 8 }: SocialIconProps) => {
@@ -66,7 +71,7 @@ export const SocialIcon = ({ kind, href, size = 8 }: SocialIconProps) => {
   );
 };
 
-export const Icon = ({ kind, href, size = 12 }: Icons) => {
+export const Icon = ({ kind, href, size = 12, color }: Icons) => {
   const IconSvg = components[kind];
-  return <IconSvg className={`fill-current`} height={size} width={size} />;
+  return <IconSvg className={`fill-current`} height={size} width={size} color={color} />;
 };

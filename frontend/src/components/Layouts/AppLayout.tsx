@@ -21,7 +21,6 @@ export default function AppLayout({ children }: Props) {
               <div className="mx-5 lg:mx-20 xl:mr-64 w-full h-full">{children}</div>
             </div>
           </div>
-          <FeedbackCom />
           <SideBar />
         </div>
       </body>

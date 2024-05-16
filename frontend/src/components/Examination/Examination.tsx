@@ -4,6 +4,7 @@ import MultipChoice from './MultipChoice';
 import BoardQuestion from './BoardQuestion';
 import CountDown from './CountDown';
 import { ExaminationContext } from '@/contexts/ExaminationContext';
+import ReviewBox from './ReviewBox';
 
 export type Question = {
   id: string;
@@ -13,6 +14,7 @@ export type Question = {
 };
 export default function ExaminationContent() {
   const [start, setStart] = useState(false);
+
   useEffect(() => {
     const confirmLeave = (event: BeforeUnloadEvent) => {
       event.preventDefault();
@@ -28,46 +30,59 @@ export default function ExaminationContent() {
   }, []);
   const [type, setType] = useState('Multip Choice');
   const [content, setContent] = useState('');
+  const [time, setTime] = useState(15);
+  const [review, setReview] = useState(false);
+  const { page, changePage, init } = useContext(ExaminationContext);
+  const [back, setBack] = useState(false);
+
   const types = ['Multip Choice', 'True or False', 'Short Answer', 'Long Answer'];
   const contents = ['Grammar', 'Vocabulary', 'Topic', 'Review'];
-  const { page, changePage } = useContext(ExaminationContext);
   const questions: Question[] = [
     {
-      question: 'Question 1',
-      answers: ['Answer 1', 'Answer 2', 'Answer 3'],
-      correctAnswer: 'Answer 1',
+      question: 'Is this website good?',
+      answers: ['No', 'Not Bad', 'Excellent'],
+      correctAnswer: 'Excellent',
       id: '1',
     },
     {
-      question: 'Question 2',
-      answers: ['Answer 1', 'Answer 2', 'Answer 3'],
-      correctAnswer: 'Answer 2',
+      question: '1 / 0 = ',
+      answers: ['0', '1', 'Wrong'],
+      correctAnswer: 'Wrong',
       id: '2',
     },
     {
-      question: 'Question 3',
-      answers: ['Answer 1', 'Answer 2', 'Answer 3'],
-      correctAnswer: 'Answer 3',
+      question: 'What color is Oggy cat?',
+      answers: ['Black', 'Orange', 'Blue'],
+      correctAnswer: 'Blue',
       id: '3',
     },
     {
-      question: 'Question 3',
-      answers: ['Answer 1', 'Answer 2', 'Answer 3'],
-      correctAnswer: 'Answer 3',
+      question: 'You + me = ',
+      answers: ['2', '3', 'we'],
+      correctAnswer: 'we',
       id: '4',
     },
     {
-      question: 'Question 3',
-      answers: ['Answer 1', 'Answer 2', 'Answer 3'],
-      correctAnswer: 'Answer 3',
+      question: '1 + 1 = ',
+      answers: ['1', '2', '3'],
+      correctAnswer: '2',
       id: '5',
     },
   ];
+
   return (
     <>
-      {console.log('🚀 ~ ExaminationContent ~ page', page)}
-      <div className="flex flex-col justify-start items-center lg:ml-[7%] w-[85%] h-full m-0">
-        <h1 className="text-2xl font-bold h-16">Examination</h1>
+      <div className="flex flex-col justify-start items-center lg:ml-[7%] w-full lg:w-[85%] h-full m-0">
+        <div className={`flex h-16 flex-row items-center justify-center w-full `}>
+          {/* <div className={`flex h-16 flex-row items-center w-full ${start ? '' : 'justify-center'}`}> */}
+          {/* <button onClick={() => setStart(!back)} className={`${start ? '' : 'hidden'} text-3xl mr-[20%] lg:mr-[40%] bg-none hover:text-primary `}>
+            ↶
+          </button>
+          <div className={`fixed left-0 top-0`}>
+            <p>confirm the cancellation of the test and leave</p>
+          </div> */}
+          <h1 className="text-2xl font-bold text-center">Examination</h1>
+        </div>
 
         <div className={`flex flex-col space-y-12 justify-center items-center ${start ? 'hidden' : ''}`}>
           <div className="flex flex-row flex-wrap justify-center space-x-6">
@@ -100,21 +115,23 @@ export default function ExaminationContent() {
           <div className="flex space-x-10 disabled">
             <label className="input input-bordered flex items-center gap-2 ">
               Number of Questions:
-              <input type="number" className="w-12" defaultValue={15} />
+              <input type="number" className="w-12" defaultValue={5} />
             </label>
             <label className="input input-bordered flex items-center gap-2">
-              Time (minutes):
-              <input type="number" className="w-12" defaultValue={15} />
+              Time:
+              <input type="number" className="w-12" value={time} onChange={(e) => setTime(Number(e.target.value))} />
             </label>
           </div>
           <button
             className={`btn btn-primary w-40 ${type == '' || content == '*****************' ? 'btn-disabled' : ''}`}
-            onClick={() => setStart(true)}
+            onClick={() => {
+              setStart(true);
+              init(time * 60);
+            }}
           >
             Start
           </button>
         </div>
-        {/* menu */}
         <div
           className={`flex flex-col justify-center w-full h-[calc(100%-12rem)] items-center border-2 border-base-200 rounded-md ${start ? '' : 'hidden'}`}
         >
@@ -136,18 +153,26 @@ export default function ExaminationContent() {
             </div>
           </div>
         </div>
+        <div className={`flex justify-end items-center my-5 lg:mr-6 ${start ? '' : 'hidden'}`}>
+          <button onClick={() => setReview(!review)} className="btn btn-outline w-24">
+            Review
+          </button>
+          {review && (
+            <ReviewBox
+              numOfQuestions={questions.length}
+              cancelReview={() => setReview(false)}
+              endExam={() => setStart(false)}
+            />
+          )}
+        </div>
         <div
-          className={`fixed flex-col right-6 top-20 flex z-20 bg-base-100 border-neutral-400 rounded-md md:border-none`}
+          className={`fixed flex-col right-6 top-16 flex z-20 bg-base-100 border-neutral-400 rounded-md md:border-none ${start ? '' : 'hidden'}`}
         >
           <div className="flex justify-end items-center lg:mr-6 mb-2 h-full">
-            <CountDown initialTime={900} />
+            <CountDown />
           </div>
           {/* <BoardQuestion /> */}
           <BoardQuestion numOfQuestions={questions.length} />
-
-          <div className="flex justify-end items-center my-5 lg:mr-6">
-            <button className="btn btn-outline w-24">Submit</button>
-          </div>
         </div>
       </div>
     </>
