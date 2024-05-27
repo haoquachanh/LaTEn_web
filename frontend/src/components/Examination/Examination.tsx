@@ -30,10 +30,8 @@ export default function ExaminationContent() {
   }, []);
   const [type, setType] = useState('Multip Choice');
   const [content, setContent] = useState('');
-  const [time, setTime] = useState(15);
   const [review, setReview] = useState(false);
-  const { page, changePage, init } = useContext(ExaminationContext);
-  const [back, setBack] = useState(false);
+  const { page, numberOfQuestions, changePage, init, time, changeTime } = useContext(ExaminationContext);
 
   const types = ['Multip Choice', 'True or False', 'Short Answer', 'Long Answer'];
   const contents = ['Grammar', 'Vocabulary', 'Topic', 'Review'];
@@ -51,7 +49,7 @@ export default function ExaminationContent() {
       id: '2',
     },
     {
-      question: 'What color is Oggy cat?',
+      question: 'What color is Oggy cat ?',
       answers: ['Black', 'Orange', 'Blue'],
       correctAnswer: 'Blue',
       id: '3',
@@ -119,21 +117,21 @@ export default function ExaminationContent() {
             </label>
             <label className="input input-bordered flex items-center gap-2">
               Time:
-              <input type="number" className="w-12" value={time} onChange={(e) => setTime(Number(e.target.value))} />
+              <input type="number" className="w-12" value={time} onChange={(e) => changeTime(Number(e.target.value))} />
             </label>
           </div>
           <button
             className={`btn btn-primary w-40 ${type == '' || content == '*****************' ? 'btn-disabled' : ''}`}
             onClick={() => {
               setStart(true);
-              init(time * 60);
+              init(time);
             }}
           >
             Start
           </button>
         </div>
         <div
-          className={`flex flex-col justify-center w-full h-[calc(100%-12rem)] items-center border-2 border-base-200 rounded-md ${start ? '' : 'hidden'}`}
+          className={`flex flex-col justify-center w-full lg:h-[calc(100%-12rem)] items-center border-2 border-base-200 rounded-md ${start ? '' : 'hidden'}`}
         >
           <MultipChoice questions={questions} />
           <div className="flex flex-row w-full">
@@ -145,7 +143,7 @@ export default function ExaminationContent() {
               )}
             </div>
             <div className="flex items-center justify-end w-[50%]">
-              {page < questions.length / 3 - 1 && (
+              {page < questions.length / numberOfQuestions - 1 && (
                 <button className="btn btn-link" onClick={() => changePage(page + 1)}>
                   Next page ⇝
                 </button>
@@ -153,18 +151,18 @@ export default function ExaminationContent() {
             </div>
           </div>
         </div>
-        <div className={`flex justify-end items-center my-5 lg:mr-6 ${start ? '' : 'hidden'}`}>
+        <div className={`fixed bottom-2 flex justify-end items-center m-5 lg:mr-6 ${start ? '' : 'hidden'}`}>
           <button onClick={() => setReview(!review)} className="btn btn-outline w-24">
             Review
           </button>
-          {review && (
-            <ReviewBox
-              numOfQuestions={questions.length}
-              cancelReview={() => setReview(false)}
-              endExam={() => setStart(false)}
-            />
-          )}
         </div>
+        {review && (
+          <ReviewBox
+            numOfQuestions={questions.length}
+            cancelReview={() => setReview(false)}
+            endExam={() => setStart(false)}
+          />
+        )}
         <div
           className={`fixed flex-col right-6 top-16 flex z-20 bg-base-100 border-neutral-400 rounded-md md:border-none ${start ? '' : 'hidden'}`}
         >

@@ -10,7 +10,7 @@ type Props = {
 
 export default function MultipChoice({ questions }: Props) {
   // const [answers, setAnswers] = useState<{ [key: string]: string }>({});
-  const { page, answers, handleChange } = useContext(ExaminationContext);
+  const { page, numberOfQuestions, answers, handleChange } = useContext(ExaminationContext);
 
   // const handleChange = (event: React.ChangeEvent<HTMLInputElement>, key: string) => {
   //   setAnswers({
@@ -20,11 +20,11 @@ export default function MultipChoice({ questions }: Props) {
   // };
 
   return (
-    <div className="flex flex-col space-y-8 w-full lg:w-[95%] h-full justify-start my-8">
+    <div className="flex flex-col space-y-5 w-full lg:w-[95%] h-full justify-start my-8">
       {questions.map(
         (item, index) =>
-          index >= page * 3 &&
-          index < (page + 1) * 3 && (
+          index >= page * numberOfQuestions &&
+          index < (page + 1) * numberOfQuestions && (
             <div className="flex flex-col items-center w-full" key={index}>
               <div className="flex flex-col items-start space-y-2 w-full">
                 <h1 className="text-xl ml-5">

@@ -20,7 +20,7 @@ export default function ReviewBox({ numOfQuestions, cancelReview, endExam }: Pro
   };
   return (
     <>
-      <div className="fixed flex h-screen w-screen top-0 left-0 bg-primary/50 justify-center z-50">
+      <div className="fixed flex h-screen w-screen top-0 left-0 bg-primary/50 justify-center !z-50">
         <div className="flex w-3/5 h-[calc(100vh-10rem)] bg-primary py-20 my-20 flex-col items-center rounded-xl bg-primary/95">
           <h1 className="text-3xl h-[10%]">Review & Submit</h1>
           <div className="flex w-full h-[10%]">

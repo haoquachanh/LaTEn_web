@@ -1,21 +1,27 @@
 'use client';
-import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
+import { createContext, ReactNode, useEffect, useState } from 'react';
 
 interface ExamContextProps {
   time: number;
   page: number;
+  second: number;
+  numberOfQuestions: number;
   answers: { [key: string]: string };
   handleChange: (event: React.ChangeEvent<HTMLInputElement>, key: string) => void;
   changePage: (page: number) => void;
+  changeTime: (time: number) => void;
   init: (time: number) => void;
 }
 
 // Create a context with the correct type
 const ExaminationContext = createContext<ExamContextProps>({
-  time: 900,
+  time: 15,
+  second: 900,
+  numberOfQuestions: 2,
   page: 0,
   changePage: () => {},
   answers: {},
+  changeTime: () => {},
   handleChange: () => {},
   init: () => {},
   // submit: () => {},
@@ -29,7 +35,9 @@ interface Props {
 function ExaminationProvider({ children }: Props) {
   const [answers, setAnswers] = useState<{ [key: string]: string }>({});
   const [page, setPage] = useState(0);
-  const [time, setTime] = useState(900);
+  const [numberOfQuestions, setNumberOfQuestions] = useState(2);
+  const [time, setTime] = useState(15);
+  const [second, setSecond] = useState(900);
   const handleChangePage = (page: number) => {
     setPage(page);
   };
@@ -42,24 +50,34 @@ function ExaminationProvider({ children }: Props) {
   };
 
   useEffect(() => {
-    if (time > 0) {
-      const timerId = setTimeout(() => setTime(time - 1), 1000);
+    if (window.screenX >= 768) {
+      setNumberOfQuestions(3);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (second > 0) {
+      const timerId = setTimeout(() => setSecond(second - 1), 1000);
       return () => clearTimeout(timerId);
     }
-  }, [time]);
+  }, [second]);
 
   const init = (theTime: number) => {
     setAnswers({});
     setPage(0);
     setTime(theTime);
+    setSecond(theTime * 60);
   };
 
   const value = {
+    numberOfQuestions,
     time,
+    second,
     page,
     answers,
     init,
     handleChange,
+    changeTime: setTime,
     changePage: handleChangePage,
   };
 

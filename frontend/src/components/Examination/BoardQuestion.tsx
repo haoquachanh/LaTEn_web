@@ -1,14 +1,12 @@
 import { useContext, useState } from 'react';
-import { Question } from './Examination';
 import { Icon } from '../Icons';
-import Countdown from './CountDown';
 import { ExaminationContext } from '@/contexts/ExaminationContext';
 type Props = {
   numOfQuestions: number;
 };
 export default function BoardQuestion({ numOfQuestions }: Props) {
   const [show, setShow] = useState(true);
-  const { answers, changePage } = useContext(ExaminationContext);
+  const { answers, numberOfQuestions, changePage } = useContext(ExaminationContext);
   const qs = Array.from({ length: numOfQuestions });
   return (
     <div className="flex justify-start flex-row-reverse z-20">
@@ -24,7 +22,7 @@ export default function BoardQuestion({ numOfQuestions }: Props) {
           {qs.map((item, index) => (
             <div className="flex flex-col items-center m-1" key={index}>
               <button
-                onClick={() => changePage(Math.floor(index / 3))}
+                onClick={() => changePage(Math.floor(index / numberOfQuestions))}
                 className={`kbd ${answers[index + 1] ? 'bg-primary' : ''} hover:scale-105`}
               >
                 {index + 1}
