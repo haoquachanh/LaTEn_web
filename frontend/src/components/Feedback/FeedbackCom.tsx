@@ -46,7 +46,7 @@ export default function FeedbackCom() {
       <div
         className={`${
           showFeedback ? 'flex' : 'hidden'
-        } fixed top-0 left-0 z-20 w-screen h-screen items-center justify-center`}
+        } fixed top-0 left-0 z-50 w-screen h-screen items-center justify-center`}
       >
         <div className="modal-box w-full bg-[#000]" ref={wrapperRef}>
           <div className="flex flex-row items-center pt-5 justify-center">
