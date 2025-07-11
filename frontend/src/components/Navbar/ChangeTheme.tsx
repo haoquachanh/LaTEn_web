@@ -1,5 +1,6 @@
 import { ThemeContext } from '@/contexts/ThemeContext';
 import { useContext } from 'react';
+import { Icon } from '../Icons';
 
 export default function ChangeTheme() {
   const { theme, changeTheme } = useContext(ThemeContext);
@@ -40,32 +41,12 @@ export default function ChangeTheme() {
 
   return (
     <div title="Change Theme" className="[@supports(color:oklch(0%_0_0))]:block hidden dropdown dropdown-end">
-      <div tabIndex={0} role="button" className="d-flex flex-nowrap btn btn-ghost">
-        <svg
-          width={20}
-          height={20}
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          className="md:hidden w-5 h-5 stroke-current"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"
-          />
-        </svg>
-        <span className="md:inline hidden font-normal">Theme</span>
-        <svg
-          width="12px"
-          height="12px"
-          className="sm:inline-block hidden opacity-60 w-2 h-2 fill-current"
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 2048 2048"
-        >
-          <path d="M1799 349l242 241-1017 1017L7 590l242-241 775 775 775-775z" />
-        </svg>
+      <div
+        tabIndex={0}
+        role="button"
+        className="btn btn-ghost btn-circle hover:bg-primary/10 hover:text-primary focus:bg-primary/10 focus:text-primary active:bg-primary/20 transition-all duration-200"
+      >
+        <Icon kind="theme" size={20} className="text-primary/70" />
       </div>
       <div
         tabIndex={0}

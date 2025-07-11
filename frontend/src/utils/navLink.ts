@@ -1,6 +1,6 @@
 type NavLinks = {
   name: string;
-  icon: 'course' | 'community' | 'about' | 'exam';
+  icon: 'course' | 'community' | 'about' | 'exam' | 'app' | 'questionnobox';
   href: string;
 };
 export const navLinks: NavLinks[] = [
@@ -23,6 +23,16 @@ export const navLinks: NavLinks[] = [
     name: 'About',
     icon: 'about',
     href: '/about',
+  },
+  {
+    name: 'Docs',
+    icon: 'questionnobox',
+    href: '/docs',
+  },
+  {
+    name: 'Test',
+    icon: 'app',
+    href: '/test',
   },
 ];
 

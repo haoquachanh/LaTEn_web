@@ -1,9 +1,6 @@
+'use client';
 import ExaminationContent from '@/components/Examination/Examination';
 
-export default async function ExaminationPage() {
-  return (
-    <>
-      <ExaminationContent />
-    </>
-  );
+export default function ExaminationPage() {
+  return <ExaminationContent />;
 }
