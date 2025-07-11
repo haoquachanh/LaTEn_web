@@ -12,8 +12,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "analyze": "ANALYZE=true npm run build",
-    "ci": "npm run lint && npm run type-check && npm run build",
-    "prepare": "husky install || true"
+    "ci": "npm run lint && npm run type-check && npm run build"
   },
   "dependencies": {
     "@vercel/speed-insights": "^1.0.10",
