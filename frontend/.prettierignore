@@ -1,0 +1,11 @@
+# Prettier ignore file
+node_modules/
+.next/
+out/
+build/
+dist/
+*.min.js
+*.min.css
+coverage/
+.nyc_output/
+*.log

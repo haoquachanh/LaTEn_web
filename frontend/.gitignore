@@ -27,9 +27,21 @@ yarn-error.log*
 
 # local env files
 .env*.local
+.env.production
+.env.staging
 
 # vercel
 .vercel
+
+# CI/CD and analysis
+coverage/
+.nyc_output/
+analyze/
+lighthouse-results/
+.lighthouseci/
+
+# Docker
+docker-compose.override.yml
 
 # typescript
 *.tsbuildinfo
