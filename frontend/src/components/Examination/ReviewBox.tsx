@@ -1,7 +1,8 @@
+'use client';
 import { ExaminationContext } from '@/contexts/ExaminationContext';
 import { useContext } from 'react';
 import BoardQuestion from './BoardQuestion';
-import Countdown from './CountDown';
+import CountDown from './CountDown';
 import { Icon } from '../Icons';
 type Props = {
   numOfQuestions: number;
@@ -27,7 +28,7 @@ export default function ReviewBox({ numOfQuestions, cancelReview, endExam }: Pro
             <div className="flex flex-col justify-start ml-5 lg:ml-32">
               <div className="flex items-center">
                 <p className="text-md lg:text-xl mr-2">Time remaining: </p>
-                <Countdown />
+                <CountDown />
               </div>
               <p className="text-md lg:text-xl">
                 You answered: {Object.keys(answers).length} / {numOfQuestions}

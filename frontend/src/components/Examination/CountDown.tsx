@@ -1,3 +1,4 @@
+'use client';
 import { ExaminationContext } from '@/contexts/ExaminationContext';
 import React, { useContext } from 'react';
 const Countdown = () => {

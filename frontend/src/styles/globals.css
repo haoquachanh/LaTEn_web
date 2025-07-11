@@ -4,3 +4,70 @@
 /* @tailwind base;
 @tailwind components;
 @tailwind utilities; */
+
+/* Modal animation improvements */
+.modal {
+  transition-property: opacity, visibility;
+  transition-duration: 300ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: opacity, visibility;
+}
+
+.modal:not(.modal-open) {
+  visibility: hidden;
+}
+
+.modal .modal-box {
+  transition-property: transform, opacity;
+  transition-duration: 300ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform, opacity;
+  transform-origin: center;
+  backface-visibility: hidden;
+  max-width: none !important; /* Override DaisyUI max-width restrictions */
+}
+
+.modal:not(.modal-open) .modal-box {
+  transform: scale(0.95);
+  opacity: 0;
+}
+
+.modal.modal-open .modal-box {
+  transform: scale(1);
+  opacity: 1;
+}
+
+/* Fix height calculation for content containers */
+.review-modal-content {
+  max-height: calc(80vh - 12rem);
+  overscroll-behavior: contain;
+  contain: content;
+}
+
+/* Optimize scrolling performance */
+.optimized-scroll {
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  overscroll-behavior: contain;
+  will-change: scroll-position;
+  contain: content;
+}
+
+/* Custom review modal styling */
+.review-modal {
+  width: 60vw !important;
+  max-width: 1000px !important; /* More reasonable max-width */
+}
+
+@media (min-width: 1280px) {
+  .review-modal {
+    width: 60vw !important;
+    max-width: 1200px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .review-modal {
+    width: 85vw !important;
+  }
+}

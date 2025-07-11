@@ -4,7 +4,7 @@ import { createContext, useContext, useState, ReactNode, useEffect } from 'react
 interface AuthContextType {
   access_token: string | undefined | null;
   loggedIn: boolean;
-  login: () => void;
+  login: (token?: string) => void;
   logout: () => void;
 }
 // const token = localStorage.getItem("access_token");
@@ -30,12 +30,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setAccessToken(token);
   }, []);
 
-  const login = () => {
+  const login = (token?: string) => {
     setLoggedIn(true);
+    if (token) {
+      setAccessToken(token);
+      localStorage.setItem('access_token', token);
+    }
   };
 
   const logout = () => {
     setLoggedIn(false);
+    setAccessToken(null);
+    localStorage.removeItem('access_token');
   };
 
   return <AuthContext.Provider value={{ access_token, loggedIn, login, logout }}>{children}</AuthContext.Provider>;

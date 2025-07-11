@@ -58,106 +58,6 @@ export default function ExaminationContent() {
         correctAnswer: 'To delay',
         id: '5',
       },
-      {
-        question: 'Which sentence is grammatically correct?',
-        answers: [
-          "She don't like coffee.",
-          "She doesn't likes coffee.",
-          "She doesn't like coffee.",
-          'She not like coffee.',
-        ],
-        correctAnswer: "She doesn't like coffee.",
-        id: '6',
-      },
-      {
-        question: 'What is the past tense of "go"?',
-        answers: ['Goed', 'Gone', 'Went', 'Going'],
-        correctAnswer: 'Went',
-        id: '7',
-      },
-      {
-        question: 'Choose the correct comparative form of "good"',
-        answers: ['Gooder', 'More good', 'Better', 'Best'],
-        correctAnswer: 'Better',
-        id: '8',
-      },
-      {
-        question: 'Which word is NOT a preposition?',
-        answers: ['On', 'Under', 'Before', 'Running'],
-        correctAnswer: 'Running',
-        id: '9',
-      },
-      {
-        question: 'What is the plural form of "child"?',
-        answers: ['Childs', 'Childes', 'Children', 'Childern'],
-        correctAnswer: 'Children',
-        id: '10',
-      },
-      {
-        question: 'Choose the correct spelling',
-        answers: ['Recieve', 'Receive', 'Receeve', 'Receve'],
-        correctAnswer: 'Receive',
-        id: '11',
-      },
-      {
-        question: 'Which word is a countable noun?',
-        answers: ['Water', 'Bread', 'Rice', 'Book'],
-        correctAnswer: 'Book',
-        id: '12',
-      },
-      {
-        question: 'What is the meaning of "ubiquitous"?',
-        answers: ['Found everywhere', 'Very rare', 'Extremely large', 'Completely transparent'],
-        correctAnswer: 'Found everywhere',
-        id: '13',
-      },
-      {
-        question: 'The idiom "piece of cake" means:',
-        answers: ['Something delicious', 'Something very easy', 'Something incomplete', 'Something sweet'],
-        correctAnswer: 'Something very easy',
-        id: '14',
-      },
-      {
-        question: 'Complete the sentence: "If I _____ rich, I would buy a mansion."',
-        answers: ['am', 'was', 'were', 'had been'],
-        correctAnswer: 'were',
-        id: '15',
-      },
-      {
-        question: 'Which of these is NOT a phrasal verb?',
-        answers: ['Look up', 'Turn down', 'Give away', 'Beautiful'],
-        correctAnswer: 'Beautiful',
-        id: '16',
-      },
-      {
-        question: 'What does the prefix "un-" typically indicate?',
-        answers: ['Repetition', 'Negation', 'Greatness', 'Together'],
-        correctAnswer: 'Negation',
-        id: '17',
-      },
-      {
-        question: 'Choose the sentence with correct punctuation:',
-        answers: ['Where are you going?', 'Where are you going.', 'Where, are you going?', 'Where are you going!'],
-        correctAnswer: 'Where are you going?',
-        id: '18',
-      },
-      {
-        question: 'What is the correct order of adjectives in English?',
-        answers: [
-          'Opinion, size, age, shape, color, origin, material, purpose',
-          'Size, color, age, shape, origin, material, purpose, opinion',
-          'Purpose, material, origin, shape, age, size, color, opinion',
-          'Opinion, purpose, material, origin, age, shape, size, color',
-        ],
-        correctAnswer: 'Opinion, size, age, shape, color, origin, material, purpose',
-        id: '19',
-      },
-      {
-        question: 'Which of the following is a subordinating conjunction?',
-        answers: ['And', 'But', 'Or', 'Although'],
-        correctAnswer: 'Although',
-        id: '20',
-      },
     ],
     [],
   );
@@ -488,38 +388,9 @@ export default function ExaminationContent() {
               {/* Left Side: Question Display */}
               <div className="flex-1 bg-base-100 rounded-box p-6 shadow-lg flex flex-col">
                 <div className="flex justify-between items-center mb-4">
-                  <div className="flex items-center gap-2">
-                    <h2 className="font-bold text-lg">
-                      Câu hỏi {currentQuestionIndex + 1} / {questions.length}
-                    </h2>
-                    {/* Flag icon button */}
-                    <button
-                      onClick={() => handleFlagQuestion(currentQuestion?.id)}
-                      className={`flex items-center justify-center h-8 w-8 rounded-full ${
-                        flaggedQuestions.includes(currentQuestion?.id)
-                          ? 'bg-warning text-warning-content'
-                          : 'bg-base-200 text-base-content/70 hover:bg-base-300'
-                      } transition-colors duration-200`}
-                      title={
-                        flaggedQuestions.includes(currentQuestion?.id) ? 'Unflag question' : 'Flag question for review'
-                      }
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-5 w-5"
-                        fill={flaggedQuestions.includes(currentQuestion?.id) ? 'currentColor' : 'none'}
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"
-                        />
-                      </svg>
-                    </button>
-                  </div>
+                  <h2 className="font-bold text-lg">
+                    Câu hỏi {currentQuestionIndex + 1} / {questions.length}
+                  </h2>
                   <div className="flex flex-wrap gap-2">
                     <div className="badge badge-neutral">{examTypes.find((t) => t.id === type)?.label || 'Exam'}</div>
                     <div className={`badge badge-${subjects.find((s) => s.id === content)?.color || 'neutral'}`}>
@@ -566,6 +437,13 @@ export default function ExaminationContent() {
                       disabled={currentQuestionIndex === 0}
                     >
                       Previous
+                    </button>
+
+                    <button
+                      className={`btn ${flaggedQuestions.includes(currentQuestion?.id) ? 'btn-warning' : 'btn-outline'}`}
+                      onClick={() => handleFlagQuestion(currentQuestion?.id)}
+                    >
+                      {flaggedQuestions.includes(currentQuestion?.id) ? 'Unflag' : 'Flag'} Question
                     </button>
 
                     {currentQuestionIndex === questions.length - 1 ? (
@@ -660,38 +538,9 @@ export default function ExaminationContent() {
             {/* Question Content */}
             <div className="flex-1 bg-base-100 rounded-box p-4 shadow-lg">
               <div className="flex justify-between items-center mb-4">
-                <div className="flex items-center gap-1.5">
-                  <h2 className="font-bold text-base">
-                    Q{currentQuestionIndex + 1}/{questions.length}
-                  </h2>
-                  {/* Flag icon button */}
-                  <button
-                    onClick={() => handleFlagQuestion(currentQuestion?.id)}
-                    className={`flex items-center justify-center h-6 w-6 rounded-full ${
-                      flaggedQuestions.includes(currentQuestion?.id)
-                        ? 'bg-warning text-warning-content'
-                        : 'bg-base-200 text-base-content/70 hover:bg-base-300'
-                    } transition-colors duration-200`}
-                    title={
-                      flaggedQuestions.includes(currentQuestion?.id) ? 'Unflag question' : 'Flag question for review'
-                    }
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-4 w-4"
-                      fill={flaggedQuestions.includes(currentQuestion?.id) ? 'currentColor' : 'none'}
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"
-                      />
-                    </svg>
-                  </button>
-                </div>
+                <h2 className="font-bold text-base">
+                  Q{currentQuestionIndex + 1}/{questions.length}
+                </h2>
                 <div className="flex gap-1">
                   <div className="badge badge-xs badge-neutral">
                     {examTypes.find((t) => t.id === type)?.label || 'Exam'}
@@ -739,12 +588,15 @@ export default function ExaminationContent() {
               >
                 Previous
               </button>
-              <button className="btn btn-sm btn-outline" onClick={handleReviewToggle}>
-                Review Answers
+              <button
+                className={`btn btn-sm ${flaggedQuestions.includes(currentQuestion?.id) ? 'btn-warning' : 'btn-outline'}`}
+                onClick={() => handleFlagQuestion(currentQuestion?.id)}
+              >
+                {flaggedQuestions.includes(currentQuestion?.id) ? 'Unflag' : 'Flag'}
               </button>
               {currentQuestionIndex === questions.length - 1 ? (
-                <button className="btn btn-sm btn-primary" onClick={() => setShowSubmitConfirm(true)}>
-                  Submit
+                <button className="btn btn-sm btn-primary" onClick={handleReviewToggle}>
+                  Review
                 </button>
               ) : (
                 <button className="btn btn-sm btn-primary" onClick={handleNextQuestion}>
@@ -756,21 +608,7 @@ export default function ExaminationContent() {
             {/* Bottom Bar for Mobile */}
             <div className="fixed bottom-0 left-0 right-0 bg-base-100 p-2 flex justify-between items-center shadow-lg border-t border-base-200 z-10">
               <div className="flex space-x-1">
-                <button className="btn btn-sm btn-outline" onClick={handleReviewToggle}>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-4 w-4 mr-1"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-                    />
-                  </svg>
+                <button className="btn btn-sm" onClick={handleReviewToggle}>
                   Review
                 </button>
                 <span className="badge badge-sm self-center">
@@ -811,25 +649,22 @@ export default function ExaminationContent() {
 
       {/* Modals */}
       {(showReview || showSubmitConfirm) && (
-        <div
-          className={`fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 ${showReview ? 'review-modal-container' : ''}`}
-        >
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
           <Suspense fallback={<div className="loading loading-spinner text-primary"></div>}>
             {showReview && (
-              <div className="review-modal">
-                <ReviewModalContent
-                  questions={questions}
-                  currentQuestionIndex={currentQuestionIndex}
-                  userAnswers={userAnswers}
-                  flaggedQuestions={flaggedQuestions}
-                  onGoToQuestion={(index) => {
-                    setCurrentQuestionIndex(index);
-                    setShowReview(false);
-                  }}
-                  onClose={() => setShowReview(false)}
-                  onFlagToggle={handleFlagQuestion}
-                />
-              </div>
+              <ReviewModalContent
+                questions={questions}
+                userAnswers={userAnswers}
+                flaggedQuestions={flaggedQuestions}
+                onGoToQuestion={(index) => {
+                  setCurrentQuestionIndex(index);
+                  setShowReview(false);
+                }}
+                onClose={() => setShowReview(false)}
+                onSubmit={handleSubmitExam}
+                onFlagToggle={handleFlagQuestion}
+                getAnsweredCount={getAnsweredCount}
+              />
             )}
 
             {showSubmitConfirm && (

@@ -1,10 +1,5 @@
-import { FormEvent, useEffect, ReactNode } from 'react';
-import { useRouter } from 'next/router';
-interface FetchOptions {
-  headers?: HeadersInit;
-  method?: string;
-  body?: BodyInit | null;
-}
+import { useEffect, ReactNode } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function ProtectedRoute({ children }: { children: ReactNode }) {
   const router = useRouter();
@@ -15,7 +10,7 @@ export default function ProtectedRoute({ children }: { children: ReactNode }) {
     if (!jwtToken) {
       router.push('/login');
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [router]);
+
   return <>{children}</>;
 }
