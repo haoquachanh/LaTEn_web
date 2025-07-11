@@ -585,25 +585,59 @@ export default function ExaminationContent() {
               <div className="w-72 flex flex-col gap-4">
                 {/* Question Navigator */}
                 <div className="bg-base-100 rounded-box p-4 shadow-lg">
-                  <h3 className="font-bold mb-3">Question Navigator</h3>
-                  <div className="grid grid-cols-5 gap-2">
+                  <div className="flex justify-between items-center mb-3">
+                    <h3 className="font-bold">Question Navigator</h3>
+                    <div className="text-xs text-base-content/70">
+                      {currentQuestionIndex + 1} of {questions.length}
+                    </div>
+                  </div>
+
+                  {/* Legend */}
+                  <div className="flex flex-wrap gap-2 mb-3 text-xs">
+                    <div className="flex items-center gap-1">
+                      <div className="w-3 h-3 bg-success rounded"></div>
+                      <span>Answered</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <div className="w-3 h-3 bg-warning rounded"></div>
+                      <span>Flagged</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <div className="w-3 h-3 bg-secondary rounded"></div>
+                      <span>Current</span>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-5 gap-2 max-h-48 overflow-y-auto question-navigator-grid">
                     {navigatorButtons.map((btn) => (
                       <button
                         key={btn.id}
-                        className={`btn btn-sm ${
+                        className={`btn btn-sm relative ${
                           currentQuestionIndex === btn.index
-                            ? 'btn-secondary'
+                            ? 'btn-secondary ring-2 ring-secondary/50'
                             : btn.status === 'answered'
                               ? 'btn-success'
                               : btn.status === 'flagged'
                                 ? 'btn-warning'
                                 : btn.status === 'answeredAndFlagged'
-                                  ? 'btn-warning border border-success'
-                                  : 'btn-outline'
+                                  ? 'btn-success border-2 border-warning'
+                                  : 'btn-outline hover:btn-primary'
                         }`}
                         onClick={() => handleNavigateQuestion(btn.index)}
+                        title={`Question ${btn.index + 1} - ${
+                          btn.status === 'answered'
+                            ? 'Answered'
+                            : btn.status === 'flagged'
+                              ? 'Flagged for review'
+                              : btn.status === 'answeredAndFlagged'
+                                ? 'Answered & Flagged'
+                                : 'Not answered'
+                        }`}
                       >
                         {btn.index + 1}
+                        {btn.status === 'flagged' || btn.status === 'answeredAndFlagged' ? (
+                          <div className="absolute -top-1 -right-1 w-2 h-2 bg-warning rounded-full"></div>
+                        ) : null}
                       </button>
                     ))}
                   </div>
@@ -612,6 +646,33 @@ export default function ExaminationContent() {
                 {/* Quick Actions */}
                 <div className="bg-base-100 rounded-box p-4 shadow-lg">
                   <h3 className="font-bold mb-3">Quick Actions</h3>
+
+                  {/* Quick Jump Buttons */}
+                  <div className="grid grid-cols-2 gap-2 mb-3">
+                    <button
+                      className="btn btn-outline btn-xs"
+                      onClick={() => {
+                        const unanswered = questions.findIndex((q) => !userAnswers[q.id]);
+                        if (unanswered !== -1) setCurrentQuestionIndex(unanswered);
+                      }}
+                      disabled={getAnsweredCount() === questions.length}
+                    >
+                      Next Unanswered
+                    </button>
+                    <button
+                      className="btn btn-outline btn-xs"
+                      onClick={() => {
+                        if (flaggedQuestions.length > 0) {
+                          const flaggedIndex = questions.findIndex((q) => q.id === flaggedQuestions[0]);
+                          if (flaggedIndex !== -1) setCurrentQuestionIndex(flaggedIndex);
+                        }
+                      }}
+                      disabled={flaggedQuestions.length === 0}
+                    >
+                      First Flagged
+                    </button>
+                  </div>
+
                   <div className="space-y-2">
                     <button className="btn btn-outline btn-block btn-sm" onClick={handleReviewToggle}>
                       Review All Answers
@@ -658,16 +719,16 @@ export default function ExaminationContent() {
           {/* Mobile View */}
           <div className="lg:hidden flex flex-col min-h-[calc(100vh-4rem)]">
             {/* Question Content */}
-            <div className="flex-1 bg-base-100 rounded-box p-4 shadow-lg">
-              <div className="flex justify-between items-center mb-4">
-                <div className="flex items-center gap-1.5">
-                  <h2 className="font-bold text-base">
+            <div className="flex-1 bg-base-100 rounded-box p-3 shadow-lg">
+              <div className="flex justify-between items-center mb-3">
+                <div className="flex items-center gap-1">
+                  <h2 className="font-bold text-sm">
                     Q{currentQuestionIndex + 1}/{questions.length}
                   </h2>
                   {/* Flag icon button */}
                   <button
                     onClick={() => handleFlagQuestion(currentQuestion?.id)}
-                    className={`flex items-center justify-center h-6 w-6 rounded-full ${
+                    className={`flex items-center justify-center h-5 w-5 rounded-full ${
                       flaggedQuestions.includes(currentQuestion?.id)
                         ? 'bg-warning text-warning-content'
                         : 'bg-base-200 text-base-content/70 hover:bg-base-300'
@@ -678,7 +739,7 @@ export default function ExaminationContent() {
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
-                      className="h-4 w-4"
+                      className="h-3 w-3"
                       fill={flaggedQuestions.includes(currentQuestion?.id) ? 'currentColor' : 'none'}
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -693,18 +754,20 @@ export default function ExaminationContent() {
                   </button>
                 </div>
                 <div className="flex gap-1">
-                  <div className="badge badge-xs badge-neutral">
+                  <div className="badge badge-xs badge-neutral text-xs">
                     {examTypes.find((t) => t.id === type)?.label || 'Exam'}
                   </div>
-                  <div className={`badge badge-xs badge-${subjects.find((s) => s.id === content)?.color || 'neutral'}`}>
+                  <div
+                    className={`badge badge-xs badge-${subjects.find((s) => s.id === content)?.color || 'neutral'} text-xs`}
+                  >
                     {subjects.find((s) => s.id === content)?.label || 'Subject'}
                   </div>
                 </div>
               </div>
 
               {/* Question Text */}
-              <div className="mb-4">
-                <p className="text-base font-medium">{currentQuestion?.question}</p>
+              <div className="mb-3">
+                <p className="text-sm font-medium leading-relaxed">{currentQuestion?.question}</p>
               </div>
 
               {/* Answer Options */}
@@ -712,7 +775,7 @@ export default function ExaminationContent() {
                 {currentQuestion?.answers?.map((answer, idx) => (
                   <div
                     key={idx}
-                    className={`p-3 rounded-lg cursor-pointer transition-all duration-300 ${
+                    className={`p-2.5 rounded-lg cursor-pointer transition-all duration-300 ${
                       userAnswers[currentQuestion.id] === answer
                         ? 'bg-primary text-primary-content'
                         : 'bg-base-200 hover:bg-base-300'
@@ -720,10 +783,10 @@ export default function ExaminationContent() {
                     onClick={() => handleAnswerChange(currentQuestion.id, answer)}
                   >
                     <div className="flex items-center">
-                      <div className="w-5 h-5 flex items-center justify-center rounded-full mr-2 text-xs border border-current">
+                      <div className="w-4 h-4 flex items-center justify-center rounded-full mr-2 text-xs border border-current flex-shrink-0">
                         {String.fromCharCode(65 + idx)}
                       </div>
-                      <span className="text-sm">{answer}</span>
+                      <span className="text-xs leading-relaxed">{answer}</span>
                     </div>
                   </div>
                 ))}
@@ -731,35 +794,45 @@ export default function ExaminationContent() {
             </div>
 
             {/* Navigation Controls for Mobile */}
-            <div className="grid grid-cols-3 gap-2 mt-2">
+            <div className="grid grid-cols-4 gap-1.5 mt-2 px-1">
               <button
-                className="btn btn-sm btn-outline"
+                className="btn btn-xs btn-outline text-xs h-8"
                 onClick={handlePrevQuestion}
                 disabled={currentQuestionIndex === 0}
               >
-                Previous
+                ← Prev
               </button>
-              <button className="btn btn-sm btn-outline" onClick={handleReviewToggle}>
-                Review Answers
+              <button
+                className="btn btn-xs btn-outline text-xs h-8"
+                onClick={() => {
+                  const unanswered = questions.findIndex((q) => !userAnswers[q.id]);
+                  if (unanswered !== -1) setCurrentQuestionIndex(unanswered);
+                }}
+                disabled={getAnsweredCount() === questions.length}
+              >
+                Skip
+              </button>
+              <button className="btn btn-xs btn-outline text-xs h-8" onClick={handleReviewToggle}>
+                Review
               </button>
               {currentQuestionIndex === questions.length - 1 ? (
-                <button className="btn btn-sm btn-primary" onClick={() => setShowSubmitConfirm(true)}>
+                <button className="btn btn-xs btn-primary text-xs h-8" onClick={() => setShowSubmitConfirm(true)}>
                   Submit
                 </button>
               ) : (
-                <button className="btn btn-sm btn-primary" onClick={handleNextQuestion}>
-                  Next
+                <button className="btn btn-xs btn-primary text-xs h-8" onClick={handleNextQuestion}>
+                  Next →
                 </button>
               )}
             </div>
 
             {/* Bottom Bar for Mobile */}
-            <div className="fixed bottom-0 left-0 right-0 bg-base-100 p-2 flex justify-between items-center shadow-lg border-t border-base-200 z-10">
-              <div className="flex space-x-1">
-                <button className="btn btn-sm btn-outline" onClick={handleReviewToggle}>
+            <div className="fixed bottom-0 left-0 right-0 bg-base-100 p-1.5 flex justify-between items-center shadow-lg border-t border-base-200 z-10">
+              <div className="flex space-x-1 items-center">
+                <button className="btn btn-xs btn-outline text-xs h-7" onClick={handleReviewToggle}>
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    className="h-4 w-4 mr-1"
+                    className="h-3 w-3 mr-0.5"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -773,35 +846,43 @@ export default function ExaminationContent() {
                   </svg>
                   Review
                 </button>
-                <span className="badge badge-sm self-center">
+                <span className="badge badge-xs self-center text-xs">
                   {getAnsweredCount()}/{questions.length}
                 </span>
               </div>
 
               {/* Question Navigator - Mobile (horizontal scroll) */}
-              <div className="flex space-x-1 overflow-x-auto hide-scrollbar pb-1 max-w-[50%]">
-                {navigatorButtons.map((btn) => (
-                  <button
-                    key={btn.id}
-                    className={`btn btn-xs w-6 h-6 min-h-0 ${
-                      currentQuestionIndex === btn.index
-                        ? 'btn-secondary'
-                        : btn.status === 'answered'
-                          ? 'btn-success'
-                          : btn.status === 'flagged'
-                            ? 'btn-warning'
-                            : btn.status === 'answeredAndFlagged'
-                              ? 'btn-warning border border-success'
-                              : 'btn-outline'
-                    }`}
-                    onClick={() => handleNavigateQuestion(btn.index)}
-                  >
-                    {btn.index + 1}
-                  </button>
-                ))}
+              <div className="flex-1 flex flex-col items-center">
+                <div className="text-xs text-base-content/70 mb-1">
+                  {currentQuestionIndex + 1} / {questions.length}
+                </div>
+                <div className="flex space-x-1 overflow-x-auto hide-scrollbar pb-1 max-w-full">
+                  {navigatorButtons.map((btn) => (
+                    <button
+                      key={btn.id}
+                      className={`btn btn-xs relative flex-shrink-0 ${
+                        currentQuestionIndex === btn.index
+                          ? 'btn-secondary ring-1 ring-secondary/50'
+                          : btn.status === 'answered'
+                            ? 'btn-success'
+                            : btn.status === 'flagged'
+                              ? 'btn-warning'
+                              : btn.status === 'answeredAndFlagged'
+                                ? 'btn-success border border-warning'
+                                : 'btn-outline'
+                      } w-6 h-6 min-h-0 text-xs p-0`}
+                      onClick={() => handleNavigateQuestion(btn.index)}
+                    >
+                      {btn.index + 1}
+                      {(btn.status === 'flagged' || btn.status === 'answeredAndFlagged') && (
+                        <div className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-warning rounded-full"></div>
+                      )}
+                    </button>
+                  ))}
+                </div>
               </div>
 
-              <button className="btn btn-sm btn-primary" onClick={handleSubmitExam}>
+              <button className="btn btn-xs btn-primary text-xs h-7" onClick={handleSubmitExam}>
                 Submit
               </button>
             </div>

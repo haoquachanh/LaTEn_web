@@ -71,3 +71,36 @@
     width: 85vw !important;
   }
 }
+
+/* Hide scrollbar utility */
+.hide-scrollbar {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+/* Question navigator enhancements */
+.question-navigator-grid {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--bc) / 0.2) transparent;
+}
+
+.question-navigator-grid::-webkit-scrollbar {
+  width: 6px;
+}
+
+.question-navigator-grid::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.question-navigator-grid::-webkit-scrollbar-thumb {
+  background-color: hsl(var(--bc) / 0.2);
+  border-radius: 3px;
+}
+
+.question-navigator-grid::-webkit-scrollbar-thumb:hover {
+  background-color: hsl(var(--bc) / 0.3);
+}
