@@ -1,28 +1,77 @@
 version: '3.8'
 
 services:
+  # PostgreSQL Database
   postgres:
-    container_name: latendatabase
-    image: postgres:latest
-    restart: always
+    container_name: laten-database
+    image: postgres:15-alpine
+    restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: '578722'
-      POSTGRES_DB: postgres
+      POSTGRES_DB: laten
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8"
     ports:
       - '5432:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
-  nodejs:
-    container_name: latenserver
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend API
+  backend:
+    container_name: laten-backend
     build:
       context: .
       dockerfile: Dockerfile
-    restart: always
+      target: production
+    restart: unless-stopped
     ports:
-      - '3000:3000'
+      - '3001:3001'
+    environment:
+      - NODE_ENV=production
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=578722
+      - DB_DATABASE=laten
+      - JWT_SECRET=your_production_jwt_secret_here
+      - JWT_EXPIRES_IN=24h
+      - PORT=3001
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3001/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Redis for caching (optional)
+  redis:
+    container_name: laten-redis
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
   postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  default:
+    name: laten-network

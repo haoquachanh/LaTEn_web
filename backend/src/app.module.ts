@@ -7,11 +7,13 @@ import { UserModule } from '@modules/users/user.module';
 import { DictionaryModule } from '@modules/dictionary/dictionary.module';
 import { ExaminationModule } from '@modules/examination/examination.module';
 import { CommentModule } from '@modules/comment/comment.module';
+import { HealthModule } from '@modules/health/health.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot(),
     TypeOrmModule.forRootAsync(typeOrmConfig),
+    HealthModule,
     AuthModule,
     UserModule,
     DictionaryModule,

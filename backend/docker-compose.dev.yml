@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database for Development
+  postgres-dev:
+    container_name: laten-database-dev
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: '578722'
+      POSTGRES_DB: laten_dev
+    ports:
+      - '5433:5432'
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend Development Server
+  backend-dev:
+    container_name: laten-backend-dev
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    restart: unless-stopped
+    ports:
+      - '3001:3001'
+      - '9229:9229'  # Debug port
+    environment:
+      - NODE_ENV=development
+      - DB_HOST=postgres-dev
+      - DB_PORT=5432
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=578722
+      - DB_DATABASE=laten_dev
+      - JWT_SECRET=dev_jwt_secret_key
+      - JWT_EXPIRES_IN=24h
+      - PORT=3001
+    volumes:
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      postgres-dev:
+        condition: service_healthy
+    command: npm run start:dev
+
+volumes:
+  postgres_dev_data:
+    driver: local
+
+networks:
+  default:
+    name: laten-dev-network
