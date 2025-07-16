@@ -136,7 +136,9 @@ describe('QuestionService', () => {
       const result = await service.getRandomQuestions(5, QuestionType.MULTIPLE_CHOICE);
 
       expect(result).toEqual([mockQuestion]);
-      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith('question.type = :type', { type: QuestionType.MULTIPLE_CHOICE });
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith('question.type = :type', {
+        type: QuestionType.MULTIPLE_CHOICE,
+      });
       expect(mockQueryBuilder.limit).toHaveBeenCalledWith(5);
     });
   });

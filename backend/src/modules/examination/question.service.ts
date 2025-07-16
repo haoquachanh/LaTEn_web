@@ -23,10 +23,10 @@ export class QuestionService {
   // Question CRUD operations
   async createQuestion(createQuestionDto: CreateQuestionDto): Promise<Question> {
     const question = this.questionRepository.create(createQuestionDto);
-    
+
     // Validate question type and required fields
     this.validateQuestionData(question);
-    
+
     return await this.questionRepository.save(question);
   }
 
@@ -40,7 +40,7 @@ export class QuestionService {
     bankId?: number,
   ): Promise<{ questions: Question[]; total: number; totalPages: number }> {
     const where: FindOptionsWhere<Question> = {};
-    
+
     if (type) where.type = type;
     if (format) where.format = format;
     if (difficulty) where.difficulty = difficulty;
@@ -77,10 +77,10 @@ export class QuestionService {
 
   async updateQuestion(id: number, updateQuestionDto: UpdateQuestionDto): Promise<Question> {
     const question = await this.findQuestionById(id);
-    
+
     Object.assign(question, updateQuestionDto);
     this.validateQuestionData(question);
-    
+
     return await this.questionRepository.save(question);
   }
 
@@ -100,19 +100,19 @@ export class QuestionService {
           throw new BadRequestException('Multiple choice questions must have a correct answer');
         }
         break;
-        
+
       case QuestionType.TRUE_FALSE:
         if (!question.correctAnswer || !['true', 'false'].includes(question.correctAnswer.toLowerCase())) {
           throw new BadRequestException('True/False questions must have "true" or "false" as correct answer');
         }
         break;
-        
+
       case QuestionType.SHORT_ANSWER:
         if (!question.correctAnswer && (!question.acceptableAnswers || question.acceptableAnswers.length === 0)) {
           throw new BadRequestException('Short answer questions must have correct answer or acceptable answers');
         }
         break;
-        
+
       case QuestionType.ESSAY:
         // Essays don't require predefined correct answers
         break;
@@ -177,7 +177,7 @@ export class QuestionService {
     creatorId?: number,
   ): Promise<{ banks: QuestionBank[]; total: number; totalPages: number }> {
     const where: FindOptionsWhere<QuestionBank> = { isActive: true };
-    
+
     if (isPublic !== undefined) where.isPublic = isPublic;
     if (creatorId) where.creator = { id: creatorId };
 
@@ -237,13 +237,13 @@ export class QuestionService {
     format?: QuestionFormat,
   ): Promise<Question[]> {
     const query = this.questionRepository.createQueryBuilder('question');
-    
+
     if (type) query.andWhere('question.type = :type', { type });
     if (difficulty) query.andWhere('question.difficulty = :difficulty', { difficulty });
     if (format) query.andWhere('question.format = :format', { format });
-    
+
     query.orderBy('RANDOM()').limit(count);
-    
+
     return await query.getMany();
   }
 }

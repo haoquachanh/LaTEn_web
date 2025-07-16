@@ -13,14 +13,7 @@ import { QuestionBank } from '@entities/question-bank.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([
-      ExaminationEntity, 
-      Question, 
-      Answer, 
-      ExaminationResult,
-      QuestionCategory,
-      QuestionBank
-    ])
+    TypeOrmModule.forFeature([ExaminationEntity, Question, Answer, ExaminationResult, QuestionCategory, QuestionBank]),
   ],
   controllers: [ExaminationController, QuestionController],
   providers: [ExaminationService, QuestionService],
