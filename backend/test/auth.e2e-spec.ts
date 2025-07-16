@@ -22,8 +22,14 @@ describe('Auth (e2e)', () => {
     await app.init();
   });
 
+  beforeEach(async () => {
+    // Clean up database before each test suite - use delete instead of clear to avoid FK constraint issues
+    await userRepository.delete({});
+  });
+
   afterAll(async () => {
     // Clean up and close app
+    await userRepository.delete({});
     await app.close();
   });
 
@@ -31,7 +37,7 @@ describe('Auth (e2e)', () => {
     it('should register a new user', () => {
       const registerDto = {
         fullname: 'Test User',
-        email: 'test@example.com',
+        email: `test-${Date.now()}@example.com`,
         password: 'password123',
         phone: '1234567890',
         birth: '1990-01-01',
@@ -51,9 +57,10 @@ describe('Auth (e2e)', () => {
     });
 
     it('should return 409 for duplicate email', async () => {
+      const uniqueEmail = `duplicate-test-${Date.now()}@example.com`;
       const registerDto = {
         fullname: 'Test User',
-        email: 'test@example.com',
+        email: uniqueEmail,
         password: 'password123',
         phone: '1234567890',
         birth: '1990-01-01',
@@ -81,7 +88,7 @@ describe('Auth (e2e)', () => {
     it('should return 400 for short password', () => {
       const registerDto = {
         fullname: 'Test User',
-        email: 'test@example.com',
+        email: `short-password-${Date.now()}@example.com`,
         password: '123',
         phone: '1234567890',
         birth: '1990-01-01',
@@ -92,11 +99,14 @@ describe('Auth (e2e)', () => {
   });
 
   describe('/auth/login (POST)', () => {
+    let testEmail: string;
+
     beforeEach(async () => {
-      // Create a test user
+      // Create a unique test user for each test
+      testEmail = `login-test-${Date.now()}@example.com`;
       const registerDto = {
         fullname: 'Test User',
-        email: 'test@example.com',
+        email: testEmail,
         password: 'password123',
         phone: '1234567890',
         birth: '1990-01-01',
@@ -107,7 +117,7 @@ describe('Auth (e2e)', () => {
 
     it('should login with valid credentials', () => {
       const loginDto = {
-        email: 'test@example.com',
+        email: testEmail,
         password: 'password123',
       };
 
@@ -134,7 +144,7 @@ describe('Auth (e2e)', () => {
 
     it('should return 401 for invalid password', () => {
       const loginDto = {
-        email: 'test@example.com',
+        email: testEmail,
         password: 'wrongpassword',
       };
 
@@ -149,7 +159,7 @@ describe('Auth (e2e)', () => {
       // Create and login a test user
       const registerDto = {
         fullname: 'Test User',
-        email: 'test@example.com',
+        email: `profile-test-${Date.now()}@example.com`,
         password: 'password123',
         phone: '1234567890',
         birth: '1990-01-01',
@@ -189,7 +199,7 @@ describe('Auth (e2e)', () => {
       // Create and login a test user
       const registerDto = {
         fullname: 'Test User',
-        email: 'test@example.com',
+        email: `refresh-test-${Date.now()}@example.com`,
         password: 'password123',
         phone: '1234567890',
         birth: '1990-01-01',
