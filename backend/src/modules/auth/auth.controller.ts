@@ -47,6 +47,7 @@ export class AuthController {
   @ApiResponse({ status: 401, description: 'Invalid refresh token' })
   @UseGuards(JwtAuthGuard)
   @Post('refresh')
+  @HttpCode(HttpStatus.OK)
   async refreshToken(@Request() req): Promise<{ access_token: string }> {
     return this.authService.refreshToken(req.user);
   }
