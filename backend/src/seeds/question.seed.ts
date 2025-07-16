@@ -29,7 +29,7 @@ export async function seedQuestionData(dataSource: DataSource) {
     {
       name: 'Translation',
       description: 'Latin to Vietnamese/English translation questions',
-    }
+    },
   ];
 
   const savedCategories = await categoryRepository.save(categories);
@@ -54,7 +54,8 @@ export async function seedQuestionData(dataSource: DataSource) {
       format: QuestionFormat.READING,
       difficulty: DifficultyLevel.LEVEL_2,
       correctAnswer: 'false',
-      explanation: 'Latin is considered a classical language, not dead, as it continues to be used in academic, legal, and religious contexts.',
+      explanation:
+        'Latin is considered a classical language, not dead, as it continues to be used in academic, legal, and religious contexts.',
       points: 1,
       category: savedCategories[0], // Grammar
     },
@@ -68,7 +69,7 @@ export async function seedQuestionData(dataSource: DataSource) {
         'I came, I saw, I conquered',
         'I came I saw I conquered',
         'came saw conquered',
-        'Tôi đến, tôi thấy, tôi chiến thắng'
+        'Tôi đến, tôi thấy, tôi chiến thắng',
       ],
       explanation: 'This famous phrase was reportedly said by Julius Caesar.',
       points: 2,
@@ -106,22 +107,24 @@ export async function seedQuestionData(dataSource: DataSource) {
       category: savedCategories[0], // Grammar
     },
     {
-      content: 'Read the passage and answer: What is the main theme?\n\nPassage: "Gallia est omnis divisa in partes tres, quarum unam incolunt Belgae, aliam Aquitani, tertiam qui ipsorum lingua Celtae, nostra Galli appellantur."',
+      content:
+        'Read the passage and answer: What is the main theme?\n\nPassage: "Gallia est omnis divisa in partes tres, quarum unam incolunt Belgae, aliam Aquitani, tertiam qui ipsorum lingua Celtae, nostra Galli appellantur."',
       type: QuestionType.MULTIPLE_CHOICE,
       format: QuestionFormat.READING,
       difficulty: DifficultyLevel.LEVEL_4,
-      passage: 'Gallia est omnis divisa in partes tres, quarum unam incolunt Belgae, aliam Aquitani, tertiam qui ipsorum lingua Celtae, nostra Galli appellantur.',
+      passage:
+        'Gallia est omnis divisa in partes tres, quarum unam incolunt Belgae, aliam Aquitani, tertiam qui ipsorum lingua Celtae, nostra Galli appellantur.',
       options: [
         'The division of Gaul into three parts',
         'The wars of Caesar',
         'The geography of Rome',
-        'The culture of the Celts'
+        'The culture of the Celts',
       ],
       correctAnswer: 'The division of Gaul into three parts',
-      explanation: 'This is the famous opening line of Caesar\'s Commentarii de Bello Gallico.',
+      explanation: "This is the famous opening line of Caesar's Commentarii de Bello Gallico.",
       points: 3,
       category: savedCategories[2], // Reading Comprehension
-    }
+    },
   ];
 
   await questionRepository.save(sampleQuestions);
@@ -131,9 +134,9 @@ export async function seedQuestionData(dataSource: DataSource) {
 export async function createDefaultQuestionBank(dataSource: DataSource, userId: number) {
   const bankRepository = dataSource.getRepository(QuestionBank);
   const categoryRepository = dataSource.getRepository(QuestionCategory);
-  
+
   const grammarCategory = await categoryRepository.findOne({ where: { name: 'Grammar' } });
-  
+
   const defaultBank = bankRepository.create({
     name: 'Latin Basics Question Bank',
     description: 'A comprehensive collection of basic Latin questions for beginners',
@@ -145,6 +148,6 @@ export async function createDefaultQuestionBank(dataSource: DataSource, userId: 
 
   await bankRepository.save(defaultBank);
   console.log('✅ Default question bank created successfully');
-  
+
   return defaultBank;
 }
