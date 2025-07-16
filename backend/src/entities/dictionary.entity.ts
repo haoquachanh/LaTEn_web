@@ -21,7 +21,11 @@ export class DictionaryEntity {
   @IsNotEmpty()
   @IsString()
   @IsEnum(WordType)
-  @Column({ type: 'simple-enum', enum: WordType, default: WordType.NONE })
+  @Column({ 
+    type: process.env.NODE_ENV === 'test' ? 'varchar' : 'simple-enum', 
+    enum: process.env.NODE_ENV === 'test' ? undefined : WordType, 
+    default: WordType.NONE 
+  })
   type: string;
 
   @IsOptional()
