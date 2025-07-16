@@ -23,11 +23,13 @@ jobs:
           POSTGRES_DB: laten_test
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
+          POSTGRES_HOST_AUTH_METHOD: trust
         options: >-
-          --health-cmd pg_isready
+          --health-cmd "pg_isready -U postgres"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+          --name postgres
         ports:
           - 5432:5432
 
@@ -57,24 +59,23 @@ jobs:
     - name: Create test environment file
       working-directory: ./backend
       run: |
-        echo "DB_TYPE=postgres" > .env.test
-        echo "DB_DATABASE=laten_test" >> .env.test
+        echo "NODE_ENV=test" > .env.test
+        echo "DB_TYPE=postgres" >> .env.test
         echo "DB_HOST=localhost" >> .env.test
         echo "DB_PORT=5432" >> .env.test
         echo "DB_USERNAME=postgres" >> .env.test
         echo "DB_PASSWORD=postgres" >> .env.test
+        echo "DB_DATABASE=laten_test" >> .env.test
         echo "JWT_SECRET=test_jwt_secret_key_for_ci" >> .env.test
         echo "JWT_EXPIRES_IN=24h" >> .env.test
-        echo "NODE_ENV=test" >> .env.test
 
-    - name: Verify database connection
+    - name: Wait for PostgreSQL to be ready
       run: |
-        sudo apt-get install -y postgresql-client
-        until PGPASSWORD=postgres psql -h localhost -U postgres -d laten_test -c '\q'; do
-          echo "Waiting for database to be ready..."
+        until pg_isready -h localhost -p 5432 -U postgres; do
+          echo "Waiting for PostgreSQL to be ready..."
           sleep 2
         done
-        echo "Database is ready!"
+        echo "PostgreSQL is ready!"
 
     - name: Run linting
       working-directory: ./backend
