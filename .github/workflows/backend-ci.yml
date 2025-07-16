@@ -67,6 +67,15 @@ jobs:
         echo "JWT_EXPIRES_IN=24h" >> .env.test
         echo "NODE_ENV=test" >> .env.test
 
+    - name: Verify database connection
+      run: |
+        sudo apt-get install -y postgresql-client
+        until PGPASSWORD=postgres psql -h localhost -U postgres -d laten_test -c '\q'; do
+          echo "Waiting for database to be ready..."
+          sleep 2
+        done
+        echo "Database is ready!"
+
     - name: Run linting
       working-directory: ./backend
       run: npm run lint
