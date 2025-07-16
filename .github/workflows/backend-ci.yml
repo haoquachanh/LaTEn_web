@@ -65,9 +65,15 @@ jobs:
         echo "DB_PORT=5432" >> .env.test
         echo "DB_USERNAME=postgres" >> .env.test
         echo "DB_PASSWORD=postgres" >> .env.test
-        echo "DB_DATABASE=laten_test" >> .env.test
+        echo "DB_DATABASE=laten_test_$(date +%s)" >> .env.test
         echo "JWT_SECRET=test_jwt_secret_key_for_ci" >> .env.test
         echo "JWT_EXPIRES_IN=24h" >> .env.test
+
+    - name: Create unique test database
+      run: |
+        TEST_DB_NAME="laten_test_$(date +%s)"
+        PGPASSWORD=postgres createdb -h localhost -U postgres $TEST_DB_NAME
+        echo "TEST_DB_NAME=$TEST_DB_NAME" >> $GITHUB_ENV
 
     - name: Wait for PostgreSQL to be ready
       run: |
@@ -91,7 +97,7 @@ jobs:
       env:
         NODE_ENV: test
         DB_TYPE: postgres
-        DB_DATABASE: laten_test
+        DB_DATABASE: ${{ env.TEST_DB_NAME }}
         DB_HOST: localhost
         DB_PORT: 5432
         DB_USERNAME: postgres
@@ -104,7 +110,7 @@ jobs:
       env:
         NODE_ENV: test
         DB_TYPE: postgres
-        DB_DATABASE: laten_test
+        DB_DATABASE: ${{ env.TEST_DB_NAME }}
         DB_HOST: localhost
         DB_PORT: 5432
         DB_USERNAME: postgres
@@ -117,7 +123,7 @@ jobs:
       env:
         NODE_ENV: test
         DB_TYPE: postgres
-        DB_DATABASE: laten_test
+        DB_DATABASE: ${{ env.TEST_DB_NAME }}
         DB_HOST: localhost
         DB_PORT: 5432
         DB_USERNAME: postgres
