@@ -9,6 +9,7 @@ export const typeOrmConfig: TypeOrmModuleAsyncOptions = {
     username: process.env.DB_USERNAME || 'postgres',
     password: process.env.DB_PASSWORD || '578722',
     entities: [__dirname + '/../../entities/**/*.entity{.ts,.js}'],
-    synchronize: true, // production only
+    synchronize: process.env.NODE_ENV !== 'production', // Disable in production
+    logging: process.env.NODE_ENV === 'development',
   }),
 };

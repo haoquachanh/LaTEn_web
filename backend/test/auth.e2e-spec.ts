@@ -11,7 +11,7 @@ describe('Auth (e2e)', () => {
   let app: INestApplication;
   let userRepository: Repository<UserEntity>;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
@@ -22,9 +22,17 @@ describe('Auth (e2e)', () => {
     await app.init();
   });
 
-  afterEach(async () => {
-    // Clean up database
-    await userRepository.delete({});
+  beforeEach(async () => {
+    // Clean up database before each test - safe cleanup
+    try {
+      await userRepository.clear();
+    } catch (error) {
+      // Ignore errors if table doesn't exist yet
+    }
+  });
+
+  afterAll(async () => {
+    // Final cleanup and close app
     await app.close();
   });
 
