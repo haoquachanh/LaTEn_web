@@ -22,17 +22,8 @@ describe('Auth (e2e)', () => {
     await app.init();
   });
 
-  beforeEach(async () => {
-    // Clean up database before each test - safe cleanup
-    try {
-      await userRepository.clear();
-    } catch (error) {
-      // Ignore errors if table doesn't exist yet
-    }
-  });
-
   afterAll(async () => {
-    // Final cleanup and close app
+    // Clean up and close app
     await app.close();
   });
 
