@@ -27,11 +27,13 @@ export const getDatabaseConfig = (): TypeOrmModuleOptions => {
       return {
         ...baseConfig,
         host: process.env.DB_HOST || 'localhost',
-        port: parseInt(process.env.DB_PORT) || 5433, // Different port for test
+        port: parseInt(process.env.DB_PORT) || 5432,
         username: process.env.DB_USERNAME || 'postgres',
-        password: process.env.DB_PASSWORD || 'postgres',
+        password: process.env.DB_PASSWORD || 'test_password_2024',
         database: process.env.DB_DATABASE || 'laten_test',
-        dropSchema: true, // Clean slate for each test
+        synchronize: true,
+        dropSchema: false,
+        migrationsRun: false,
       };
 
     case 'production':
