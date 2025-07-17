@@ -21,11 +21,9 @@ export class HealthController {
     const healthConfig = this.configService.health;
 
     const checks = [
-      // Database connectivity check
       () => this.db.pingCheck('database', { timeout: healthConfig.timeout }),
-      // Memory usage check
-      () => this.memory.checkHeap('memory_heap', 150 * 1024 * 1024), // 150MB
-      () => this.memory.checkRSS('memory_rss', 150 * 1024 * 1024), // 150MB
+      () => this.memory.checkHeap('memory_heap', 150 * 1024 * 1024),
+      () => this.memory.checkRSS('memory_rss', 150 * 1024 * 1024),
     ];
 
     return this.health.check(checks);
