@@ -28,16 +28,12 @@ export class AppConfigService {
       throw new Error(`❌ Missing required environment variables: ${missing.join(', ')}`);
     }
 
-    // Validate JWT secret strength
     const jwtSecret = this.configService.get('JWT_SECRET');
     if (jwtSecret && jwtSecret.length < 32) {
       throw new Error('❌ JWT_SECRET must be at least 32 characters long for security');
     }
-
-    console.log('✅ Configuration validation passed');
   }
 
-  // Environment detection
   get nodeEnv(): string {
     return this.configService.get('NODE_ENV', 'development');
   }
@@ -58,7 +54,6 @@ export class AppConfigService {
     return this.configService.get('PORT', 3001);
   }
 
-  // Database configuration
   get database() {
     return {
       type: 'postgres' as const,
@@ -67,7 +62,7 @@ export class AppConfigService {
       username: this.configService.get('DB_USERNAME'),
       password: this.configService.get('DB_PASSWORD'),
       database: this.configService.get('DB_DATABASE'),
-      synchronize: this.isDevelopment, // Only auto-sync in development
+      synchronize: this.isDevelopment,
       logging: this.isDevelopment ? 'all' : ['error'],
       ssl: this.isProduction ? { rejectUnauthorized: false } : false,
       retryAttempts: this.isProduction ? 10 : 1,
@@ -75,7 +70,6 @@ export class AppConfigService {
     };
   }
 
-  // JWT configuration
   get jwt() {
     return {
       secret: this.configService.get('JWT_SECRET'),
@@ -83,7 +77,6 @@ export class AppConfigService {
     };
   }
 
-  // CORS configuration
   get cors() {
     const frontendUrl = this.configService.get('FRONTEND_URL');
     return {
@@ -92,7 +85,6 @@ export class AppConfigService {
     };
   }
 
-  // Admin configuration
   get admin() {
     return {
       email: this.configService.get('ADMIN_EMAIL', 'admin@laten.com'),
@@ -100,7 +92,6 @@ export class AppConfigService {
     };
   }
 
-  // API configuration
   get api() {
     return {
       prefix: this.configService.get('API_PREFIX', 'api'),
@@ -116,15 +107,13 @@ export class AppConfigService {
     };
   }
 
-  // File upload configuration
   get upload() {
     return {
       dest: this.configService.get('UPLOAD_DEST', './uploads'),
-      maxSize: this.configService.get('MAX_FILE_SIZE', 10 * 1024 * 1024), // 10MB
+      maxSize: this.configService.get('MAX_FILE_SIZE', 10 * 1024 * 1024),
     };
   }
 
-  // Rate limiting configuration
   get rateLimit() {
     return {
       ttl: this.configService.get('RATE_LIMIT_TTL', 60),
@@ -132,7 +121,6 @@ export class AppConfigService {
     };
   }
 
-  // Health check configuration
   get health() {
     return {
       timeout: this.configService.get('HEALTH_CHECK_TIMEOUT', 10000),
@@ -142,9 +130,6 @@ export class AppConfigService {
     };
   }
 
-  /**
-   * Get configuration summary for logging/debugging
-   */
   getConfigSummary() {
     return {
       environment: this.nodeEnv,

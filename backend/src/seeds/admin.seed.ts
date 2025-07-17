@@ -60,10 +60,15 @@ export async function createAdminUser(dataSource: DataSource): Promise<UserEntit
     // Save to database
     const savedAdmin = await userRepository.save(adminUser);
 
-    // Success feedback
+    // Success feedback (SECURE - No password logging)
     console.log('✅ Admin user created successfully!');
     console.log('📧 Email:', adminEmail);
-    console.log('🔑 Temporary Password:', adminPassword);
+
+    // Only show password in development environment
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔑 Development Password: [REDACTED - Check .env file]');
+    }
+
     console.log('⚠️  IMPORTANT: Change password after first login!');
     console.log('🔒 Password is securely hashed with bcrypt (12 rounds)');
 

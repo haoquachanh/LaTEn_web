@@ -1,4 +1,4 @@
-import { WordType } from '@common/typings/word-type.enum';
+import { WordType } from '../common/typings/word-type.enum';
 import { IsEmpty, IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToMany } from 'typeorm';
 import { UserEntity } from './user.entity';
