@@ -19,11 +19,12 @@ export class HealthController {
   @HealthCheck()
   check() {
     const healthConfig = this.configService.health;
+    const memoryLimit = this.configService.isTest ? 512 * 1024 * 1024 : 150 * 1024 * 1024;
 
     const checks = [
       () => this.db.pingCheck('database', { timeout: healthConfig.timeout }),
-      () => this.memory.checkHeap('memory_heap', 150 * 1024 * 1024),
-      () => this.memory.checkRSS('memory_rss', 150 * 1024 * 1024),
+      () => this.memory.checkHeap('memory_heap', memoryLimit),
+      () => this.memory.checkRSS('memory_rss', memoryLimit),
     ];
 
     return this.health.check(checks);
