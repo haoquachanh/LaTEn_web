@@ -57,10 +57,8 @@ jobs:
           echo "DB_USERNAME=postgres" >> .env
           echo "DB_PASSWORD=postgres" >> .env
           echo "DB_DATABASE=laten_test" >> .env
-          echo "JWT_SECRET=test_jwt_secret_key_at_least_32_chars_long_for_testing_only" >> .env
+          echo "JWT_SECRET=test_jwt_secret_for_ci_testing_environment_only" >> .env
           echo "FRONTEND_URL=http://localhost:3000" >> .env
-          echo "ADMIN_EMAIL=admin@test.local" >> .env
-          echo "ADMIN_PASSWORD=TestPassword123!" >> .env
 
       - name: Wait for PostgreSQL
         run: |
@@ -148,7 +146,7 @@ jobs:
           docker run --rm \
             -e NODE_ENV=test \
             -e DB_HOST=localhost \
-            -e JWT_SECRET=test_jwt_secret_for_docker_testing_only \
+            -e JWT_SECRET=test_jwt_for_docker_ci_environment \
             laten-backend:${{ github.sha }} \
             node --version
 
