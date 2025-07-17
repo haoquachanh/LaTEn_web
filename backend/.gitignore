@@ -1,15 +1,12 @@
 # Environment files (Professional setup)
 .env
 .env.local
-.env.development
 .env.development.local
-.env.test
 .env.test.local
-.env.production
 .env.production.local
 
-# Keep only the example template
-!.env.admin.example
+# Keep the example template
+!.env.example
 
 # Database files
 *.sqlite
