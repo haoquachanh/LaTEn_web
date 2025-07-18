@@ -17,7 +17,7 @@ export class HealthController {
   @ApiResponse({ status: 200, description: 'Health check results' })
   @Get()
   @HealthCheck()
-  check() {
+  async check() {
     const healthConfig = this.configService.health;
     const memoryLimit = this.configService.isTest ? 512 * 1024 * 1024 : 150 * 1024 * 1024;
 
@@ -27,7 +27,15 @@ export class HealthController {
       () => this.memory.checkRSS('memory_rss', memoryLimit),
     ];
 
-    return this.health.check(checks);
+    // Get the health check result
+    const result = await this.health.check(checks);
+
+    // Add timestamp and uptime for e2e tests
+    return {
+      ...result,
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+    };
   }
 
   @ApiOperation({ summary: 'Service information' })
