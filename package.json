@@ -7,12 +7,23 @@
     "frontend": "npm run --prefix frontend dev",
     "backend": "npm run --prefix backend start:dev",
     "setup": "npm --prefix frontend install && npm --prefix backend install",
-    "app": "concurrently \"npm run backend\" \"npm run frontend\""
+    "app": "concurrently \"npm run backend\" \"npm run frontend\"",
+    "build": "npm run --prefix frontend build && npm run --prefix backend build",
+    "start": "concurrently \"npm run --prefix backend start\" \"npm run --prefix frontend start\"",
+    "test": "npm run --prefix backend test && npm run --prefix frontend test",
+    "lint": "npm run --prefix backend lint && npm run --prefix frontend lint"
   },
-  "keywords": [],
+  "keywords": [
+    "english",
+    "learning",
+    "education",
+    "nextjs",
+    "nestjs"
+  ],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "concurrently": "^8.2.2",
     "react-icons": "^5.0.1"
   },
   "devDependencies": {

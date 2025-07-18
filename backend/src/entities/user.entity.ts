@@ -1,4 +1,4 @@
-import { UserRole } from '@common/typings/user-role.enum';
+import { UserRole } from '../common/typings/user-role.enum';
 import { IsEmpty, IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import {
   Entity,
