@@ -1,4 +1,4 @@
-import { WordType } from 'src/common/typings/word-type.enum';
+import { WordType } from '../common/typings/word-type.enum';
 import { IsEmpty, IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToMany } from 'typeorm';
 import { UserEntity } from './user.entity';
@@ -21,7 +21,11 @@ export class DictionaryEntity {
   @IsNotEmpty()
   @IsString()
   @IsEnum(WordType)
-  @Column({ type: 'simple-enum', enum: WordType, default: WordType.NONE })
+  @Column({
+    type: process.env.NODE_ENV === 'test' ? 'varchar' : 'simple-enum',
+    enum: process.env.NODE_ENV === 'test' ? undefined : WordType,
+    default: WordType.NONE,
+  })
   type: string;
 
   @IsOptional()

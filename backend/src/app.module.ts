@@ -5,16 +5,32 @@ import { typeOrmConfig } from './common/config/typeorm.config';
 import { AuthModule } from './modules/auth/auth.module';
 import { UserModule } from '@modules/users/user.module';
 import { DictionaryModule } from '@modules/dictionary/dictionary.module';
+import { ExaminationModule } from '@modules/examination/examination.module';
+import { CommentModule } from '@modules/comment/comment.module';
+import { HealthModule } from '@modules/health/health.module';
+import { AppConfigService } from './config/app-config.service';
 
 @Module({
   imports: [
-    ConfigModule.forRoot(),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: [
+        `.env.${process.env.NODE_ENV || 'development'}.local`,
+        `.env.${process.env.NODE_ENV || 'development'}`,
+        '.env.local',
+        '.env',
+      ],
+    }),
     TypeOrmModule.forRootAsync(typeOrmConfig),
+    HealthModule,
     AuthModule,
     UserModule,
     DictionaryModule,
+    ExaminationModule,
+    CommentModule,
   ],
   controllers: [],
-  providers: [],
+  providers: [AppConfigService],
+  exports: [AppConfigService],
 })
 export class AppModule {}
