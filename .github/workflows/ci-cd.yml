@@ -59,6 +59,8 @@ jobs:
           echo "DB_DATABASE=laten_test" >> .env
           echo "JWT_SECRET=test_jwt_secret_for_ci_testing_environment_only" >> .env
           echo "FRONTEND_URL=http://localhost:3000" >> .env
+          echo "ADMIN_EMAIL=admin@test.local" >> .env
+          echo "ADMIN_PASSWORD=ci_test_password_only" >> .env
 
       - name: Wait for PostgreSQL
         run: |
@@ -70,12 +72,13 @@ jobs:
       - name: Clean and setup database
         working-directory: ./backend
         run: |
-          # Clean database first
+          # Clean database more thoroughly
           PGPASSWORD=postgres psql -h localhost -U postgres -d postgres -c "DROP DATABASE IF EXISTS laten_test;"
           PGPASSWORD=postgres psql -h localhost -U postgres -d postgres -c "CREATE DATABASE laten_test;"
           
-          # Run migrations
-          npm run migration:run
+          # Disable TypeORM synchronize and run migrations with transaction per migration
+          echo "TYPEORM_SYNCHRONIZE=false" >> .env
+          NODE_ENV=test npm run migration:run -- --transaction=each
 
       - name: Run linting
         working-directory: ./backend
