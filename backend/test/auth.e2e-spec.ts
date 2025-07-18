@@ -23,13 +23,13 @@ describe('Auth (e2e)', () => {
   });
 
   beforeEach(async () => {
-    // Clean up database before each test suite - use delete instead of clear to avoid FK constraint issues
-    await userRepository.delete({});
+    // Clean up database before each test suite - delete with a TRUE condition to delete all records
+    await userRepository.createQueryBuilder().delete().where('1=1').execute();
   });
 
   afterAll(async () => {
     // Clean up and close app
-    await userRepository.delete({});
+    await userRepository.createQueryBuilder().delete().where('1=1').execute();
     await app.close();
   });
 
