@@ -1,4 +1,5 @@
-import Test, {
+import {
+  Test,
   Mail,
   Github,
   Facebook,

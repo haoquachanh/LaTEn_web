@@ -104,3 +104,13 @@
 .question-navigator-grid::-webkit-scrollbar-thumb:hover {
   background-color: hsl(var(--bc) / 0.3);
 }
+
+/* Authentication loading animation */
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.animate-shimmer {
+  animation: shimmer 2s infinite;
+}

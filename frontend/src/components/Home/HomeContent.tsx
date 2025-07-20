@@ -3,6 +3,7 @@ import { useContext } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { AuthContext } from '@/contexts/AuthContext';
+import ExaminationList from '@/components/Examination/ExaminationList';
 
 export default function HomeContent() {
   const { loggedIn } = useContext(AuthContext);
@@ -530,6 +531,26 @@ export default function HomeContent() {
                 </p>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Examinations Section */}
+      <div className="py-16 bg-base-200">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-10">
+            <h2 className="text-3xl md:text-4xl font-bold mb-3">Language Examinations</h2>
+            <p className="text-lg text-base-content/70 max-w-2xl mx-auto">
+              Test your language skills with our comprehensive examinations designed by experts.
+            </p>
+          </div>
+
+          <ExaminationList title="Featured Examinations" limit={3} />
+
+          <div className="mt-8 text-center">
+            <Link href="/examination" className="btn btn-primary">
+              View All Examinations
+            </Link>
           </div>
         </div>
       </div>
