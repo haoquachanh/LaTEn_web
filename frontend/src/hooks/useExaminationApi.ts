@@ -1,0 +1,121 @@
+/**
+ * Examination API Hooks
+ *
+ * Cust  consexport function useStartExaminationApi() {
+  const url = `${EXAMINATIONS_API}/start`;
+  const { trigger } = useApiMutation<{ examinationId: string | number }, Examination>(url);
+
+  const startExam = async (examinationId: string | number) => {
+    try {
+      return await trigger(undefined, {
+        arg: {
+          data: { examinationId },
+          method: 'POST'
+        }
+      });
+    } catch (error) {
+      throw error;async (examinationId: string | number) => {
+    try {
+      return await trigger({
+        data: { examinationId },
+        method: 'POST'
+      });
+    } catch (error) {
+      throw error;
+    }
+  }; accessing examination-related API endpoints
+ * using the SWR data fetching pattern.
+ */
+import { useApiQuery, usePaginatedQuery, useApiMutation } from '@/hooks/useApiQuery';
+import {
+  Examination,
+  ExaminationQueryParams,
+  ExaminationResult,
+  ExaminationSubmission,
+  Question,
+} from '@/services/types/examination.types';
+import { PaginatedResponse } from '@/services/types/api.types';
+
+// Base API endpoint
+const EXAMINATIONS_API = '/examinations';
+
+/**
+ * Hook to fetch a list of examinations with pagination and filtering
+ */
+export function useExaminationsApi(params: ExaminationQueryParams = {}, page: number = 1, limit: number = 10) {
+  // Convert params to a format expected by API
+  const filters = { ...params };
+
+  return usePaginatedQuery<Examination>(EXAMINATIONS_API, page, limit, filters);
+}
+
+/**
+ * Hook to fetch a single examination by ID
+ */
+export function useExaminationApi(id: string | number | null) {
+  return useApiQuery<Examination>(id ? `${EXAMINATIONS_API}/${id}` : null);
+}
+
+/**
+ * Hook to start an examination
+ */
+export function useStartExaminationApi() {
+  const url = `${EXAMINATIONS_API}/start`;
+  const { trigger } = useApiMutation<{ examinationId: string | number }, Examination>(url);
+
+  const startExam = async (examinationId: string | number) => {
+    try {
+      return await trigger({ examinationId });
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  return { startExam };
+}
+
+/**
+ * Hook to submit examination answers
+ */
+export function useSubmitExaminationApi(examinationId?: string | number) {
+  // Create a URL based on the examinationId if provided
+  const url = examinationId ? `${EXAMINATIONS_API}/${examinationId}/submit` : `${EXAMINATIONS_API}/submit`;
+
+  const { trigger } = useApiMutation<ExaminationSubmission, ExaminationResult>(url);
+
+  const submit = async (submissionData: ExaminationSubmission, id?: string | number) => {
+    try {
+      // If id is provided in the call, it takes precedence over the one in the hook
+      const finalId = id || examinationId;
+
+      return await trigger(submissionData);
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  return { submit };
+}
+
+/**
+ * Hook to fetch examination questions
+ */
+export function useExaminationQuestionsApi(examinationId: string | number | null) {
+  return useApiQuery<Question[]>(examinationId ? `${EXAMINATIONS_API}/${examinationId}/questions` : null);
+}
+
+/**
+ * Hook to fetch examination results
+ */
+export function useExaminationResultsApi(userId?: string | number) {
+  const url = userId ? `${EXAMINATIONS_API}/results?userId=${userId}` : `${EXAMINATIONS_API}/results`;
+
+  return useApiQuery<PaginatedResponse<ExaminationResult>>(url);
+}
+
+/**
+ * Hook to fetch a specific examination result
+ */
+export function useExaminationResultApi(resultId: string | number | null) {
+  return useApiQuery<ExaminationResult>(resultId ? `${EXAMINATIONS_API}/results/${resultId}` : null);
+}
