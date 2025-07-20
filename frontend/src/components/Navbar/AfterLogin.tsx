@@ -40,7 +40,7 @@ export default function TheAccount() {
             <Link
               href={'/'}
               onClick={() => {
-                localStorage.removeItem('access_token');
+                // Sử dụng hàm logout từ AuthContext để đảm bảo xóa token đúng cách
                 logout();
               }}
               className="flex items-center gap-3 p-3 rounded-lg hover:bg-error/10 hover:text-error focus:bg-error/10 focus:text-error active:bg-error/20 transition-all duration-200"

@@ -1,6 +1,6 @@
-import { useContext, useState } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
-import { AuthContext } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 import TheAccount from './AfterLogin';
 import TheAccountUnLogged from './BeforeLogin';
 import ChangeLang from './ChangeLang';
@@ -8,7 +8,7 @@ import ChangeTheme from './ChangeTheme';
 import { Icon } from '../Icons';
 
 export default function NavBarSimple() {
-  const { loggedIn } = useContext(AuthContext);
+  const { loggedIn, loading } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
@@ -127,7 +127,15 @@ export default function NavBarSimple() {
           <ChangeLang />
 
           {/* Profile dropdown or login buttons */}
-          {loggedIn ? <TheAccount /> : <TheAccountUnLogged />}
+          {loading ? (
+            <div className="w-10 h-10 rounded-full bg-base-200 animate-pulse flex items-center justify-center">
+              <span className="loading loading-spinner loading-sm"></span>
+            </div>
+          ) : loggedIn ? (
+            <TheAccount />
+          ) : (
+            <TheAccountUnLogged />
+          )}
         </div>
       </div>
     </div>

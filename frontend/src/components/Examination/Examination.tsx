@@ -1,6 +1,7 @@
 'use client';
-import React, { useContext, useEffect, useState, useMemo, useCallback, Suspense, lazy } from 'react';
-import { ExaminationContext } from '@/contexts/ExaminationContext';
+import React, { useState, useMemo, useCallback, Suspense, lazy } from 'react';
+import { useExamination } from '@/hooks/useExamination';
+import { evaluateScore } from '@/utils/testEvaluation';
 
 // Import components lazily to avoid loading them until needed
 const ReviewModalContent = lazy(() => import('./ReviewModalContent'));
@@ -24,7 +25,14 @@ export default function ExaminationContent() {
   const [flaggedQuestions, setFlaggedQuestions] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const { page, numberOfQuestions, changePage, init, time, changeTime } = useContext(ExaminationContext);
+
+  // Use the modern examination context
+  const { currentPage: page, totalTime: examDuration, goToPage: changePage, resetExamination: init } = useExamination();
+
+  // Local state for exam setup
+  const [numberOfQuestions, setNumberOfQuestions] = useState(2);
+  const [time, setTime] = useState(15);
+  const changeTime = setTime;
 
   const questions = useMemo(
     () => [
@@ -181,7 +189,8 @@ export default function ExaminationContent() {
     setIsLoading(true);
     setTimeout(() => {
       setStart(true);
-      init(time);
+      init(); // Reset the examination state
+      setTime(time); // Set our local time state
       setIsLoading(false);
     }, 1000);
   };
@@ -390,8 +399,8 @@ export default function ExaminationContent() {
                       </svg>
                     </div>
                     <div className="stat-title text-sm">Completed Exams</div>
-                    <div className="stat-value text-primary text-2xl">25</div>
-                    <div className="stat-desc text-xs">12% more than last month</div>
+                    <div className="stat-value text-primary text-2xl">{/* Will be populated from API */}</div>
+                    <div className="stat-desc text-xs">{/* Comparison will come from API */}</div>
                   </div>
 
                   <div className="stat py-2">
@@ -411,8 +420,8 @@ export default function ExaminationContent() {
                       </svg>
                     </div>
                     <div className="stat-title text-sm">Average Score</div>
-                    <div className="stat-value text-secondary text-2xl">85%</div>
-                    <div className="stat-desc text-xs">5% improvement</div>
+                    <div className="stat-value text-secondary text-2xl">{/* Will be populated from API */}</div>
+                    <div className="stat-desc text-xs">{/* Comparison will come from API */}</div>
                   </div>
                 </div>
               </div>

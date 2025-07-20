@@ -23,7 +23,8 @@ export default function ProfileContent() {
   const [userData, setData] = useState<UserData>({});
   const [isLoading, setIsLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
-  const { access_token, logout } = useContext(AuthContext);
+  const { user, logout } = useContext(AuthContext);
+  const access_token = user?.token;
 
   useEffect(() => {
     async function getInfo() {

@@ -1,16 +1,18 @@
-// File: Questions.jsx
+// File: MultipChoice.tsx
 'use client';
-import { useContext, useState } from 'react';
+import { useContext } from 'react';
 import { Question } from './Examination';
-import { ExaminationContext } from '@/contexts/ExaminationContext';
+import { useExamination } from '@/hooks/useExamination';
 
 type Props = {
   questions: Question[];
 };
 
 export default function MultipChoice({ questions }: Props) {
-  // const [answers, setAnswers] = useState<{ [key: string]: string }>({});
-  const { page, numberOfQuestions, answers, handleChange } = useContext(ExaminationContext);
+  // Use the modern examination context directly
+  const { currentPage: page, answers, handleAnswer } = useExamination();
+  // Number of questions to show per page - can be customized
+  const numberOfQuestions = 3;
 
   // const handleChange = (event: React.ChangeEvent<HTMLInputElement>, key: string) => {
   //   setAnswers({
@@ -38,8 +40,8 @@ export default function MultipChoice({ questions }: Props) {
                       className="radio mr-5"
                       name={item.id}
                       value={answer}
-                      onChange={(e) => handleChange(e, item.id)}
-                      checked={answers[item.id] === answer}
+                      onChange={() => handleAnswer(parseInt(item.id), answerIndex)}
+                      checked={answers[parseInt(item.id)] === answerIndex}
                     />
                     <label className="text-lg">{answer}</label>
                   </div>

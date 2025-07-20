@@ -17,21 +17,25 @@ const ThemeContext = createContext<ThemeContextProps>({
 const useTheme = () => useContext(ThemeContext).theme;
 function ThemeProvider({ children }: Props) {
   const [theme, setTheme] = useState('valentine');
+  const [isMounted, setIsMounted] = useState(false);
 
   const changeTheme = (x: string) => {
-    localStorage.setItem('theme', x);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('theme', x);
+    }
     setTheme(x);
   };
 
   useEffect(() => {
-    const theme = localStorage.getItem('theme');
-    if (theme) {
-      changeTheme(theme);
+    setIsMounted(true);
+    const storedTheme = localStorage.getItem('theme');
+    if (storedTheme) {
+      setTheme(storedTheme);
     }
   }, []);
 
   const value = {
-    theme,
+    theme: isMounted ? theme : 'valentine', // Use default theme until client-side code runs
     changeTheme,
   };
 
