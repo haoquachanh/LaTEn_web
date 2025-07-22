@@ -2,6 +2,7 @@
 import React, { useState, useMemo, useCallback, Suspense, lazy } from 'react';
 import { useExamination } from '@/hooks/useExamination';
 import { evaluateScore } from '@/utils/testEvaluation';
+import Image from 'next/image';
 
 // Import components lazily to avoid loading them until needed
 const ReviewModalContent = lazy(() => import('./ReviewModalContent'));
@@ -30,7 +31,7 @@ export default function ExaminationContent() {
   const { currentPage: page, totalTime: examDuration, goToPage: changePage, resetExamination: init } = useExamination();
 
   // Local state for exam setup
-  const [numberOfQuestions, setNumberOfQuestions] = useState(2);
+  const [numberOfQuestions, setNumberOfQuestions] = useState(10);
   const [time, setTime] = useState(15);
   const changeTime = setTime;
 
@@ -171,17 +172,25 @@ export default function ExaminationContent() {
   );
 
   const examTypes = [
-    { id: 'multiple', label: 'Multiple Choice', icon: '📝', description: 'Choose from multiple options' },
-    { id: 'truefalse', label: 'True or False', icon: '✓✗', description: 'Simple true/false questions' },
-    { id: 'short', label: 'Short Answer', icon: '📄', description: 'Brief written responses' },
-    { id: 'essay', label: 'Essay', icon: '📋', description: 'Detailed written answers' },
+    {
+      id: 'multiple',
+      label: 'Multiple Choice',
+      icon: '/icons/testing.png',
+      description: 'Choose from multiple options',
+    },
+    {
+      id: 'truefalse',
+      label: 'True or False',
+      icon: '/icons/true-or-false.png',
+      description: 'Simple true/false questions',
+    },
+    { id: 'short', label: 'Short Answer', icon: '/icons/form.png', description: 'Brief written responses' },
+    // { id: 'essay', label: 'Essay', icon: '/icons/essay.png', description: 'Detailed written answers' },
   ];
 
   const subjects = [
-    { id: 'grammar', label: 'Grammar', icon: '📚', color: 'primary' },
-    { id: 'vocabulary', label: 'Vocabulary', icon: '📖', color: 'secondary' },
-    { id: 'reading', label: 'Reading', icon: '👁️', color: 'accent' },
-    { id: 'listening', label: 'Listening', icon: '👂', color: 'info' },
+    { id: 'reading', label: 'Reading', color: 'accent' },
+    { id: 'listening', label: 'Listening', color: 'accent' },
   ];
 
   const handleStartExam = () => {
@@ -290,7 +299,7 @@ export default function ExaminationContent() {
                 {/* Exam Type Selection */}
                 <div className="mb-8">
                   <h3 className="text-lg font-medium mb-4">Select Exam Type</h3>
-                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-3 lg:grid-cols-3 gap-4">
                     {examTypes.map((examType) => (
                       <div
                         key={examType.id}
@@ -301,9 +310,10 @@ export default function ExaminationContent() {
                         }`}
                         onClick={() => setType(examType.id)}
                       >
-                        <div className="text-3xl mb-2">{examType.icon}</div>
                         <div className="font-medium text-center">{examType.label}</div>
-                        <p className="text-xs text-center mt-2 opacity-80">{examType.description}</p>
+                        {/* <div className="text-3xl mb-2">{examType.icon}</div> */}
+                        <p className="text-xs text-center my-2 opacity-80">{examType.description}</p>
+                        <Image src={examType.icon} alt="" width={40} height={40} />
                       </div>
                     ))}
                   </div>
@@ -323,7 +333,6 @@ export default function ExaminationContent() {
                         }`}
                         onClick={() => setContent(subject.id)}
                       >
-                        <div className="text-2xl mr-3">{subject.icon}</div>
                         <div className="font-medium text-lg">{subject.label}</div>
                       </div>
                     ))}
@@ -334,13 +343,29 @@ export default function ExaminationContent() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                   {/* Number of Questions */}
                   <div>
-                    <h3 className="text-lg font-medium mb-4">Number of Questions</h3>
-                    <div className="flex gap-2">
+                    <h3 className="text-lg font-medium mb-2">Number of Questions</h3>
+                    <input
+                      type="number"
+                      min={1}
+                      max={100}
+                      className="input input-bordered rounded-none w-full"
+                      value={numberOfQuestions}
+                      onChange={(e) => {
+                        const val = Math.max(1, Math.min(questions.length, Number(e.target.value)));
+                        setNumberOfQuestions(val);
+                        changePage(val);
+                      }}
+                      placeholder="Enter number of questions"
+                    />
+                    <div className="flex gap-2 my-2">
                       {[10, 20, 30, 40].map((num) => (
                         <button
                           key={num}
                           className={`flex-1 btn ${numberOfQuestions === num ? 'btn-primary' : 'btn-outline'}`}
-                          onClick={() => changePage(num)}
+                          onClick={() => {
+                            setNumberOfQuestions(num);
+                            changePage(num);
+                          }}
                         >
                           {num}
                         </button>
@@ -350,18 +375,30 @@ export default function ExaminationContent() {
 
                   {/* Time Selection */}
                   <div>
-                    <h3 className="text-lg font-medium mb-4">Time Limit</h3>
-                    <div className="flex gap-2">
+                    <h3 className="text-lg font-medium mb-4">Time Limit (minutes)</h3>
+                    <div className="flex gap-2 mb-2">
                       {[15, 30, 45, 60].map((minutes) => (
                         <button
                           key={minutes}
                           className={`flex-1 btn ${time === minutes ? 'btn-primary' : 'btn-outline'}`}
-                          onClick={() => changeTime(minutes)}
+                          onClick={() => setTime(minutes)}
                         >
                           {minutes} min
                         </button>
                       ))}
                     </div>
+                    <input
+                      type="number"
+                      min={1}
+                      max={180}
+                      className="input input-bordered w-full"
+                      value={time}
+                      onChange={(e) => {
+                        const val = Math.max(1, Math.min(180, Number(e.target.value)));
+                        setTime(val);
+                      }}
+                      placeholder="Enter time in minutes"
+                    />
                   </div>
                 </div>
 
