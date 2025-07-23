@@ -351,7 +351,7 @@ export default function ExaminationContent() {
                       className="input input-bordered rounded-none w-full"
                       value={numberOfQuestions}
                       onChange={(e) => {
-                        const val = Math.max(1, Math.min(questions.length, Number(e.target.value)));
+                        const val = Math.max(1, Math.min(100, Number(e.target.value)));
                         setNumberOfQuestions(val);
                         changePage(val);
                       }}
@@ -375,8 +375,20 @@ export default function ExaminationContent() {
 
                   {/* Time Selection */}
                   <div>
-                    <h3 className="text-lg font-medium mb-4">Time Limit (minutes)</h3>
-                    <div className="flex gap-2 mb-2">
+                    <h3 className="text-lg font-medium mb-2">Time Limit (minutes)</h3>
+                    <input
+                      type="number"
+                      min={1}
+                      max={180}
+                      className="input input-bordered rounded-none w-full"
+                      value={time}
+                      onChange={(e) => {
+                        const val = Math.max(1, Math.min(180, Number(e.target.value)));
+                        setTime(val);
+                      }}
+                      placeholder="Enter time in minutes"
+                    />
+                    <div className="flex gap-2 my-2">
                       {[15, 30, 45, 60].map((minutes) => (
                         <button
                           key={minutes}
@@ -387,18 +399,6 @@ export default function ExaminationContent() {
                         </button>
                       ))}
                     </div>
-                    <input
-                      type="number"
-                      min={1}
-                      max={180}
-                      className="input input-bordered w-full"
-                      value={time}
-                      onChange={(e) => {
-                        const val = Math.max(1, Math.min(180, Number(e.target.value)));
-                        setTime(val);
-                      }}
-                      placeholder="Enter time in minutes"
-                    />
                   </div>
                 </div>
 
