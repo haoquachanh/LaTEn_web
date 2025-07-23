@@ -7,6 +7,7 @@ import { JwtService } from '@nestjs/jwt';
 import { LoginDto } from './dtos/login.dto';
 import { RegisterDto } from './dtos/register.dto';
 import { UserRole } from '@common/typings/user-role.enum';
+import { refreshTokenConfig } from '@common/config/jwt.config';
 
 @Injectable()
 export class AuthService {
@@ -72,7 +73,9 @@ export class AuthService {
     throw new UnauthorizedException('Invalid email or password');
   }
 
-  async login(credentials: LoginDto): Promise<{ access_token: string; user: Partial<UserEntity> }> {
+  async login(
+    credentials: LoginDto,
+  ): Promise<{ access_token: string; refresh_token: string; user: Partial<UserEntity> }> {
     const foundUser = await this.validateUser(credentials);
 
     const payload = {
@@ -83,11 +86,22 @@ export class AuthService {
 
     const access_token = this.jwtService.sign(payload);
 
+    const refresh_token = this.jwtService.sign(payload, {
+      secret: refreshTokenConfig.secret,
+      expiresIn: refreshTokenConfig.expiresIn,
+    });
+
+    await this.userRepository.update(foundUser.id, {
+      refreshToken: refresh_token,
+      refreshTokenExpires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 ngày
+    });
+
     // Return user without password
     const { password, ...userWithoutPassword } = foundUser;
 
     return {
       access_token,
+      refresh_token,
       user: userWithoutPassword,
     };
   }
@@ -106,15 +120,51 @@ export class AuthService {
     return userWithoutPassword;
   }
 
-  async refreshToken(user: any): Promise<{ access_token: string }> {
+  async refreshToken(refreshToken: string): Promise<{
+    access_token: string;
+    refresh_token?: string;
+  }> {
+    const user = await this.userRepository.findOne({
+      where: { refreshToken },
+    });
+
+    if (!user || new Date(user.refreshTokenExpires) < new Date()) {
+      throw new UnauthorizedException('Invalid or expired refresh token');
+    }
+
     const payload = {
       email: user.email,
       id: user.id,
       role: user.role,
     };
 
+    const access_token = this.jwtService.sign(payload);
+
+    let newRefreshToken: string | undefined;
+    const expiresInDays = (user.refreshTokenExpires.getTime() - Date.now()) / (1000 * 60 * 60 * 24);
+
+    if (expiresInDays < 1) {
+      newRefreshToken = this.jwtService.sign(payload, {
+        secret: refreshTokenConfig.secret,
+        expiresIn: refreshTokenConfig.expiresIn,
+      });
+
+      await this.userRepository.update(user.id, {
+        refreshToken: newRefreshToken,
+        refreshTokenExpires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      });
+    }
+
     return {
-      access_token: this.jwtService.sign(payload),
+      access_token,
+      refresh_token: newRefreshToken,
     };
+  }
+
+  async logout(userId: number): Promise<void> {
+    await this.userRepository.update(userId, {
+      refreshToken: null,
+      refreshTokenExpires: null,
+    });
   }
 }

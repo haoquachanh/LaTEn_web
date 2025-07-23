@@ -56,6 +56,16 @@ export class UserEntity {
   @UpdateDateColumn()
   updated: Date;
 
+  @IsOptional()
+  @IsString()
+  @Column({ nullable: true })
+  refreshToken?: string;
+
+  @IsOptional()
+  @IsString()
+  @Column({ nullable: true })
+  refreshTokenExpires?: Date;
+
   @ManyToMany(() => DictionaryEntity, { cascade: true })
   @JoinTable()
   favoriteWords: DictionaryEntity[];
