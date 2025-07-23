@@ -14,12 +14,7 @@ import { AppConfigService } from './config/app-config.service';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: [
-        `.env.${process.env.NODE_ENV || 'development'}.local`,
-        `.env.${process.env.NODE_ENV || 'development'}`,
-        '.env.local',
-        '.env',
-      ],
+      envFilePath: '.env',
     }),
     TypeOrmModule.forRootAsync(typeOrmConfig),
     HealthModule,

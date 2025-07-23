@@ -6,9 +6,10 @@ import { UserEntity } from '../../entities/user.entity';
 import { Repository } from 'typeorm';
 import { ConflictException, UnauthorizedException, NotFoundException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-import { UserRole } from '../../common/typings/user-role.enum';
+import { UserRole } from '@common/typings/user-role.enum';
 import { RegisterDto } from './dtos/register.dto';
 import { LoginDto } from './dtos/login.dto';
+import { refreshTokenConfig } from '@common/config/jwt.config';
 
 // Mock bcrypt
 jest.mock('bcrypt');
@@ -24,6 +25,7 @@ describe('AuthService', () => {
     findOneBy: jest.fn(),
     create: jest.fn(),
     save: jest.fn(),
+    update: jest.fn(),
   };
 
   const mockJwtService = {
@@ -42,6 +44,8 @@ describe('AuthService', () => {
     created: new Date(),
     updated: new Date(),
     favoriteWords: [],
+    refreshToken: 'refresh-token',
+    refreshTokenExpires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
   };
 
   beforeEach(async () => {
@@ -115,6 +119,8 @@ describe('AuthService', () => {
           created: mockUser.created,
           updated: mockUser.updated,
           favoriteWords: mockUser.favoriteWords,
+          refreshToken: mockUser.refreshToken,
+          refreshTokenExpires: mockUser.refreshTokenExpires,
         },
       });
     });
@@ -168,20 +174,38 @@ describe('AuthService', () => {
       password: 'password123',
     };
 
-    it('should login user successfully', async () => {
-      const validateUserSpy = jest.spyOn(service, 'validateUser').mockResolvedValue(mockUser);
-      mockJwtService.sign.mockReturnValue('jwt-token');
+    it('should login user successfully and return tokens', async () => {
+      jest.spyOn(service, 'validateUser').mockResolvedValue(mockUser);
+      mockJwtService.sign
+        .mockReturnValueOnce('access-token') // First call for access token
+        .mockReturnValueOnce('refresh-token'); // Second call for refresh token
 
       const result = await service.login(loginDto);
 
-      expect(validateUserSpy).toHaveBeenCalledWith(loginDto);
+      expect(service.validateUser).toHaveBeenCalledWith(loginDto);
       expect(mockJwtService.sign).toHaveBeenCalledWith({
         email: mockUser.email,
         id: mockUser.id,
         role: mockUser.role,
       });
+      expect(mockJwtService.sign).toHaveBeenCalledWith(
+        {
+          email: mockUser.email,
+          id: mockUser.id,
+          role: mockUser.role,
+        },
+        {
+          secret: refreshTokenConfig.secret,
+          expiresIn: refreshTokenConfig.expiresIn,
+        },
+      );
+      expect(mockUserRepository.update).toHaveBeenCalledWith(mockUser.id, {
+        refreshToken: 'refresh-token',
+        refreshTokenExpires: expect.any(Date),
+      });
       expect(result).toEqual({
-        access_token: 'jwt-token',
+        access_token: 'access-token',
+        refresh_token: 'refresh-token',
         user: {
           id: mockUser.id,
           fullname: mockUser.fullname,
@@ -192,6 +216,8 @@ describe('AuthService', () => {
           created: mockUser.created,
           updated: mockUser.updated,
           favoriteWords: mockUser.favoriteWords,
+          refreshToken: mockUser.refreshToken,
+          refreshTokenExpires: mockUser.refreshTokenExpires,
         },
       });
     });
@@ -217,6 +243,8 @@ describe('AuthService', () => {
         created: mockUser.created,
         updated: mockUser.updated,
         favoriteWords: mockUser.favoriteWords,
+        refreshToken: mockUser.refreshToken,
+        refreshTokenExpires: mockUser.refreshTokenExpires,
       });
       expect(result).not.toHaveProperty('password');
     });
@@ -229,24 +257,73 @@ describe('AuthService', () => {
   });
 
   describe('refreshToken', () => {
-    const userPayload = {
-      id: 1,
-      email: 'test@example.com',
-      role: UserRole.USER,
-    };
+    it('should generate new access token with existing refresh token', async () => {
+      mockUserRepository.findOne.mockResolvedValue(mockUser);
+      mockJwtService.sign.mockReturnValue('new-access-token');
 
-    it('should generate new access token', async () => {
-      mockJwtService.sign.mockReturnValue('new-jwt-token');
+      const result = await service.refreshToken('valid-refresh-token');
 
-      const result = await service.refreshToken(userPayload);
-
+      expect(mockUserRepository.findOne).toHaveBeenCalledWith({
+        where: { refreshToken: 'valid-refresh-token' },
+      });
       expect(mockJwtService.sign).toHaveBeenCalledWith({
-        email: userPayload.email,
-        id: userPayload.id,
-        role: userPayload.role,
+        email: mockUser.email,
+        id: mockUser.id,
+        role: mockUser.role,
       });
       expect(result).toEqual({
-        access_token: 'new-jwt-token',
+        access_token: 'new-access-token',
+      });
+    });
+
+    it('should generate new access token and refresh token when current one is about to expire', async () => {
+      const userWithExpiringToken = {
+        ...mockUser,
+        refreshTokenExpires: new Date(Date.now() + 12 * 60 * 60 * 1000), // 12 hours from now
+      };
+
+      mockUserRepository.findOne.mockResolvedValue(userWithExpiringToken);
+      mockJwtService.sign.mockReturnValueOnce('new-access-token').mockReturnValueOnce('new-refresh-token');
+
+      const result = await service.refreshToken('expiring-refresh-token');
+
+      expect(mockJwtService.sign).toHaveBeenCalledTimes(2);
+      expect(mockUserRepository.update).toHaveBeenCalledWith(userWithExpiringToken.id, {
+        refreshToken: 'new-refresh-token',
+        refreshTokenExpires: expect.any(Date),
+      });
+      expect(result).toEqual({
+        access_token: 'new-access-token',
+        refresh_token: 'new-refresh-token',
+      });
+    });
+
+    it('should throw UnauthorizedException if refresh token is invalid', async () => {
+      mockUserRepository.findOne.mockResolvedValue(null);
+
+      await expect(service.refreshToken('invalid-token')).rejects.toThrow(UnauthorizedException);
+    });
+
+    it('should throw UnauthorizedException if refresh token is expired', async () => {
+      const userWithExpiredToken = {
+        ...mockUser,
+        refreshTokenExpires: new Date(Date.now() - 1000), // 1 second ago
+      };
+      mockUserRepository.findOne.mockResolvedValue(userWithExpiredToken);
+
+      await expect(service.refreshToken('expired-token')).rejects.toThrow(UnauthorizedException);
+    });
+  });
+
+  describe('logout', () => {
+    it('should clear refresh token for user', async () => {
+      mockUserRepository.update.mockResolvedValue({ affected: 1 } as any);
+
+      await service.logout(1);
+
+      expect(mockUserRepository.update).toHaveBeenCalledWith(1, {
+        refreshToken: null,
+        refreshTokenExpires: null,
       });
     });
   });
