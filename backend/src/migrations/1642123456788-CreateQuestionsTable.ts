@@ -6,7 +6,7 @@ export class CreateQuestionsTable1642123456788 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Create questions table first
     await queryRunner.query(`
-      CREATE TABLE "questions" (
+      CREATE TABLE IF NOT EXISTS "questions" (
         "id" SERIAL NOT NULL,
         "title" character varying NOT NULL,
         "content" text NOT NULL,
@@ -35,21 +35,6 @@ export class CreateQuestionsTable1642123456788 implements MigrationInterface {
         "updated" TIMESTAMP NOT NULL DEFAULT now(),
         CONSTRAINT "UQ_users_email" UNIQUE ("email"),
         CONSTRAINT "PK_users" PRIMARY KEY ("id")
-      )
-    `);
-
-    // Create other essential tables
-    await queryRunner.query(`
-      CREATE TABLE IF NOT EXISTS "dictionary" (
-        "id" SERIAL NOT NULL,
-        "word" character varying NOT NULL,
-        "definition" character varying NOT NULL,
-        "type" character varying NOT NULL DEFAULT 'NONE',
-        "example" character varying,
-        "source" character varying,
-        "created" TIMESTAMP NOT NULL DEFAULT now(),
-        "updated" TIMESTAMP NOT NULL DEFAULT now(),
-        CONSTRAINT "PK_dictionary" PRIMARY KEY ("id")
       )
     `);
 
@@ -134,7 +119,6 @@ export class CreateQuestionsTable1642123456788 implements MigrationInterface {
     await queryRunner.query(`DROP TABLE "answers"`);
     await queryRunner.query(`DROP TABLE "examination_results"`);
     await queryRunner.query(`DROP TABLE "examinations"`);
-    await queryRunner.query(`DROP TABLE "dictionary"`);
     await queryRunner.query(`DROP TABLE "users"`);
     await queryRunner.query(`DROP TABLE "questions"`);
   }

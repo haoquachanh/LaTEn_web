@@ -6,7 +6,7 @@ export class CreateQuestionCategoriesAndBanks1642123456789 implements MigrationI
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Create question_categories table
     await queryRunner.query(`
-      CREATE TABLE "question_categories" (
+      CREATE TABLE IF NOT EXISTS "question_categories" (
         "id" SERIAL NOT NULL,
         "name" character varying NOT NULL,
         "description" text,
@@ -19,7 +19,7 @@ export class CreateQuestionCategoriesAndBanks1642123456789 implements MigrationI
 
     // Create question_banks table
     await queryRunner.query(`
-      CREATE TABLE "question_banks" (
+      CREATE TABLE IF NOT EXISTS "question_banks" (
         "id" SERIAL NOT NULL,
         "name" character varying NOT NULL,
         "description" text,
@@ -33,18 +33,28 @@ export class CreateQuestionCategoriesAndBanks1642123456789 implements MigrationI
       )
     `);
 
-    // Add new columns to questions table
-    await queryRunner.query(`
-      ALTER TABLE "questions" 
-      ADD COLUMN "format" character varying NOT NULL DEFAULT 'reading',
-      ADD COLUMN "difficulty" integer NOT NULL DEFAULT 1,
-      ADD COLUMN "acceptableAnswers" json,
-      ADD COLUMN "passage" text,
-      ADD COLUMN "timeLimit" integer,
-      ADD COLUMN "metadata" json,
-      ADD COLUMN "categoryId" integer,
-      ADD COLUMN "questionBankId" integer
-    `);
+    // Add new columns to questions table only if they do not exist
+    const addColumnIfNotExists = async (table: string, column: string, type: string) => {
+      await queryRunner.query(`
+        DO $$ BEGIN
+          IF NOT EXISTS (
+            SELECT 1 FROM information_schema.columns 
+            WHERE table_name='${table}' AND column_name='${column}'
+          ) THEN
+            ALTER TABLE "${table}" ADD COLUMN ${column} ${type};
+          END IF;
+        END $$;
+      `);
+    };
+
+    await addColumnIfNotExists('questions', 'format', "character varying NOT NULL DEFAULT 'reading'");
+    await addColumnIfNotExists('questions', 'difficulty', 'integer NOT NULL DEFAULT 1');
+    await addColumnIfNotExists('questions', 'acceptableAnswers', 'json');
+    await addColumnIfNotExists('questions', 'passage', 'text');
+    await addColumnIfNotExists('questions', 'timeLimit', 'integer');
+    await addColumnIfNotExists('questions', 'metadata', 'json');
+    await addColumnIfNotExists('questions', 'categoryId', 'integer');
+    await addColumnIfNotExists('questions', 'questionBankId', 'integer');
 
     // Create foreign key constraints
     await queryRunner.query(`
