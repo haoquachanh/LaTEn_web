@@ -31,7 +31,6 @@ async function bootstrap() {
     .addBearerAuth()
     .addTag('Authentication', 'User authentication endpoints')
     .addTag('Users', 'User management endpoints')
-    .addTag('Dictionary', 'Dictionary and vocabulary endpoints')
     .addTag('Examinations', 'Examination and testing endpoints')
     .addTag('Comments', 'Comments and replies endpoints')
     .build();

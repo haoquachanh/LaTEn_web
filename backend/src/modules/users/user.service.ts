@@ -2,7 +2,6 @@ import { HttpStatus, Injectable, UnprocessableEntityException } from '@nestjs/co
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeleteResult, Repository, UpdateResult } from 'typeorm';
 import { UserEntity } from '@entities/user.entity';
-import { DictionaryEntity } from '@entities/dictionary.entity';
 import { CreateUserDto } from './dtos/create-user.dto';
 import * as bcrypt from 'bcrypt';
 import { UpdateUserDto } from './dtos/update-user.dto';
@@ -12,8 +11,6 @@ export class UserService {
   constructor(
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
-    @InjectRepository(DictionaryEntity)
-    private readonly dictionaryRepository: Repository<DictionaryEntity>,
   ) {}
 
   async getAllUsers(): Promise<UserEntity[]> {

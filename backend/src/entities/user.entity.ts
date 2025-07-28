@@ -9,7 +9,6 @@ import {
   ManyToMany,
   JoinTable,
 } from 'typeorm';
-import { DictionaryEntity } from './dictionary.entity';
 import { Exclude } from 'class-transformer';
 
 @Entity('users')
@@ -65,8 +64,4 @@ export class UserEntity {
   @IsString()
   @Column({ nullable: true })
   refreshTokenExpires?: Date;
-
-  @ManyToMany(() => DictionaryEntity, { cascade: true })
-  @JoinTable()
-  favoriteWords: DictionaryEntity[];
 }
