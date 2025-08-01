@@ -1,6 +1,6 @@
 'use client';
 import { ReactNode, useContext } from 'react';
-import NavBarSimple from '../Navbar/NavBarSimple';
+import NavBar from '../Navbar/NavBar';
 import { ThemeContext } from '@/contexts/ThemeContext';
 import AuthStateHandler from '../Auth/AuthStateHandler';
 import AuthLoadingIndicator from '../Auth/AuthLoadingIndicator';
@@ -20,7 +20,7 @@ export default function AppLayout({ children }: Props) {
       {/* Hiển thị indicator khi đang kiểm tra trạng thái đăng nhập */}
       <AuthLoadingIndicator />
 
-      <NavBarSimple />
+      <NavBar />
       <main className="w-full">{children}</main>
     </div>
   );

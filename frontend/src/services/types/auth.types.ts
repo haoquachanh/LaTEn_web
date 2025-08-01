@@ -2,20 +2,19 @@
  * Authentication Service Types
  */
 export interface AuthUser {
-  id: string;
+  id: number;
   email: string;
-  username?: string;
-  firstName?: string;
-  lastName?: string;
+  fullname: string;
+  phone?: string;
+  birth?: string;
   role: string;
   [key: string]: any;
 }
 
 export interface AuthResponse {
-  accessToken: string;
-  refreshToken: string;
+  access_token: string;
+  refresh_token: string;
   user: AuthUser;
-  expiresIn?: number;
 }
 
 export interface LoginCredentials {
@@ -26,15 +25,14 @@ export interface LoginCredentials {
 export interface RegisterData {
   email: string;
   password: string;
-  username?: string;
-  firstName?: string;
-  lastName?: string;
+  fullname?: string;
+  phone?: string;
+  birth?: string;
 }
 
 export interface TokenRefreshResponse {
-  accessToken: string;
-  refreshToken?: string;
-  expiresIn?: number;
+  access_token: string;
+  refresh_token?: string;
 }
 
 export interface AuthError {
