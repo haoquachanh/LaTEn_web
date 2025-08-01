@@ -23,7 +23,7 @@ const ExaminationDashboard: React.FC<ExaminationDashboardProps> = ({ onStartTest
   const [pastExams, setPastExams] = useState<PastExam[]>([
     {
       id: '1',
-      title: 'TOEFL Practice Test',
+      title: 'Reading Comprehension Test',
       date: '2025-07-28',
       score: 85,
       questions: 20,

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, memo } from 'react';
 import Image from 'next/image';
 import CustomExamForm from './CustomExamForm';
 import PresetExamForm from './PresetExamForm';
@@ -42,13 +42,11 @@ const ExamSetup: React.FC<ExamSetupProps> = ({
   handleStartExam,
   changePage,
 }) => {
+  // Use useCallback to memoize the preset selection handler
   const handlePresetSelect = (preset: PresetExam) => {
+    // Just call setSelectedPresetId which will trigger all other updates in the parent
     setSelectedPresetId(preset.id);
-    setType(preset.type);
-    setContent(preset.content);
-    setNumberOfQuestions(preset.questions);
-    setTime(preset.time);
-    changePage(preset.questions);
+    // No need to call other setters as they'll be handled by the parent component
   };
 
   return (
@@ -61,8 +59,8 @@ const ExamSetup: React.FC<ExamSetupProps> = ({
           <h3 className="text-lg font-medium mb-4">Select Exam Mode</h3>
           <div className="grid grid-cols-2 gap-4">
             <div
-              className={`flex flex-col items-center p-5 rounded-lg cursor-pointer transition-all duration-300 ${
-                !isCustomExam ? 'bg-primary text-primary-content shadow-lg scale-105' : 'bg-base-200 hover:bg-base-300'
+              className={`flex flex-col items-center p-5 rounded-lg cursor-pointer ${
+                !isCustomExam ? 'bg-primary text-primary-content shadow-lg' : 'bg-base-200 hover:bg-base-300'
               }`}
               onClick={() => setIsCustomExam(false)}
             >
@@ -84,8 +82,8 @@ const ExamSetup: React.FC<ExamSetupProps> = ({
               </svg>
             </div>
             <div
-              className={`flex flex-col items-center p-5 rounded-lg cursor-pointer transition-all duration-300 ${
-                isCustomExam ? 'bg-primary text-primary-content shadow-lg scale-105' : 'bg-base-200 hover:bg-base-300'
+              className={`flex flex-col items-center p-5 rounded-lg cursor-pointer ${
+                isCustomExam ? 'bg-primary text-primary-content shadow-lg' : 'bg-base-200 hover:bg-base-300'
               }`}
               onClick={() => setIsCustomExam(true)}
             >
@@ -133,9 +131,12 @@ const ExamSetup: React.FC<ExamSetupProps> = ({
         >
           {isLoading ? <span className="loading loading-spinner"></span> : 'Start Exam'}
         </button>
+        {!isCustomExam && !selectedPresetId && (
+          <div className="text-error text-sm mt-2 text-center">Please select a preset exam first</div>
+        )}
       </div>
     </div>
   );
 };
 
-export default ExamSetup;
+export default memo(ExamSetup);
