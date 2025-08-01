@@ -27,7 +27,6 @@ export interface EnvironmentConfig {
   };
   features: {
     enableComments: boolean;
-    enableDictionary: boolean;
     enableExaminations: boolean;
     enableUserProfiles: boolean;
     enableAnalytics: boolean;

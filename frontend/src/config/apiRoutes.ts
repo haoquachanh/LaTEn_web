@@ -43,13 +43,6 @@ export const API_ROUTES = {
     QUESTIONS: '/examinations/:id/questions',
   },
 
-  // Dictionary
-  DICTIONARY: {
-    BASE: '/dictionary',
-    SEARCH: '/dictionary/search',
-    BY_ID: (id: string | number) => `/dictionary/${id}`,
-  },
-
   // Comments
   COMMENTS: {
     BASE: '/comments',
