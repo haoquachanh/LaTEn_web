@@ -56,8 +56,15 @@ const nextConfig = {
   images: {
     formats: ['image/webp', 'image/avif'],
     minimumCacheTTL: isProd ? 3600 : 60, // 1 hour in production, 1 minute in dev/staging
-    domains: ['daisyui.com'], // Allow images from daisyui.com
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'example.com',
+      },
+    ], // Allow images from daisyui.com
   },
+  
+  
 
   // Experimental features - only in development
   experimental: {

@@ -1,6 +1,5 @@
 'use client';
 import React from 'react';
-import { evaluateScore } from '@/utils/testEvaluation';
 
 export interface SubmitConfirmModalProps {
   onCancel: () => void;

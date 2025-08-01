@@ -43,7 +43,6 @@ describe('AuthService', () => {
     birth: '1990-01-01',
     created: new Date(),
     updated: new Date(),
-    favoriteWords: [],
     refreshToken: 'refresh-token',
     refreshTokenExpires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
   };
@@ -118,7 +117,6 @@ describe('AuthService', () => {
           birth: mockUser.birth,
           created: mockUser.created,
           updated: mockUser.updated,
-          favoriteWords: mockUser.favoriteWords,
           refreshToken: mockUser.refreshToken,
           refreshTokenExpires: mockUser.refreshTokenExpires,
         },
@@ -215,7 +213,6 @@ describe('AuthService', () => {
           birth: mockUser.birth,
           created: mockUser.created,
           updated: mockUser.updated,
-          favoriteWords: mockUser.favoriteWords,
           refreshToken: mockUser.refreshToken,
           refreshTokenExpires: mockUser.refreshTokenExpires,
         },
@@ -231,7 +228,6 @@ describe('AuthService', () => {
 
       expect(mockUserRepository.findOne).toHaveBeenCalledWith({
         where: { id: 1 },
-        relations: ['favoriteWords'],
       });
       expect(result).toEqual({
         id: mockUser.id,
@@ -242,7 +238,6 @@ describe('AuthService', () => {
         birth: mockUser.birth,
         created: mockUser.created,
         updated: mockUser.updated,
-        favoriteWords: mockUser.favoriteWords,
         refreshToken: mockUser.refreshToken,
         refreshTokenExpires: mockUser.refreshTokenExpires,
       });

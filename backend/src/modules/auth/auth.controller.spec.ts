@@ -31,7 +31,6 @@ describe('AuthController', () => {
     birth: '1990-01-01',
     created: new Date(),
     updated: new Date(),
-    favoriteWords: [],
   };
 
   beforeEach(async () => {

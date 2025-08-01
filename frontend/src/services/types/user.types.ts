@@ -26,7 +26,6 @@ export interface User {
   birth?: string;
   created: string;
   updated: string;
-  favoriteWords?: number[];
 }
 
 /**

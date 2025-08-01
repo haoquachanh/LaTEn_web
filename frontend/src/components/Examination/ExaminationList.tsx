@@ -76,7 +76,6 @@ const ExaminationList: React.FC<ExaminationListProps> = ({ title = 'Available Ex
         ))}
       </div>
 
-      {/* Pagination controls */}
       {data && data.totalPages > 1 && (
         <div className="mt-6 flex justify-center">
           <div className="join">
@@ -101,7 +100,6 @@ const ExaminationList: React.FC<ExaminationListProps> = ({ title = 'Available Ex
         </div>
       )}
 
-      {/* Loading indicator for pagination */}
       {loading && examinations.length > 0 && (
         <div className="mt-4 text-center">
           <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-primary mx-auto"></div>

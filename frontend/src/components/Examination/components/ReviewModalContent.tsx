@@ -1,14 +1,6 @@
 'use client';
 import React, { useState, useMemo, useCallback, memo } from 'react';
-
-// Define local Question interface to match the structure used in Examination.tsx
-interface Question {
-  id: string;
-  question: string;
-  answers?: string[];
-  correctAnswer: string;
-  type?: 'multiple-choice' | 'true-false' | 'short-answer' | 'long-answer';
-}
+import { Question } from '../types';
 
 // Individual review question item component - row style with status icons
 const ReviewQuestionItem = memo(
