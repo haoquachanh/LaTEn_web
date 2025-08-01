@@ -1,5 +1,6 @@
 'use client';
 
+import { memo } from 'react';
 import { PresetExam } from '../types';
 import { presetExams } from '../data/examData';
 
@@ -17,9 +18,9 @@ const PresetExamForm: React.FC<PresetExamFormProps> = ({ selectedPresetId, handl
           {presetExams.map((preset) => (
             <div
               key={preset.id}
-              className={`flex items-center justify-between p-4 rounded-lg cursor-pointer transition-all duration-300 ${
+              className={`flex items-center justify-between p-4 rounded-lg cursor-pointer ${
                 selectedPresetId === preset.id
-                  ? 'bg-primary text-primary-content shadow-lg'
+                  ? 'bg-primary text-primary-content shadow-lg border-2 border-primary-focus'
                   : 'bg-base-200 hover:bg-base-300'
               }`}
               onClick={() => handlePresetSelect(preset)}
@@ -41,4 +42,4 @@ const PresetExamForm: React.FC<PresetExamFormProps> = ({ selectedPresetId, handl
   );
 };
 
-export default PresetExamForm;
+export default memo(PresetExamForm);

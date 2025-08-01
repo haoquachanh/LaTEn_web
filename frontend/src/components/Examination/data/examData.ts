@@ -33,7 +33,7 @@ export const subjects: Subject[] = [
 export const presetExams: PresetExam[] = [
   {
     id: 'preset1',
-    title: 'TOEFL Practice Test',
+    title: 'Reading Comprehension',
     description: 'Standard reading comprehension test with multiple choice questions',
     type: 'multiple',
     questions: 20,

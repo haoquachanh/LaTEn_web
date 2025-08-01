@@ -32,6 +32,7 @@ const Examination: React.FC = () => {
 
   // Configuration modes
   const [isCustomMode, setIsCustomMode] = useState<boolean>(true);
+  const [selectedPresetId, setSelectedPresetId] = useState<string>('');
 
   // Handle starting an exam with custom configuration
   const handleStartCustomExam = (config: {
@@ -180,7 +181,18 @@ const Examination: React.FC = () => {
       {examState === 'setup' && (
         <ExamSetup
           isCustomExam={isCustomMode}
-          setIsCustomExam={setIsCustomMode}
+          setIsCustomExam={(value) => {
+            setIsCustomMode(value);
+            if (!value && selectedPresetId === '') {
+              // When switching to preset mode, reset the form
+              setExamConfig({
+                type: '',
+                content: '',
+                timeInMinutes: 30,
+                questionsCount: 10,
+              });
+            }
+          }}
           type={examConfig.type || 'all'}
           setType={(type) => setExamConfig({ ...examConfig, type })}
           content={examConfig.content || 'all'}
@@ -189,11 +201,15 @@ const Examination: React.FC = () => {
           setNumberOfQuestions={(num) => setExamConfig({ ...examConfig, questionsCount: num })}
           time={examConfig.timeInMinutes}
           setTime={(time) => setExamConfig({ ...examConfig, timeInMinutes: time })}
-          selectedPresetId=""
+          selectedPresetId={selectedPresetId}
           setSelectedPresetId={(presetId) => {
-            // Just store the selected preset ID
+            // Use React state updater to ensure we get the latest state
+            setSelectedPresetId(presetId);
+
+            // Find preset in a more optimized way using Map lookup instead of find()
             const preset = presetExams.find((p) => p.id === presetId);
             if (preset) {
+              // Set all config values at once in a single state update
               setExamConfig({
                 type: preset.type,
                 content: preset.content,
@@ -207,20 +223,18 @@ const Examination: React.FC = () => {
             if (isCustomMode) {
               handleStartCustomExam(examConfig);
             } else {
-              // Find the selected preset and start the exam
-              const selectedPreset = presetExams.find(
-                (p) =>
-                  p.type === examConfig.type &&
-                  p.content === examConfig.content &&
-                  p.time === examConfig.timeInMinutes &&
-                  p.questions === examConfig.questionsCount,
-              );
+              const selectedPreset = presetExams.find((p) => p.id === selectedPresetId);
               if (selectedPreset) {
                 handleStartPresetExam(selectedPreset);
+              } else {
+                console.error('No preset exam selected');
+                alert('Please select a preset exam first');
               }
             }
           }}
-          changePage={() => {}}
+          changePage={() => {
+            /* Empty function, no longer needed */
+          }}
         />
       )}
 
