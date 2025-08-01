@@ -24,7 +24,6 @@ export default function AppProvider({ children }: Props) {
   // Feature flags based on environment
   const features = {
     enableComments: process.env.NEXT_PUBLIC_ENABLE_COMMENTS !== 'false',
-    enableDictionary: process.env.NEXT_PUBLIC_ENABLE_DICTIONARY !== 'false',
     enableExaminations: process.env.NEXT_PUBLIC_ENABLE_EXAMS !== 'false',
   };
 
@@ -46,9 +45,9 @@ export default function AppProvider({ children }: Props) {
 
       <ToastProvider position="bottom-right" maxToasts={5}>
         <ThemeProvider>
-          <ExaminationProvider>
-            <AuthProvider>{children}</AuthProvider>
-          </ExaminationProvider>
+          <AuthProvider>
+            <ExaminationProvider>{children}</ExaminationProvider>
+          </AuthProvider>
         </ThemeProvider>
       </ToastProvider>
     </>

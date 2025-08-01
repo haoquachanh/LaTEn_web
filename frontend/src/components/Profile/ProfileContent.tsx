@@ -2,45 +2,28 @@
 /* eslint-disable jsx-a11y/alt-text */
 'use client';
 import { AuthContext } from '@/contexts/AuthContext';
-import { useContext, useEffect, useState } from 'react';
-import { getApi } from '@/utils/axiosCofig.ts';
+import { useContext, useState } from 'react';
 import { formatDate } from '@/utils/formatters';
-
-interface UserData {
-  fullname?: string;
-  email?: string;
-  avatar?: string;
-  role?: string;
-  id?: string;
-  created?: string;
-  updated?: string;
-  birth?: string;
-  phone?: string;
-  status?: string;
-}
+import { AuthUser } from '@/services/types/auth.types';
 
 export default function ProfileContent() {
-  const [userData, setData] = useState<UserData>({});
-  const [isLoading, setIsLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
-  const { user, logout } = useContext(AuthContext);
-  const access_token = user?.token;
+  const [formData, setFormData] = useState<Partial<AuthUser>>({});
+  const { user, logout, refreshUser, updateProfile } = useContext(AuthContext);
+  const isLoading = !user;
 
-  useEffect(() => {
-    async function getInfo() {
-      if (!access_token) return;
-      try {
-        setIsLoading(true);
-        const data = await getApi('user/profile', access_token);
-        setData(data);
-      } catch (error) {
-        console.error('Failed to fetch user data:', error);
-      } finally {
-        setIsLoading(false);
-      }
+  // Initialize form data when entering edit mode
+  const handleEditClick = () => {
+    if (user) {
+      setFormData({
+        fullname: user.fullname,
+        email: user.email,
+        phone: user.phone,
+        birth: user.birth,
+      });
     }
-    getInfo();
-  }, [access_token]);
+    setIsEditing(true);
+  };
 
   const handleLogout = () => {
     logout();
@@ -66,7 +49,7 @@ export default function ProfileContent() {
                 <div className="avatar">
                   <div className="w-32 h-32 rounded-full ring ring-primary ring-offset-base-100 ring-offset-4">
                     <img
-                      src={userData.avatar || 'https://daisyui.com/images/stock/photo-1534528741775-53994a69daeb.jpg'}
+                      src={user?.avatar || 'https://daisyui.com/images/stock/photo-1534528741775-53994a69daeb.jpg'}
                       alt="Profile"
                       className="object-cover"
                     />
@@ -99,8 +82,8 @@ export default function ProfileContent() {
 
               {/* User Info */}
               <div className="flex-1 text-center lg:text-left">
-                <h1 className="text-4xl font-bold mb-2">{userData.fullname || 'User Name'}</h1>
-                <p className="text-lg text-base-content/70 mb-4">{userData.role || 'Student'}</p>
+                <h1 className="text-4xl font-bold mb-2">{user?.fullname || 'User Name'}</h1>
+                <p className="text-lg text-base-content/70 mb-4">{user?.role || 'Student'}</p>
 
                 <div className="flex flex-wrap gap-4 justify-center lg:justify-start">
                   <div className="badge badge-primary badge-lg">
@@ -118,7 +101,7 @@ export default function ProfileContent() {
                         d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"
                       />
                     </svg>
-                    {userData.email}
+                    {user?.email}
                   </div>
                   <div className="badge badge-secondary badge-lg">
                     <svg
@@ -140,7 +123,7 @@ export default function ProfileContent() {
                 </div>
 
                 <div className="mt-6 flex flex-wrap gap-3 justify-center lg:justify-start">
-                  <button className="btn btn-primary" onClick={() => setIsEditing(!isEditing)}>
+                  <button className="btn btn-primary" onClick={handleEditClick}>
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       className="h-4 w-4"
@@ -173,6 +156,23 @@ export default function ProfileContent() {
                       />
                     </svg>
                     View Progress
+                  </button>
+                  <button className="btn btn-error" onClick={handleLogout}>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-4 w-4"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                      />
+                    </svg>
+                    Logout
                   </button>
                 </div>
               </div>
@@ -289,7 +289,8 @@ export default function ProfileContent() {
                     <input
                       type="text"
                       className="input input-bordered"
-                      value={userData.fullname || ''}
+                      value={formData.fullname || ''}
+                      onChange={(e) => setFormData({ ...formData, fullname: e.target.value })}
                       placeholder="Enter your full name"
                     />
                   </div>
@@ -301,7 +302,8 @@ export default function ProfileContent() {
                     <input
                       type="email"
                       className="input input-bordered"
-                      value={userData.email || ''}
+                      value={formData.email || ''}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                       placeholder="Enter your email"
                     />
                   </div>
@@ -313,7 +315,8 @@ export default function ProfileContent() {
                     <input
                       type="tel"
                       className="input input-bordered"
-                      value={userData.phone || ''}
+                      value={formData.phone || ''}
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                       placeholder="Enter your phone number"
                     />
                   </div>
@@ -322,7 +325,12 @@ export default function ProfileContent() {
                     <label className="label">
                       <span className="label-text">Date of Birth</span>
                     </label>
-                    <input type="date" className="input input-bordered" value={userData.birth || ''} />
+                    <input
+                      type="date"
+                      className="input input-bordered"
+                      value={formData.birth || ''}
+                      onChange={(e) => setFormData({ ...formData, birth: e.target.value })}
+                    />
                   </div>
                 </div>
 
@@ -340,7 +348,18 @@ export default function ProfileContent() {
                   <button className="btn btn-outline" onClick={() => setIsEditing(false)}>
                     Cancel
                   </button>
-                  <button className="btn btn-primary">Save Changes</button>
+                  <button
+                    className="btn btn-primary"
+                    onClick={async () => {
+                      const success = await updateProfile(formData);
+                      if (success) {
+                        await refreshUser();
+                        setIsEditing(false);
+                      }
+                    }}
+                  >
+                    Save Changes
+                  </button>
                 </div>
               </div>
             ) : (
@@ -350,112 +369,40 @@ export default function ProfileContent() {
                     <label className="label">
                       <span className="label-text">Full Name</span>
                     </label>
-                    <div className="input input-bordered bg-base-200">{userData.fullname || 'Not provided'}</div>
+                    <div className="input input-bordered bg-base-200 flex items-center">
+                      {user?.fullname || 'Not provided'}
+                    </div>
                   </div>
 
                   <div className="form-control">
                     <label className="label">
                       <span className="label-text">Email</span>
                     </label>
-                    <div className="input input-bordered bg-base-200">{userData.email || 'Not provided'}</div>
+                    <div className="input input-bordered bg-base-200 flex items-center">
+                      {user?.email || 'Not provided'}
+                    </div>
                   </div>
 
                   <div className="form-control">
                     <label className="label">
                       <span className="label-text">Phone Number</span>
                     </label>
-                    <div className="input input-bordered bg-base-200">{userData.phone || 'Not provided'}</div>
+                    <div className="input input-bordered bg-base-200 flex items-center">
+                      {user?.phone || 'Not provided'}
+                    </div>
                   </div>
 
                   <div className="form-control">
                     <label className="label">
                       <span className="label-text">Date of Birth</span>
                     </label>
-                    <div className="input input-bordered bg-base-200">
-                      {userData.birth ? formatDate(userData.birth) : 'Not provided'}
-                    </div>
-                  </div>
-
-                  <div className="form-control">
-                    <label className="label">
-                      <span className="label-text">Account Created</span>
-                    </label>
-                    <div className="input input-bordered bg-base-200">
-                      {userData.created ? formatDate(userData.created) : 'Not available'}
-                    </div>
-                  </div>
-
-                  <div className="form-control">
-                    <label className="label">
-                      <span className="label-text">Last Updated</span>
-                    </label>
-                    <div className="input input-bordered bg-base-200">
-                      {userData.updated ? formatDate(userData.updated) : 'Not available'}
+                    <div className="input input-bordered bg-base-200 flex items-center">
+                      {user?.birth ? formatDate(user.birth) : 'Not provided'}
                     </div>
                   </div>
                 </div>
               </div>
             )}
-          </div>
-        </div>
-
-        {/* Account Settings */}
-        <div className="card bg-base-100 shadow-xl">
-          <div className="card-body">
-            <h2 className="card-title text-2xl mb-6 text-warning">Account Settings</h2>
-            <div className="flex flex-wrap gap-4">
-              <button className="btn btn-outline">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-4 w-4"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-                  />
-                </svg>
-                Change Password
-              </button>
-              <button className="btn btn-error" onClick={handleLogout}>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-4 w-4"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                  />
-                </svg>
-                Logout
-              </button>
-              <button className="btn btn-error btn-outline">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-4 w-4"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                  />
-                </svg>
-                Delete Account
-              </button>
-            </div>
           </div>
         </div>
       </div>

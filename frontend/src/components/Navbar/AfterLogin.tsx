@@ -1,11 +1,10 @@
 'use client';
-import { AuthContext } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 import Link from 'next/link';
-import { useContext } from 'react';
 import { Icon } from '../Icons';
 
 export default function TheAccount() {
-  const { logout } = useContext(AuthContext);
+  const { logout } = useAuth();
   return (
     <div className="dropdown dropdown-end">
       <div tabIndex={0} role="button">
@@ -27,7 +26,7 @@ export default function TheAccount() {
               <span className="font-medium">Profile</span>
             </Link>
           </li>
-          <li>
+          {/* <li>
             <Link
               href={'/profile'}
               className="flex items-center gap-3 p-3 rounded-lg hover:bg-primary/10 hover:text-primary focus:bg-primary/10 focus:text-primary active:bg-primary/20 transition-all duration-200"
@@ -35,7 +34,7 @@ export default function TheAccount() {
               <Icon kind="settings" size={18} className="text-primary/70" />
               <span className="font-medium">Settings</span>
             </Link>
-          </li>
+          </li> */}
           <li>
             <Link
               href={'/'}

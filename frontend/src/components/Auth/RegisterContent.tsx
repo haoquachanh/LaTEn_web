@@ -30,7 +30,6 @@ export default function RegisterContent() {
     const password = formData.get('password') as string;
     const confirmPassword = formData.get('confirmPassword') as string;
 
-    // Validation
     if (password !== confirmPassword) {
       setError('Passwords do not match');
       setIsLoading(false);
@@ -50,16 +49,27 @@ export default function RegisterContent() {
         body: JSON.stringify({ fullname, email, password }),
       });
 
+      if (!response.ok) {
+        let errorMsg = 'Registration failed';
+        try {
+          const errorData = await response.json();
+          errorMsg = errorData.message || errorMsg;
+        } catch {}
+        setError(errorMsg);
+        setIsLoading(false);
+        return;
+      }
+
       const data = await response.json();
 
-      if (response.ok && data.access_token) {
+      if (data.access_token) {
         localStorage.setItem('access_token', data.access_token);
         router.push('/');
       } else {
         setError(data.message || 'Registration failed');
       }
-    } catch (error) {
-      setError('Network error. Please check your connection.');
+    } catch (error: any) {
+      setError(error?.message || 'Network error. Please check your connection.');
       console.error('Registration error:', error);
     } finally {
       setIsLoading(false);
@@ -102,12 +112,7 @@ export default function RegisterContent() {
 
             {error && (
               <div className="alert alert-error mb-4">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="stroke-current shrink-0 h-6 w-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
+                <svg className="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -132,13 +137,7 @@ export default function RegisterContent() {
                   required
                 />
                 <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5 text-base-content/40"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
+                  <svg className="h-5 w-5 text-base-content/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -163,13 +162,7 @@ export default function RegisterContent() {
                   required
                 />
                 <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5 text-base-content/40"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
+                  <svg className="h-5 w-5 text-base-content/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -195,13 +188,7 @@ export default function RegisterContent() {
                   onChange={(e) => setPasswordStrength(checkPasswordStrength(e.target.value))}
                 />
                 <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5 text-base-content/40"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
+                  <svg className="h-5 w-5 text-base-content/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -251,13 +238,7 @@ export default function RegisterContent() {
                   required
                 />
                 <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5 text-base-content/40"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
+                  <svg className="h-5 w-5 text-base-content/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"

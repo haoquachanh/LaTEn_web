@@ -14,6 +14,7 @@ import {
   TokenRefreshResponse,
 } from '@/services/types/auth.types';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
 
 // Base API endpoint
 const AUTH_API = '/auth';
@@ -26,25 +27,16 @@ const { token: TOKEN_KEY, refreshToken: REFRESH_TOKEN_KEY, user: USER_KEY } = co
  * Hook to login a user
  */
 export function useLogin() {
-  const { trigger, isMutating } = useApiMutation<LoginCredentials, AuthResponse>(`${AUTH_API}/login`);
+  const { login: contextLogin } = useAuth();
+  const { isMutating } = useApiMutation<LoginCredentials, AuthResponse>(`${AUTH_API}/login`);
 
-  const login = useCallback(async (credentials: LoginCredentials) => {
-    try {
-      // Gọi trực tiếp AuthService.login để đảm bảo đồng bộ với AuthContext
-      import('@/services/auth.service').then(({ default: AuthService }) => {
-        AuthService.login(credentials).catch((error: Error) => console.error('Login failed:', error));
-      });
-
-      return {
-        accessToken: localStorage.getItem(TOKEN_KEY) || '',
-        refreshToken: localStorage.getItem(REFRESH_TOKEN_KEY) || '',
-        user: JSON.parse(localStorage.getItem(USER_KEY) || '{}'),
-        expiresIn: 3600,
-      };
-    } catch (error) {
-      throw error;
-    }
-  }, []);
+  const login = useCallback(
+    async (credentials: LoginCredentials) => {
+      // Luôn dùng login từ AuthContext để cập nhật state toàn app
+      return await contextLogin(credentials);
+    },
+    [contextLogin],
+  );
 
   return { login, isLoading: isMutating };
 }
@@ -58,7 +50,7 @@ export function useRegister() {
   const register = useCallback(
     async (userData: RegisterData) => {
       try {
-        return await trigger('', { data: userData });
+        return await trigger(userData);
       } catch (error) {
         throw error;
       }
@@ -73,19 +65,13 @@ export function useRegister() {
  * Hook to logout a user
  */
 export function useLogout() {
+  const { logout: contextLogout } = useAuth();
   const router = useRouter();
 
   const logout = useCallback(() => {
-    if (typeof window !== 'undefined') {
-      // Sử dụng AuthService để đảm bảo việc đăng xuất được xử lý đồng bộ
-      import('@/services').then(({ AuthService }) => {
-        AuthService.logout();
-
-        // Redirect to login page
-        router.push('/auth/login');
-      });
-    }
-  }, [router]);
+    contextLogout();
+    router.push('/auth/login');
+  }, [contextLogout, router]);
 
   return { logout };
 }
@@ -99,14 +85,11 @@ export function useRefreshToken() {
   const refreshToken = useCallback(async () => {
     if (typeof window === 'undefined') return null;
 
-    const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
-    if (!refreshToken) return null;
+    const refreshTokenValue = localStorage.getItem(REFRESH_TOKEN_KEY);
+    if (!refreshTokenValue) return null;
 
     try {
-      const response = await trigger('', {
-        data: { refreshToken },
-        method: 'POST',
-      });
+      const response = await trigger({ refreshToken: refreshTokenValue });
 
       // Update stored tokens
       localStorage.setItem(TOKEN_KEY, response.accessToken);
@@ -133,9 +116,6 @@ export function useRefreshToken() {
  */
 export function useCurrentUser() {
   return useApiQuery<AuthUser>(`${AUTH_API}/profile`, {
-    // Only attempt to fetch if we have a token
-    enabled: typeof window !== 'undefined' && !!localStorage.getItem(TOKEN_KEY),
-    // Don't show errors if user isn't authenticated
     shouldRetryOnError: false,
     onError: () => {
       // Clear invalid auth data
@@ -157,10 +137,7 @@ export function useUpdateProfile() {
   const updateProfile = useCallback(
     async (userData: Partial<AuthUser>) => {
       try {
-        return await trigger('', {
-          data: userData,
-          method: 'PATCH',
-        });
+        return await trigger(userData);
       } catch (error) {
         throw error;
       }

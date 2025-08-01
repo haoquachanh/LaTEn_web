@@ -1,45 +1,27 @@
 'use client';
-import { FormEvent, useContext, useState } from 'react';
+import { FormEvent, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { AuthContext } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function LoginContent() {
-  const { login } = useContext(AuthContext);
+  const { login, loading } = useAuth();
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setIsLoading(true);
     setError('');
 
     const formData = new FormData(event.currentTarget);
-    const email = formData.get('email');
-    const password = formData.get('password');
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
 
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await response.json();
-
-      if (data.access_token) {
-        localStorage.setItem('access_token', data.access_token);
-        login(data.access_token);
-        router.push('/');
-      } else {
-        setError(data.message || 'Login failed. Please try again.');
-      }
-    } catch (error) {
-      setError('Network error. Please check your connection.');
-      console.error('Login error:', error);
-    } finally {
-      setIsLoading(false);
+    const success = await login({ email, password });
+    if (success) {
+      router.push('/');
+    } else {
+      setError('Login failed. Please try again.');
     }
   }
 
@@ -164,8 +146,8 @@ export default function LoginContent() {
             </div>
 
             <div className="form-control mt-6">
-              <button type="submit" className={`btn btn-primary ${isLoading ? 'loading' : ''}`} disabled={isLoading}>
-                {isLoading ? 'Signing In...' : 'Sign In'}
+              <button type="submit" className={`btn btn-primary ${loading ? 'loading' : ''}`} disabled={loading}>
+                {loading ? 'Signing In...' : 'Sign In'}
               </button>
             </div>
 

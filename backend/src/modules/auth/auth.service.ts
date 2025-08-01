@@ -97,7 +97,7 @@ export class AuthService {
     });
 
     // Return user without password
-    const { password, ...userWithoutPassword } = foundUser;
+    const { password, refreshToken, ...userWithoutPassword } = foundUser;
 
     return {
       access_token,
@@ -109,7 +109,6 @@ export class AuthService {
   async getProfile(userId: number): Promise<Partial<UserEntity>> {
     const user = await this.userRepository.findOne({
       where: { id: userId },
-      relations: ['favoriteWords'],
     });
 
     if (!user) {
