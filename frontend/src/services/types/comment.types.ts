@@ -22,7 +22,6 @@ export enum EntityType {
   EXAMINATION = 'examination',
   COURSE = 'course',
   LESSON = 'lesson',
-  DICTIONARY = 'dictionary',
 }
 
 /**

@@ -44,7 +44,6 @@ const productionConfig: EnvironmentConfig = {
 
   features: {
     enableComments: getFeatureFlag('ENABLE_COMMENTS', true),
-    enableDictionary: getFeatureFlag('ENABLE_DICTIONARY', true),
     enableExaminations: getFeatureFlag('ENABLE_EXAMINATIONS', true),
     enableUserProfiles: getFeatureFlag('ENABLE_USER_PROFILES', true),
     enableAnalytics: getFeatureFlag('ENABLE_ANALYTICS', true),
