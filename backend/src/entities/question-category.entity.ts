@@ -12,9 +12,6 @@ export class QuestionCategory {
   @Column({ type: 'text', nullable: true })
   description: string;
 
-  @Column({ default: true })
-  isActive: boolean;
-
   @OneToMany(() => Question, (question) => question.category)
   questions: Question[];
 

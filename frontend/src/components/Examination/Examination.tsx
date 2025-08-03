@@ -8,6 +8,7 @@ import ExamSetup from './components/ExamSetup';
 import ExamContainer from './components/ExamContainer';
 import ExamResults from './components/ExamResults';
 import ExaminationDashboard from './components/ExaminationDashboard';
+import examinationService from '@/services/examination.service';
 
 // Main Examination component that manages the overall exam flow
 const Examination: React.FC = () => {
@@ -68,72 +69,144 @@ const Examination: React.FC = () => {
   };
 
   // Handle starting a preset exam
-  const handleStartPresetExam = (preset: PresetExam) => {
-    // Filter questions based on preset configuration
-    let filteredQuestions = [...sampleQuestions];
+  const handleStartPresetExam = async (preset: PresetExam) => {
+    try {
+      // Create exam config from preset
+      const config = {
+        type: preset.type,
+        content: preset.content,
+        timeInMinutes: preset.time,
+        questionsCount: preset.questions,
+      };
 
-    if (preset.type !== 'all') {
-      filteredQuestions = filteredQuestions.filter((q) => q.type === preset.type);
+      // Store exam configuration in session storage for persistence
+      sessionStorage.setItem('exam-type', preset.type);
+      sessionStorage.setItem('exam-content', preset.content);
+      sessionStorage.setItem('exam-questions', preset.questions.toString());
+      sessionStorage.setItem('exam-time', preset.time.toString());
+
+      // TODO: Fetch examination from backend API instead of using sample questions
+      // Get the questions from the backend by starting the examination
+      const examination = await examinationService.startExamination(preset.id);
+
+      // Use questions from the API response
+      if (examination && examination.questions) {
+        // Transform backend questions to frontend format if needed
+        const questionsFromAPI = examination.questions.map((q: any) => ({
+          id: q.id.toString(),
+          question: q.text || q.content,
+          answers: q.options || [],
+          correctAnswer: q.correctOption || q.correctAnswer,
+          type: q.type || preset.type,
+          content: q.format || preset.content,
+        }));
+
+        setSelectedQuestions(questionsFromAPI);
+        setExamConfig(config);
+        setExamState('inProgress');
+      } else {
+        // Fallback to sample questions if the API doesn't return questions
+        console.warn('No questions received from API, using sample questions as fallback');
+        let filteredQuestions = [...sampleQuestions];
+
+        // Filter and prepare sample questions
+        if (preset.type !== 'all') {
+          filteredQuestions = filteredQuestions.filter((q) => q.type === preset.type);
+        }
+
+        if (preset.content !== 'all') {
+          filteredQuestions = filteredQuestions.filter((q) => q.content === preset.content);
+        }
+
+        const shuffled = filteredQuestions.sort(() => 0.5 - Math.random());
+        const selected = shuffled.slice(0, preset.questions);
+
+        setSelectedQuestions(selected);
+        setExamConfig(config);
+        setExamState('inProgress');
+      }
+    } catch (error) {
+      console.error('Failed to start examination:', error);
+      alert('Failed to start examination. Please try again later.');
     }
-
-    if (preset.content !== 'all') {
-      filteredQuestions = filteredQuestions.filter((q) => q.content === preset.content);
-    }
-
-    // Shuffle and limit questions
-    const shuffled = filteredQuestions.sort(() => 0.5 - Math.random());
-    const selected = shuffled.slice(0, preset.questions);
-
-    // Create exam config from preset
-    const config = {
-      type: preset.type,
-      content: preset.content,
-      timeInMinutes: preset.time,
-      questionsCount: preset.questions,
-    };
-
-    // Store exam configuration in session storage for persistence
-    sessionStorage.setItem('exam-type', preset.type);
-    sessionStorage.setItem('exam-content', preset.content);
-    sessionStorage.setItem('exam-questions', preset.questions.toString());
-    sessionStorage.setItem('exam-time', preset.time.toString());
-
-    setSelectedQuestions(selected);
-    setExamConfig(config);
-    setExamState('inProgress');
   };
 
   // Handle submitting an exam
-  const handleSubmitExam = (answers: { [key: string]: string }) => {
-    setUserAnswers(answers);
+  const handleSubmitExam = async (answers: { [key: string]: string }) => {
+    try {
+      setUserAnswers(answers);
 
-    // Calculate results
-    let correctCount = 0;
-    let incorrectCount = 0;
-    let skippedCount = 0;
+      // If we have a real exam ID from the backend, submit to API
+      const presetId = selectedPresetId;
+      if (presetId) {
+        // Format answers for API
+        const formattedAnswers = Object.keys(answers).map((questionId) => ({
+          questionId: parseInt(questionId),
+          selectedOption: parseInt(answers[questionId]), // Using selectedOption as required by backend
+        }));
 
-    selectedQuestions.forEach((question) => {
-      if (!answers[question.id]) {
-        skippedCount++;
-      } else if (answers[question.id] === question.correctAnswer) {
-        correctCount++;
-      } else {
-        incorrectCount++;
+        // Calculate time spent (for now, use the full time - should implement actual tracking)
+        const timeSpent = examConfig.timeInMinutes * 60;
+
+        // Submit to backend
+        try {
+          const submission = {
+            answers: formattedAnswers,
+            timeSpent,
+          };
+
+          const result = await examinationService.submitExamination(presetId, submission);
+
+          // Use results from the API
+          if (result) {
+            setExamResults({
+              score: result.score || 0,
+              totalQuestions: result.totalQuestions || selectedQuestions.length,
+              correctAnswers: result.correctAnswers || 0,
+              incorrectAnswers: (result.totalQuestions || selectedQuestions.length) - (result.correctAnswers || 0),
+              skippedAnswers: selectedQuestions.length - Object.keys(answers).length,
+              timeSpent: result.timeSpent || timeSpent,
+            });
+            setExamState('results');
+            return;
+          }
+        } catch (error) {
+          console.error('Failed to submit examination to API:', error);
+          // Fall back to client-side scoring below
+        }
       }
-    });
 
-    const score = Math.round((correctCount / selectedQuestions.length) * 100);
+      // Client-side fallback scoring
+      let correctCount = 0;
+      let incorrectCount = 0;
+      let skippedCount = 0;
 
-    setExamResults({
-      score,
-      totalQuestions: selectedQuestions.length,
-      correctAnswers: correctCount,
-      incorrectAnswers: incorrectCount,
-      skippedAnswers: skippedCount,
-      timeSpent: examConfig.timeInMinutes * 60 - 0, // We'd calculate actual time spent
-    });
+      selectedQuestions.forEach((question) => {
+        if (!answers[question.id]) {
+          skippedCount++;
+        } else if (answers[question.id] === question.correctAnswer) {
+          correctCount++;
+        } else {
+          incorrectCount++;
+        }
+      });
 
-    setExamState('results');
+      const score = Math.round((correctCount / selectedQuestions.length) * 100);
+
+      setExamResults({
+        score,
+        totalQuestions: selectedQuestions.length,
+        correctAnswers: correctCount,
+        incorrectAnswers: incorrectCount,
+        skippedAnswers: skippedCount,
+        timeSpent: examConfig.timeInMinutes * 60, // We'd calculate actual time spent
+      });
+
+      setExamState('results');
+    } catch (error) {
+      console.error('Error submitting exam:', error);
+      alert('There was an error submitting your exam. Please try again.');
+    }
 
     // Clear session storage
     sessionStorage.removeItem('exam-type');

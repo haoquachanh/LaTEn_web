@@ -2,21 +2,20 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ExaminationController } from './examination.controller';
 import { ExaminationService } from './examination.service';
-import { QuestionController } from './question.controller';
-import { QuestionService } from './question.service';
-import { ExaminationEntity } from '@entities/examination.entity';
+import { Examination } from '@entities/examination.entity';
 import { Question } from '@entities/question.entity';
-import { Answer } from '@entities/answer.entity';
-import { ExaminationResult } from '@entities/examination-result.entity';
-import { QuestionCategory } from '@entities/question-category.entity';
-import { QuestionBank } from '@entities/question-bank.entity';
+import { QuestionOption } from '@entities/question-option.entity';
+import { ExaminationQuestion } from '@entities/examination-question.entity';
+import { ExaminationAnswer } from '@entities/examination-answer.entity';
+import { QuestionModule } from '../question/question.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([ExaminationEntity, Question, Answer, ExaminationResult, QuestionCategory, QuestionBank]),
+    TypeOrmModule.forFeature([Examination, Question, QuestionOption, ExaminationQuestion, ExaminationAnswer]),
+    QuestionModule,
   ],
-  controllers: [ExaminationController, QuestionController],
-  providers: [ExaminationService, QuestionService],
-  exports: [ExaminationService, QuestionService],
+  controllers: [ExaminationController],
+  providers: [ExaminationService],
+  exports: [ExaminationService],
 })
 export class ExaminationModule {}

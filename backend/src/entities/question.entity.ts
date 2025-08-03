@@ -8,9 +8,8 @@ import {
   OneToMany,
   JoinColumn,
 } from 'typeorm';
-import { ExaminationEntity } from './examination.entity';
+import { UserEntity } from './user.entity';
 import { QuestionCategory } from './question-category.entity';
-import { QuestionBank } from './question-bank.entity';
 
 export enum QuestionType {
   TRUE_FALSE = 'true_false',
@@ -19,17 +18,22 @@ export enum QuestionType {
   ESSAY = 'essay',
 }
 
+export enum QuestionMode {
+  READING = 'reading',
+  LISTENING = 'listening',
+}
+
 export enum QuestionFormat {
   READING = 'reading',
   LISTENING = 'listening',
 }
 
 export enum DifficultyLevel {
-  LEVEL_1 = 1,
-  LEVEL_2 = 2,
-  LEVEL_3 = 3,
-  LEVEL_4 = 4,
-  LEVEL_5 = 5,
+  LEVEL_1 = 'level_1',
+  LEVEL_2 = 'level_2',
+  LEVEL_3 = 'level_3',
+  LEVEL_4 = 'level_4',
+  LEVEL_5 = 'level_5',
 }
 
 @Entity('questions')
@@ -43,59 +47,43 @@ export class Question {
   @Column({ type: 'enum', enum: QuestionType })
   type: QuestionType;
 
-  @Column({ type: 'enum', enum: QuestionFormat })
+  @Column({ type: 'enum', enum: QuestionMode })
+  mode: QuestionMode;
+
+  @Column({ type: 'enum', enum: QuestionFormat, default: QuestionFormat.READING })
   format: QuestionFormat;
 
-  @Column({ type: 'enum', enum: DifficultyLevel })
+  @Column({ type: 'enum', enum: DifficultyLevel, default: DifficultyLevel.LEVEL_1 })
   difficulty: DifficultyLevel;
 
-  @Column({ type: 'json', nullable: true })
-  options: string[]; // For multiple choice questions
-
-  @Column({ type: 'text', nullable: true })
-  correctAnswer: string;
-
-  @Column({ type: 'json', nullable: true })
-  acceptableAnswers: string[]; // For short answer questions with multiple acceptable answers
-
-  @Column({ type: 'text', nullable: true })
+  @Column('text', { nullable: true })
   explanation: string;
 
-  @Column({ type: 'int', default: 1 })
+  @Column('text', { nullable: true })
+  correctAnswer: string;
+
+  @Column('simple-array', { nullable: true })
+  acceptableAnswers: string[];
+
+  @Column('int', { default: 1 })
   points: number;
 
-  @Column({ type: 'int', default: 0 })
-  order: number;
-
   @Column({ type: 'text', nullable: true })
-  imageUrl: string;
+  audioUrl: string; // For listening questions
 
-  @Column({ type: 'text', nullable: true })
-  audioUrl: string;
+  @ManyToOne(() => UserEntity)
+  @JoinColumn({ name: 'createdById' })
+  createdBy: UserEntity;
 
-  @Column({ type: 'text', nullable: true })
-  passage: string; // For reading comprehension questions
+  @OneToMany('QuestionOption', 'question')
+  options: any[];
 
-  @Column({ type: 'int', nullable: true })
-  timeLimit: number; // Time limit in seconds for this specific question
-
-  @Column({ type: 'json', nullable: true })
-  metadata: Record<string, any>; // Additional question-specific data
-
-  @ManyToOne(() => ExaminationEntity, (examination) => examination.questions)
-  @JoinColumn({ name: 'examinationId' })
-  examination: ExaminationEntity;
+  @OneToMany('ExaminationQuestion', 'question')
+  examinationQuestions: any[];
 
   @ManyToOne(() => QuestionCategory, (category) => category.questions, { nullable: true })
   @JoinColumn({ name: 'categoryId' })
   category: QuestionCategory;
-
-  @ManyToOne(() => QuestionBank, (bank) => bank.questions, { nullable: true })
-  @JoinColumn({ name: 'questionBankId' })
-  questionBank: QuestionBank;
-
-  @OneToMany('Answer', 'question')
-  answers: any[];
 
   @CreateDateColumn()
   createdAt: Date;

@@ -8,8 +8,8 @@ export default function TheAccount() {
   return (
     <div className="dropdown dropdown-end">
       <div tabIndex={0} role="button">
-        <div className="flex justify-center align-middle btn btn-circle btn-ghost hover:bg-base-200 focus:bg-base-200 active:bg-base-300 transition-colors">
-          <Icon kind="profile" size={20} />
+        <div className="flex justify-center align-middle btn btn-circle btn-ghost hover:bg-primary/10 hover:text-primary focus:bg-primary/10 focus:text-primary active:bg-primary/20 transition-all duration-200">
+          <Icon kind="account" size={20} className="text-primary/70" />
         </div>
       </div>
       <div

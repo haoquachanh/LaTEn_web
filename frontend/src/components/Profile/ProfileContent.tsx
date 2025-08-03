@@ -48,11 +48,7 @@ export default function ProfileContent() {
               <div className="flex flex-col items-center gap-4">
                 <div className="avatar">
                   <div className="w-32 h-32 rounded-full ring ring-primary ring-offset-base-100 ring-offset-4">
-                    <img
-                      src={user?.avatar || 'https://daisyui.com/images/stock/photo-1534528741775-53994a69daeb.jpg'}
-                      alt="Profile"
-                      className="object-cover"
-                    />
+                    <img src={user?.avatar || ''} alt="Profile" className="object-cover" />
                   </div>
                 </div>
                 <button className="btn btn-outline btn-sm">

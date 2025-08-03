@@ -1,37 +1,41 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { ExaminationEntity, ExaminationType, ExaminationLevel } from '@entities/examination.entity';
-import { Question, QuestionType } from '@entities/question.entity';
-import { Answer } from '@entities/answer.entity';
-import { ExaminationResult } from '@entities/examination-result.entity';
+import { Examination } from '@entities/examination.entity';
+import { Question, QuestionType, QuestionMode } from '@entities/question.entity';
+import { QuestionOption } from '@entities/question-option.entity';
+import { ExaminationQuestion } from '@entities/examination-question.entity';
+import { ExaminationAnswer } from '@entities/examination-answer.entity';
 import { UserEntity } from '@entities/user.entity';
+import { CreateExaminationDto, SubmitExaminationDto } from './dtos/examination.dto';
 
 @Injectable()
 export class ExaminationService {
   constructor(
-    @InjectRepository(ExaminationEntity)
-    private readonly examinationRepository: Repository<ExaminationEntity>,
+    @InjectRepository(Examination)
+    private readonly examinationRepository: Repository<Examination>,
     @InjectRepository(Question)
     private readonly questionRepository: Repository<Question>,
-    @InjectRepository(Answer)
-    private readonly answerRepository: Repository<Answer>,
-    @InjectRepository(ExaminationResult)
-    private readonly resultRepository: Repository<ExaminationResult>,
+    @InjectRepository(QuestionOption)
+    private readonly optionRepository: Repository<QuestionOption>,
+    @InjectRepository(ExaminationQuestion)
+    private readonly examinationQuestionRepository: Repository<ExaminationQuestion>,
+    @InjectRepository(ExaminationAnswer)
+    private readonly examinationAnswerRepository: Repository<ExaminationAnswer>,
   ) {}
 
-  async getAllExaminations(): Promise<ExaminationEntity[]> {
+  async getUserExaminations(userId: number): Promise<Examination[]> {
     return this.examinationRepository.find({
-      where: { isActive: true },
-      relations: ['createdBy'],
-      order: { createdAt: 'DESC' },
+      where: { user: { id: userId } },
+      relations: ['user'],
+      order: { startedAt: 'DESC' },
     });
   }
 
-  async getExaminationById(id: number): Promise<ExaminationEntity> {
+  async getExaminationById(id: number, userId: number): Promise<Examination> {
     const examination = await this.examinationRepository.findOne({
-      where: { id, isActive: true },
-      relations: ['questions', 'createdBy'],
+      where: { id, user: { id: userId } },
+      relations: ['user', 'examinationQuestions', 'examinationQuestions.question', 'examinationQuestions.answers'],
     });
 
     if (!examination) {
@@ -41,78 +45,95 @@ export class ExaminationService {
     return examination;
   }
 
-  async getExaminationsByType(type: ExaminationType): Promise<ExaminationEntity[]> {
-    return this.examinationRepository.find({
-      where: { type, isActive: true },
-      relations: ['createdBy'],
-      order: { createdAt: 'DESC' },
-    });
+  async getExaminations(type?: QuestionType, mode?: QuestionMode): Promise<Examination[]> {
+    const query = this.examinationRepository
+      .createQueryBuilder('examination')
+      .leftJoinAndSelect('examination.user', 'user')
+      .orderBy('examination.startedAt', 'DESC');
+
+    if (type) {
+      query.andWhere('examination.questionType = :type', { type });
+    }
+
+    if (mode) {
+      query.andWhere('examination.mode = :mode', { mode });
+    }
+
+    return query.getMany();
   }
 
-  async getExaminationsByLevel(level: ExaminationLevel): Promise<ExaminationEntity[]> {
-    return this.examinationRepository.find({
-      where: { level, isActive: true },
-      relations: ['createdBy'],
-      order: { createdAt: 'DESC' },
-    });
-  }
-
-  async createExamination(
-    examinationData: Partial<ExaminationEntity>,
-    createdBy: UserEntity,
-  ): Promise<ExaminationEntity> {
+  async startExamination(examData: CreateExaminationDto, user: UserEntity): Promise<Examination> {
+    // Create new examination
     const examination = this.examinationRepository.create({
-      ...examinationData,
-      createdBy,
+      user,
+      questionType: examData.questionType,
+      mode: examData.mode,
+      totalQuestions: examData.totalQuestions,
+      durationSeconds: examData.durationSeconds,
+      startedAt: new Date(),
+      correctAnswers: 0,
     });
 
-    return this.examinationRepository.save(examination);
+    const savedExamination = await this.examinationRepository.save(examination);
+
+    // Get random questions based on type and mode
+    const questions = await this.questionRepository
+      .createQueryBuilder('question')
+      .where('question.type = :type', { type: examData.questionType })
+      .andWhere('question.mode = :mode', { mode: examData.mode })
+      .orderBy('RAND()')
+      .limit(examData.totalQuestions)
+      .getMany();
+
+    // Create examination questions
+    for (const question of questions) {
+      const examQuestion = this.examinationQuestionRepository.create({
+        examination: savedExamination,
+        question,
+      });
+      await this.examinationQuestionRepository.save(examQuestion);
+    }
+
+    // Return examination with questions
+    return this.getExaminationWithQuestions(savedExamination.id);
   }
 
-  async updateExamination(
-    id: number,
-    updateData: Partial<ExaminationEntity>,
-    userId: number,
-  ): Promise<ExaminationEntity> {
-    const examination = await this.examinationRepository.findOne({
-      where: { id },
-      relations: ['createdBy'],
-    });
-
-    if (!examination) {
-      throw new NotFoundException('Examination not found');
-    }
-
-    if (examination.createdBy.id !== userId) {
-      throw new ForbiddenException('You can only update your own examinations');
-    }
-
-    Object.assign(examination, updateData);
-    return this.examinationRepository.save(examination);
-  }
-
-  async deleteExamination(id: number, userId: number): Promise<void> {
-    const examination = await this.examinationRepository.findOne({
-      where: { id },
-      relations: ['createdBy'],
-    });
-
-    if (!examination) {
-      throw new NotFoundException('Examination not found');
-    }
-
-    if (examination.createdBy.id !== userId) {
-      throw new ForbiddenException('You can only delete your own examinations');
-    }
-
-    examination.isActive = false;
-    await this.examinationRepository.save(examination);
-  }
-
-  async submitExamination(examinationId: number, answers: any[], userId: number): Promise<ExaminationResult> {
+  async getExaminationWithQuestions(examinationId: number): Promise<Examination> {
     const examination = await this.examinationRepository.findOne({
       where: { id: examinationId },
-      relations: ['questions'],
+      relations: ['user'],
+    });
+
+    if (!examination) {
+      throw new NotFoundException('Examination not found');
+    }
+
+    const examQuestions = await this.examinationQuestionRepository.find({
+      where: { examination: { id: examinationId } },
+      relations: ['question', 'question.options'],
+    });
+
+    // Hide correct answers from the response
+    for (const examQuestion of examQuestions) {
+      if (examQuestion.question.options) {
+        for (const option of examQuestion.question.options) {
+          delete option.isCorrect;
+        }
+      }
+    }
+
+    examination['questions'] = examQuestions.map((eq) => ({
+      id: eq.id,
+      question: eq.question,
+    }));
+
+    return examination;
+  }
+
+  async submitExamination(submitData: SubmitExaminationDto, userId: number): Promise<Examination> {
+    // Find examination
+    const examination = await this.examinationRepository.findOne({
+      where: { id: submitData.examinationId, user: { id: userId } },
     });
 
     if (!examination) {
@@ -120,72 +141,83 @@ export class ExaminationService {
     }
 
     let correctAnswers = 0;
-    let totalScore = 0;
-    const detailedResults = [];
 
     // Process each answer
-    for (const answer of answers) {
-      const question = examination.questions.find((q) => q.id === answer.questionId);
-      if (question) {
-        const isCorrect = question.correctAnswer === answer.userAnswer;
-        const pointsEarned = isCorrect ? question.points : 0;
+    for (const answer of submitData.answers) {
+      const examQuestion = await this.examinationQuestionRepository.findOne({
+        where: { id: answer.questionId, examination: { id: examination.id } },
+        relations: ['question'],
+      });
 
-        if (isCorrect) correctAnswers++;
-        totalScore += pointsEarned;
+      if (!examQuestion) {
+        continue;
+      }
 
-        // Save user answer
-        const userAnswer = this.answerRepository.create({
-          userAnswer: answer.userAnswer,
-          isCorrect,
-          pointsEarned,
-          user: { id: userId } as UserEntity,
-          question,
-        });
-        await this.answerRepository.save(userAnswer);
+      let isCorrect = false;
+      const examAnswer = this.examinationAnswerRepository.create({
+        examinationQuestion: examQuestion,
+      });
 
-        detailedResults.push({
-          questionId: question.id,
-          userAnswer: answer.userAnswer,
-          correctAnswer: question.correctAnswer,
-          isCorrect,
-          pointsEarned,
-        });
+      if (examQuestion.question.type === QuestionType.MULTIPLE_CHOICE) {
+        if (answer.selectedOptionId) {
+          const option = await this.optionRepository.findOne({
+            where: { id: answer.selectedOptionId, question: { id: examQuestion.question.id } },
+          });
+
+          if (option) {
+            examAnswer.selectedOption = option;
+            isCorrect = option.isCorrect;
+          }
+        }
+      } else if (examQuestion.question.type === QuestionType.TRUE_FALSE) {
+        if (answer.selectedOptionId) {
+          const option = await this.optionRepository.findOne({
+            where: { id: answer.selectedOptionId, question: { id: examQuestion.question.id } },
+          });
+
+          if (option) {
+            examAnswer.selectedOption = option;
+            isCorrect = option.isCorrect;
+          }
+        }
+      } else if (examQuestion.question.type === QuestionType.SHORT_ANSWER) {
+        if (answer.answerText) {
+          examAnswer.answerText = answer.answerText;
+
+          // Get correct option to check answer
+          const correctOption = await this.optionRepository.findOne({
+            where: { question: { id: examQuestion.question.id }, isCorrect: true },
+          });
+
+          if (correctOption) {
+            // Simple case-insensitive check - this could be made more sophisticated
+            isCorrect = answer.answerText.toLowerCase() === correctOption.text.toLowerCase();
+          }
+        }
+      }
+
+      examAnswer.isCorrect = isCorrect;
+      await this.examinationAnswerRepository.save(examAnswer);
+
+      if (isCorrect) {
+        correctAnswers++;
       }
     }
 
-    const totalPossibleScore = examination.questions.reduce((sum, q) => sum + q.points, 0);
-    const percentage = (totalScore / totalPossibleScore) * 100;
-    const isPassed = percentage >= examination.passingScore;
-
-    // Save examination result
-    const result = this.resultRepository.create({
-      score: totalScore,
-      percentage,
-      totalQuestions: examination.questions.length,
-      correctAnswers,
-      timeSpent: answers.length > 0 ? answers[0].timeSpent || 0 : 0,
-      isPassed,
-      detailedResults,
-      user: { id: userId } as UserEntity,
-      examination,
-    });
-
-    return this.resultRepository.save(result);
+    // Update examination with results
+    examination.correctAnswers = correctAnswers;
+    return this.examinationRepository.save(examination);
   }
 
-  async getUserResults(userId: number): Promise<ExaminationResult[]> {
-    return this.resultRepository.find({
-      where: { user: { id: userId } },
-      relations: ['examination'],
-      order: { completedAt: 'DESC' },
+  async deleteExamination(id: number, userId: number): Promise<void> {
+    const examination = await this.examinationRepository.findOne({
+      where: { id, user: { id: userId } },
     });
-  }
 
-  async getExaminationResults(examinationId: number): Promise<ExaminationResult[]> {
-    return this.resultRepository.find({
-      where: { examination: { id: examinationId } },
-      relations: ['user', 'examination'],
-      order: { completedAt: 'DESC' },
-    });
+    if (!examination) {
+      throw new NotFoundException('Examination not found');
+    }
+
+    await this.examinationRepository.remove(examination);
   }
 }

@@ -15,25 +15,29 @@ export class CommentReply {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'text' })
+  @Column('text')
   content: string;
-
-  @Column({ type: 'int', default: 0 })
-  likes: number;
-
-  @Column({ type: 'int', default: 0 })
-  dislikes: number;
 
   @Column({ default: true })
   isActive: boolean;
 
+  @Column({ default: 0 })
+  likes: number;
+
+  @Column({ default: 0 })
+  dislikes: number;
+
+  @ManyToOne(() => Comment, (comment) => comment.replies, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'commentId' })
+  comment: Comment;
+
+  @ManyToOne(() => UserEntity)
+  @JoinColumn({ name: 'userId' })
+  user: UserEntity;
+
   @ManyToOne(() => UserEntity)
   @JoinColumn({ name: 'authorId' })
   author: UserEntity;
-
-  @ManyToOne(() => Comment, (comment) => comment.replies)
-  @JoinColumn({ name: 'commentId' })
-  comment: Comment;
 
   @CreateDateColumn()
   createdAt: Date;

@@ -1,5 +1,5 @@
 import { IsNotEmpty, IsString, IsEnum, IsOptional, IsNumber } from 'class-validator';
-import { CommentType } from '@entities/comment.entity';
+import { CommentType } from '../../../entities/comment.entity';
 
 export class CreateCommentDto {
   @IsNotEmpty()

@@ -15,12 +15,61 @@ import {
   ExaminationType,
   ResultQueryParams,
 } from './types/examination.types';
+// Import PresetExam để sử dụng cho kiểu dữ liệu trả về
+import { PresetExam } from '@/components/Examination/types';
 
 /**
  * ExaminationService provides methods to interact with examination endpoints
  */
 class ExaminationService {
   private basePath = '/examinations';
+
+  /**
+   * Get preset examinations
+   *
+   * @returns Promise with array of preset exams for the frontend
+   */
+  async getPresetExaminations(): Promise<PresetExam[]> {
+    try {
+      const response = await api.get(`${this.basePath}/presets`);
+
+      // Transform backend preset format to match frontend PresetExam format
+      const presets: PresetExam[] = response.data.map((preset: any) => ({
+        id: preset.id,
+        title: preset.title,
+        description: preset.description || '',
+        type: this.mapExamType(preset.type),
+        questions: preset.totalQuestions,
+        questionsCount: preset.totalQuestions,
+        time: preset.duration,
+        content: preset.type.toLowerCase(), // Using type as content (reading/listening)
+      }));
+
+      return presets;
+    } catch (error) {
+      console.error('Error fetching preset examinations:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Map backend examination type to frontend type
+   */
+  private mapExamType(type: string): string {
+    switch (type) {
+      case 'grammar':
+      case 'vocabulary':
+        return 'multiple';
+      case 'listening':
+        return 'multiple';
+      case 'reading':
+        return 'multiple';
+      case 'mixed':
+        return 'multiple';
+      default:
+        return 'multiple';
+    }
+  }
 
   /**
    * Get all examinations with optional filtering
@@ -157,14 +206,31 @@ class ExaminationService {
   async startExamination(id: number | string): Promise<Examination> {
     try {
       const response = await api.post(`${this.basePath}/${id}/start`);
-      return response.data;
+
+      // Transform backend response to match frontend Examination interface
+      const examination = response.data;
+
+      // Map questions from backend format to frontend format
+      if (examination.questions) {
+        examination.questions = examination.questions.map((q: any) => ({
+          id: q.id,
+          text: q.content,
+          options: q.options || [],
+          correctOption: q.correctAnswer, // This will be used for validation after submission
+          explanation: q.explanation,
+          type: q.type,
+          format: q.format,
+          difficulty: q.difficulty,
+          points: q.points || 1,
+        }));
+      }
+
+      return examination;
     } catch (error) {
       console.error(`Error starting examination ${id}:`, error);
       throw error;
     }
-  }
-
-  /**
+  } /**
    * Submit examination answers
    *
    * @param id Examination ID

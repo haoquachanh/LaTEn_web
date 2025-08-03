@@ -5,12 +5,13 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   ManyToOne,
-  OneToMany,
+  ManyToMany,
+  JoinTable,
   JoinColumn,
 } from 'typeorm';
-import { UserEntity } from './user.entity';
-import { Question } from './question.entity';
 import { QuestionCategory } from './question-category.entity';
+import { Question } from './question.entity';
+import { UserEntity } from './user.entity';
 
 @Entity('question_banks')
 export class QuestionBank {
@@ -23,21 +24,25 @@ export class QuestionBank {
   @Column({ type: 'text', nullable: true })
   description: string;
 
-  @Column({ default: true })
+  @Column({ default: false })
   isPublic: boolean;
 
   @Column({ default: true })
   isActive: boolean;
 
-  @ManyToOne(() => UserEntity, { nullable: false })
-  @JoinColumn({ name: 'createdBy' })
+  @ManyToOne(() => UserEntity)
+  @JoinColumn({ name: 'creatorId' })
   creator: UserEntity;
 
-  @ManyToOne(() => QuestionCategory, { nullable: true })
-  @JoinColumn({ name: 'categoryId' })
+  @ManyToOne(() => QuestionCategory)
   category: QuestionCategory;
 
-  @OneToMany(() => Question, (question) => question.questionBank)
+  @ManyToMany(() => Question)
+  @JoinTable({
+    name: 'question_bank_questions',
+    joinColumn: { name: 'bank_id', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'question_id', referencedColumnName: 'id' },
+  })
   questions: Question[];
 
   @CreateDateColumn()

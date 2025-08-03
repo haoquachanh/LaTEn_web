@@ -1,71 +1,37 @@
-import {
-  Entity,
-  Column,
-  PrimaryGeneratedColumn,
-  CreateDateColumn,
-  UpdateDateColumn,
-  ManyToOne,
-  OneToMany,
-  JoinColumn,
-} from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
 import { UserEntity } from './user.entity';
-
-export enum ExaminationType {
-  GRAMMAR = 'grammar',
-  VOCABULARY = 'vocabulary',
-  LISTENING = 'listening',
-  READING = 'reading',
-  MIXED = 'mixed',
-}
-
-export enum ExaminationLevel {
-  BEGINNER = 'beginner',
-  INTERMEDIATE = 'intermediate',
-  ADVANCED = 'advanced',
-}
+import { QuestionType, QuestionMode } from './question.entity';
 
 @Entity('examinations')
-export class ExaminationEntity {
+export class Examination {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
-  title: string;
+  @ManyToOne(() => UserEntity, (user) => user.examinations)
+  @JoinColumn({ name: 'userId' })
+  user: UserEntity;
 
-  @Column({ type: 'text', nullable: true })
-  description: string;
+  @Column({ type: 'enum', enum: QuestionType })
+  questionType: QuestionType;
 
-  @Column({ type: 'enum', enum: ExaminationType })
-  type: ExaminationType;
+  @Column({ type: 'enum', enum: QuestionMode })
+  mode: QuestionMode;
 
-  @Column({ type: 'enum', enum: ExaminationLevel })
-  level: ExaminationLevel;
-
-  @Column({ type: 'int', default: 60 })
-  duration: number; // in minutes
-
-  @Column({ type: 'int', default: 10 })
+  @Column('int')
   totalQuestions: number;
 
-  @Column({ type: 'float', default: 0 })
-  passingScore: number;
+  @Column('int', { default: 0 })
+  correctAnswers: number;
 
-  @Column({ default: true })
-  isActive: boolean;
+  @Column('int')
+  durationSeconds: number;
 
-  @ManyToOne(() => UserEntity)
-  @JoinColumn({ name: 'createdBy' })
-  createdBy: UserEntity;
+  @Column('timestamp')
+  startedAt: Date;
 
-  @OneToMany('Question', 'examination')
-  questions: any[];
-
-  @OneToMany('ExaminationResult', 'examination')
-  results: any[];
+  @OneToMany('ExaminationQuestion', 'examination')
+  examinationQuestions: any[];
 
   @CreateDateColumn()
   createdAt: Date;
-
-  @UpdateDateColumn()
-  updatedAt: Date;
 }

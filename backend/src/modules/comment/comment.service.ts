@@ -1,9 +1,9 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Comment, CommentType } from '@entities/comment.entity';
-import { CommentReply } from '@entities/comment-reply.entity';
-import { UserEntity } from '@entities/user.entity';
+import { Comment, CommentType } from '../../entities/comment.entity';
+import { CommentReply } from '../../entities/comment-reply.entity';
+import { UserEntity } from '../../entities/user.entity';
 
 @Injectable()
 export class CommentService {
@@ -34,8 +34,8 @@ export class CommentService {
   ): Promise<{ comments: Comment[]; total: number }> {
     const [comments, total] = await this.commentRepository.findAndCount({
       where: {
-        relatedEntityType: entityType,
-        relatedEntityId: entityId,
+        type: entityType as CommentType,
+        targetId: entityId,
         isActive: true,
       },
       relations: ['author', 'replies', 'replies.author'],

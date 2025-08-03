@@ -5,6 +5,7 @@ import { typeOrmConfig } from './common/config/typeorm.config';
 import { AuthModule } from './modules/auth/auth.module';
 import { UserModule } from '@modules/users/user.module';
 import { ExaminationModule } from '@modules/examination/examination.module';
+import { QuestionModule } from '@modules/question/question.module';
 import { CommentModule } from '@modules/comment/comment.module';
 import { HealthModule } from '@modules/health/health.module';
 import { AppConfigService } from './config/app-config.service';
@@ -19,6 +20,7 @@ import { AppConfigService } from './config/app-config.service';
     HealthModule,
     AuthModule,
     UserModule,
+    QuestionModule,
     ExaminationModule,
     CommentModule,
   ],

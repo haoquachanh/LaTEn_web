@@ -9,12 +9,12 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { UserEntity } from './user.entity';
+import { CommentReply } from './comment-reply.entity';
 
 export enum CommentType {
-  GENERAL = 'general',
+  POST = 'post',
   QUESTION = 'question',
-  FEEDBACK = 'feedback',
-  HELP_REQUEST = 'help_request',
+  EXAM = 'exam',
 }
 
 @Entity('comments')
@@ -22,37 +22,38 @@ export class Comment {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'text' })
+  @Column('text')
   content: string;
 
-  @Column({ type: 'enum', enum: CommentType, default: CommentType.GENERAL })
+  @Column({ type: 'enum', enum: CommentType })
   type: CommentType;
 
-  @Column({ type: 'varchar', nullable: true })
-  relatedEntityType: string; // 'examination', 'course', 'lesson', etc.
-
-  @Column({ type: 'int', nullable: true })
-  relatedEntityId: number;
-
-  @Column({ type: 'int', default: 0 })
-  likes: number;
-
-  @Column({ type: 'int', default: 0 })
-  dislikes: number;
+  @Column('int')
+  targetId: number;
 
   @Column({ default: true })
   isActive: boolean;
 
+  @Column({ default: 0 })
+  likes: number;
+
+  @Column({ default: 0 })
+  dislikes: number;
+
+  @ManyToOne(() => UserEntity)
+  @JoinColumn({ name: 'userId' })
+  user: UserEntity;
+
   @ManyToOne(() => UserEntity)
   @JoinColumn({ name: 'authorId' })
   author: UserEntity;
-
-  @OneToMany('CommentReply', 'comment')
-  replies: any[];
 
   @CreateDateColumn()
   createdAt: Date;
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @OneToMany(() => CommentReply, (reply) => reply.comment)
+  replies: CommentReply[];
 }

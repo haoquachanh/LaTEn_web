@@ -14,8 +14,8 @@ import {
 } from '@nestjs/common';
 import { CommentService } from './comment.service';
 import { JwtAuthGuard } from '@common/security/jwt.guard';
-import { Comment, CommentType } from '@entities/comment.entity';
-import { CommentReply } from '@entities/comment-reply.entity';
+import { Comment, CommentType } from '../../entities/comment.entity';
+import { CommentReply } from '../../entities/comment-reply.entity';
 
 @Controller('comments')
 export class CommentController {

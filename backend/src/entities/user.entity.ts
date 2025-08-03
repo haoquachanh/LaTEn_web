@@ -1,14 +1,6 @@
 import { UserRole } from '../common/typings/user-role.enum';
 import { IsEmpty, IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
-import {
-  Entity,
-  Column,
-  PrimaryGeneratedColumn,
-  CreateDateColumn,
-  UpdateDateColumn,
-  ManyToMany,
-  JoinTable,
-} from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
 import { Exclude } from 'class-transformer';
 
 @Entity('users')
@@ -29,7 +21,11 @@ export class UserEntity {
 
   @IsOptional()
   @IsEnum(UserRole)
-  @Column({ type: 'simple-enum', enum: UserRole, default: UserRole.USER })
+  @Column({
+    type: 'enum',
+    enum: UserRole,
+    default: UserRole.ADMIN,
+  })
   role: UserRole;
 
   @IsOptional()
@@ -47,13 +43,11 @@ export class UserEntity {
   @Column({ nullable: true })
   birth: string;
 
-  @IsEmpty()
   @CreateDateColumn()
-  created: Date;
+  createdAt: Date;
 
-  @IsEmpty()
   @UpdateDateColumn()
-  updated: Date;
+  updatedAt: Date;
 
   @IsOptional()
   @IsString()
@@ -64,4 +58,10 @@ export class UserEntity {
   @IsString()
   @Column({ nullable: true })
   refreshTokenExpires?: Date;
+
+  @OneToMany('Examination', 'user')
+  examinations: any[];
+
+  @OneToMany('Question', 'createdBy')
+  questions: any[];
 }

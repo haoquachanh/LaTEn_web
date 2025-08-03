@@ -36,11 +36,12 @@ export const API_ROUTES = {
   EXAMINATION: {
     BASE: '/examinations',
     BY_ID: (id: string | number) => `/examinations/${id}`,
-    START: '/examinations/:id/start',
-    SUBMIT: '/examinations/:id/submit',
-    RESULTS: '/examinations/results',
+    START: (id: string | number) => `/examinations/${id}/start`,
+    SUBMIT: (id: string | number) => `/examinations/${id}/submit`,
+    RESULTS: '/examinations/results/my',
     RESULT_BY_ID: (id: string | number) => `/examinations/results/${id}`,
-    QUESTIONS: '/examinations/:id/questions',
+    QUESTIONS: (id: string | number) => `/examinations/${id}/questions`,
+    PRESETS: '/examinations/presets',
   },
 
   // Comments
