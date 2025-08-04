@@ -1,29 +1,7 @@
 /**
  * Examination API Hooks
  *
- * Cust  consexport function useStartExaminationApi() {
-  const url = `${EXAMINATIONS_API}/start`;
-  const { trigger } = useApiMutation<{ examinationId: string | number }, Examination>(url);
-
-  const startExam = async (examinationId: string | number) => {
-    try {
-      return await trigger(undefined, {
-        arg: {
-          data: { examinationId },
-          method: 'POST'
-        }
-      });
-    } catch (error) {
-      throw error;async (examinationId: string | number) => {
-    try {
-      return await trigger({
-        data: { examinationId },
-        method: 'POST'
-      });
-    } catch (error) {
-      throw error;
-    }
-  }; accessing examination-related API endpoints
+ * Custom hooks for accessing examination-related API endpoints
  * using the SWR data fetching pattern.
  */
 import { useApiQuery, usePaginatedQuery, useApiMutation } from '@/hooks/useApiQuery';
@@ -60,12 +38,23 @@ export function useExaminationApi(id: string | number | null) {
  * Hook to start an examination
  */
 export function useStartExaminationApi() {
-  const url = `${EXAMINATIONS_API}/start`;
-  const { trigger } = useApiMutation<{ examinationId: string | number }, Examination>(url);
+  // Không có URL cụ thể vì sẽ tạo URL động dựa trên examinationId
+  const { trigger: triggerMutation } = useApiMutation<any, Examination>(`${EXAMINATIONS_API}/dummy-url`);
 
-  const startExam = async (examinationId: string | number) => {
+  const startExam = async (
+    examinationId: string | number, 
+    examParams?: {
+      questionsCount?: number;
+      type?: string;
+      content?: string;
+      duration?: number;
+      level?: string;
+    }
+  ) => {
     try {
-      return await trigger({ examinationId });
+      // Sử dụng examination.service.ts thay vì hook api mutation
+      const examinationService = (await import('@/services/examination.service')).default;
+      return await examinationService.startExamination(examinationId, examParams);
     } catch (error) {
       throw error;
     }

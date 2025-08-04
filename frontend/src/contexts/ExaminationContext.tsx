@@ -35,7 +35,13 @@ interface ExaminationContextProps {
 
   // Actions
   loadExamination: (id: number | string) => Promise<Examination>;
-  startExamination: (id: number | string) => Promise<Examination>;
+  startExamination: (id: number | string, examParams?: {
+    questionsCount?: number;
+    type?: string;
+    content?: string;
+    duration?: number;
+    level?: string;
+  }) => Promise<Examination>;
   submitExamination: () => Promise<ExaminationResult | undefined>;
   handleAnswer: (questionId: number, selectedOption: number) => void;
   goToPage: (page: number) => void;
@@ -57,7 +63,13 @@ const ExaminationContext = createContext<ExaminationContextProps>({
   result: null,
 
   loadExamination: async (id: number | string) => ({}) as Examination,
-  startExamination: async (id: number | string) => ({}) as Examination,
+  startExamination: async (id: number | string, examParams?: {
+    questionsCount?: number;
+    type?: string;
+    content?: string;
+    duration?: number;
+    level?: string;
+  }) => ({}) as Examination,
   submitExamination: async () => undefined,
   handleAnswer: () => {},
   goToPage: () => {},
@@ -163,18 +175,33 @@ export function ExaminationProvider({ children }: Props) {
    * Start an examination
    */
   const startExamination = useCallback(
-    async (id: number | string) => {
+    async (id: number | string, examParams?: {
+      questionsCount?: number;
+      type?: string;
+      content?: string;
+      duration?: number;
+      level?: string;
+    }) => {
       try {
         setIsSubmitting(false);
         setResult(null);
         setAnswers({});
         setCurrentPage(0);
 
-        // Load exam with questions
-        const exam = await examinationService.startExamination(id);
+        console.log(`Context: Starting examination with ID ${id}`, examParams ? `with params: ${JSON.stringify(examParams)}` : '');
+        
+        // Load exam with questions, passing examParams
+        const exam = await examinationService.startExamination(id, examParams);
+        console.log('Context: Examination data received:', exam);
+        
         setCurrentExam(exam);
-        if (exam.questions) {
+        
+        if (exam.questions && exam.questions.length > 0) {
+          console.log(`Context: ${exam.questions.length} questions loaded`);
           setQuestions(exam.questions);
+        } else {
+          console.error('Context: No questions received from API');
+          showToast('Error: No questions available for this examination', 'error');
         }
 
         // Set up timer
@@ -202,18 +229,25 @@ export function ExaminationProvider({ children }: Props) {
     try {
       setIsSubmitting(true);
 
-      // Prepare answers array
-      const answerArray: ExaminationAnswer[] = Object.keys(answers).map((questionId) => ({
-        questionId: parseInt(questionId),
-        selectedOption: answers[parseInt(questionId)],
-      }));
-
+      console.log('Preparing to submit exam answers');
+      
+      // Format answers for API submission
+      // Chuyển từ { questionId: selectedOption } sang định dạng mà API mong đợi
+      const formattedAnswers: { [key: string]: string } = {};
+      
+      Object.keys(answers).forEach((questionId) => {
+        formattedAnswers[questionId] = answers[parseInt(questionId)].toString();
+      });
+      
       // Calculate time spent
       const timeSpent = startTime ? Math.round((Date.now() - startTime.getTime()) / 1000) : totalTime - timeRemaining;
+      
+      console.log('Time spent:', timeSpent);
+      console.log('Answers:', formattedAnswers);
 
       // Submit answers
       const submission: ExaminationSubmission = {
-        answers: answerArray,
+        answers: formattedAnswers,
         timeSpent,
       };
 

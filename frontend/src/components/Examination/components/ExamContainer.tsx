@@ -12,6 +12,7 @@ interface ExamContainerProps {
     content: string;
     timeInMinutes: number;
     questionsCount: number;
+    level: string;
   };
   onSubmitExam: (answers: { [key: string]: string }) => void;
   onCancelExam: () => void;

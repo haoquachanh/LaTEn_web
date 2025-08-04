@@ -14,6 +14,8 @@ interface CustomExamFormProps {
   setNumberOfQuestions: (num: number) => void;
   time: number;
   setTime: (time: number) => void;
+  level?: string;
+  setLevel?: (level: string) => void;
   changePage: (page: number) => void;
 }
 
@@ -26,6 +28,8 @@ const CustomExamForm: React.FC<CustomExamFormProps> = ({
   setNumberOfQuestions,
   time,
   setTime,
+  level = 'medium',
+  setLevel = () => {},
   changePage,
 }) => {
   return (
@@ -132,6 +136,22 @@ const CustomExamForm: React.FC<CustomExamFormProps> = ({
               </button>
             ))}
           </div>
+        </div>
+      </div>
+      
+      {/* Difficulty Level Selection */}
+      <div className="mb-8">
+        <h3 className="text-lg font-medium mb-2">Difficulty Level</h3>
+        <div className="flex gap-2">
+          {['easy', 'medium', 'hard', 'expert'].map((diffLevel) => (
+            <button
+              key={diffLevel}
+              className={`flex-1 btn ${level === diffLevel ? 'btn-primary' : 'btn-outline'}`}
+              onClick={() => setLevel(diffLevel)}
+            >
+              {diffLevel.charAt(0).toUpperCase() + diffLevel.slice(1)}
+            </button>
+          ))}
         </div>
       </div>
     </>

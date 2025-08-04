@@ -1,8 +1,16 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useExaminationResultsApi } from '@/hooks/useExaminationApi';
+
+// Helper function to format time spent
+const formatTimeSpent = (seconds: number): string => {
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+  return `${minutes}m ${remainingSeconds}s`;
+};
 
 interface PastExam {
   id: string;
@@ -19,36 +27,26 @@ interface ExaminationDashboardProps {
 }
 
 const ExaminationDashboard: React.FC<ExaminationDashboardProps> = ({ onStartTest }) => {
-  // Mock data for past exams
-  const [pastExams, setPastExams] = useState<PastExam[]>([
-    {
-      id: '1',
-      title: 'Reading Comprehension Test',
-      date: '2025-07-28',
-      score: 85,
-      questions: 20,
-      timeSpent: '25m 14s',
-      type: 'Reading',
-    },
-    {
-      id: '2',
-      title: 'Grammar Quiz',
-      date: '2025-07-25',
-      score: 70,
-      questions: 15,
-      timeSpent: '14m 30s',
-      type: 'Grammar',
-    },
-    {
-      id: '3',
-      title: 'Listening Comprehension',
-      date: '2025-07-20',
-      score: 90,
-      questions: 10,
-      timeSpent: '18m 45s',
-      type: 'Listening',
-    },
-  ]);
+  // Get past exams from API
+  const [pastExams, setPastExams] = useState<PastExam[]>([]);
+  const { data: resultsData, isLoading } = useExaminationResultsApi();
+  
+  // Transform examination results to PastExam format when data is available
+  useEffect(() => {
+    if (resultsData?.data) {
+      const formattedExams = resultsData.data.map(result => ({
+        id: result.id.toString(),
+        title: result.examination?.title || 'Unnamed Examination',
+        date: new Date(result.completedAt).toISOString().split('T')[0],
+        score: result.score,
+        questions: result.totalQuestions,
+        timeSpent: formatTimeSpent(result.timeSpent),
+        type: result.examination?.type || 'Unknown',
+      }));
+      
+      setPastExams(formattedExams);
+    }
+  }, [resultsData]);
 
   // Statistics for the dashboard
   const totalExams = pastExams.length;

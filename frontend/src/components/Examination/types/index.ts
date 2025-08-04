@@ -29,4 +29,5 @@ export type PresetExam = {
   questionsCount: number; // This is redundant but keeping for compatibility
   time: number; // in minutes
   content: string;
+  level?: string; // Difficulty level: easy, medium, hard, expert
 };

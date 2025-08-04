@@ -13,7 +13,7 @@ import {
 } from '@nestjs/common';
 import { JwtAuthGuard } from '@common/security/jwt.guard';
 import { QuestionService } from './question.service';
-import { CreateQuestionDto, UpdateQuestionDto } from './dtos/create-question.dto';
+import { CreateQuestionDto, UpdateQuestionDto, QuestionFilterDto } from './dtos/question.dto';
 import { QuestionType, QuestionMode } from '@entities/question.entity';
 import { RolesGuard } from '../../common/security/role.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -27,18 +27,17 @@ export class QuestionController {
   @Post()
   @UseGuards(RolesGuard)
   @Roles(UserRole.ADMIN, UserRole.TEACHER)
-  async createQuestion(@Body() createQuestionDto: CreateQuestionDto, @Request() req) {
-    return await this.questionService.createQuestion(createQuestionDto, req.user);
+  async createQuestion(@Body() createQuestionDto: CreateQuestionDto) {
+    return await this.questionService.createQuestion(createQuestionDto);
   }
 
   @Get()
-  async findAllQuestions(
+  async getAllQuestions(
+    @Query() filter: QuestionFilterDto,
     @Query('page') page: number = 1,
     @Query('limit') limit: number = 10,
-    @Query('type') type?: QuestionType,
-    @Query('mode') mode?: QuestionMode,
   ) {
-    return await this.questionService.findAllQuestions(page, limit, type, mode);
+    return await this.questionService.getAllQuestions(filter, page, limit);
   }
 
   @Get('random')
@@ -58,19 +57,15 @@ export class QuestionController {
   @Put(':id')
   @UseGuards(RolesGuard)
   @Roles(UserRole.ADMIN, UserRole.TEACHER)
-  async updateQuestion(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() updateQuestionDto: UpdateQuestionDto,
-    @Request() req,
-  ) {
-    return await this.questionService.updateQuestion(id, updateQuestionDto, req.user);
+  async updateQuestion(@Param('id', ParseIntPipe) id: number, @Body() updateQuestionDto: UpdateQuestionDto) {
+    return await this.questionService.updateQuestion(id, updateQuestionDto);
   }
 
   @Delete(':id')
   @UseGuards(RolesGuard)
   @Roles(UserRole.ADMIN, UserRole.TEACHER)
-  async deleteQuestion(@Param('id', ParseIntPipe) id: number, @Request() req) {
-    await this.questionService.deleteQuestion(id, req.user);
+  async deleteQuestion(@Param('id', ParseIntPipe) id: number) {
+    await this.questionService.deleteQuestion(id);
     return { message: 'Question deleted successfully' };
   }
 }

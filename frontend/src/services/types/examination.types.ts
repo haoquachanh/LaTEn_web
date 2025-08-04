@@ -89,11 +89,14 @@ export interface ExaminationQueryParams {
 export interface ExaminationResult {
   id: number;
   score: number;
-  percentage: number;
+  percentage?: number;
   totalQuestions: number;
   correctAnswers: number;
+  incorrectAnswers?: number;
+  skippedAnswers?: number;
   timeSpent: number;
-  isPassed: boolean;
+  isPassed?: boolean;
+  submittedAt?: string;
   detailedResults?: {
     questionId: number;
     isCorrect: boolean;
@@ -114,7 +117,19 @@ export interface ExaminationResult {
  * Structure for examination submission
  */
 export interface ExaminationSubmission {
-  answers: ExaminationAnswer[];
+  answers: { [key: string]: string }; // Map of questionId to selectedOptionId
+  timeSpent?: number;
+}
+
+/**
+ * API format for examination submission
+ */
+export interface ApiExaminationSubmission {
+  answers: {
+    questionId: number;
+    selectedOptionId?: number;
+    answerText?: string;
+  }[];
   timeSpent?: number;
 }
 

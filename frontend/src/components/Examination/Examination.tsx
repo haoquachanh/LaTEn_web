@@ -3,12 +3,36 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Question, PresetExam } from './types';
 import { sampleQuestions } from './data/sampleQuestions';
-import { examTypes, subjects, presetExams } from './data/examData';
+import { examTypes, subjects } from './data/examData';
 import ExamSetup from './components/ExamSetup';
 import ExamContainer from './components/ExamContainer';
 import ExamResults from './components/ExamResults';
 import ExaminationDashboard from './components/ExaminationDashboard';
 import examinationService from '@/services/examination.service';
+
+/**
+ * Helper function to map frontend exam type to backend QuestionType enum
+ */
+const mapTypeToBackend = (type: string): string => {
+  const typeMap: Record<string, string> = {
+    'multiple-choice': 'MULTIPLE_CHOICE',
+    'true-false': 'TRUE_FALSE',
+    'essay': 'ESSAY',
+    'short-answer': 'SHORT_ANSWER',
+  };
+  return typeMap[type] || 'MULTIPLE_CHOICE';
+};
+
+/**
+ * Helper function to map frontend content type to backend QuestionMode enum
+ */
+const mapContentToBackend = (content: string): string => {
+  const contentMap: Record<string, string> = {
+    'reading': 'READING',
+    'listening': 'LISTENING',
+  };
+  return contentMap[content] || 'READING';
+};
 
 // Main Examination component that manages the overall exam flow
 const Examination: React.FC = () => {
@@ -20,6 +44,7 @@ const Examination: React.FC = () => {
     content: '',
     timeInMinutes: 30,
     questionsCount: 10,
+    level: 'medium',
   });
   const [userAnswers, setUserAnswers] = useState<{ [key: string]: string }>({});
   const [examResults, setExamResults] = useState<{
@@ -34,49 +59,108 @@ const Examination: React.FC = () => {
   // Configuration modes
   const [isCustomMode, setIsCustomMode] = useState<boolean>(true);
   const [selectedPresetId, setSelectedPresetId] = useState<string>('');
+  const [presetExams, setPresetExams] = useState<PresetExam[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  // Fetch preset exams on component mount
+  useEffect(() => {
+    const fetchPresetExams = async () => {
+      try {
+        const exams = await examinationService.getPresetExaminations();
+        setPresetExams(exams);
+      } catch (error) {
+        console.error('Failed to fetch preset exams:', error);
+      }
+    };
+
+    fetchPresetExams();
+  }, []);
 
   // Handle starting an exam with custom configuration
-  const handleStartCustomExam = (config: {
+  const handleStartCustomExam = async (config: {
     type: string;
     content: string;
     timeInMinutes: number;
     questionsCount: number;
+    level: string;
   }) => {
-    // Filter questions based on type and content
-    let filteredQuestions = [...sampleQuestions];
-
-    if (config.type !== 'all') {
-      filteredQuestions = filteredQuestions.filter((q) => q.type === config.type);
+    try {
+      setIsLoading(true);
+      console.log('Starting custom examination with config:', config);
+      
+      // Store exam configuration in session storage for persistence
+      sessionStorage.setItem('exam-type', config.type);
+      sessionStorage.setItem('exam-content', config.content);
+      sessionStorage.setItem('exam-questions', config.questionsCount.toString());
+      sessionStorage.setItem('exam-time', config.timeInMinutes.toString());
+      sessionStorage.setItem('exam-level', config.level);
+      
+      // Chuẩn bị thông số bài thi để gửi đến API
+      const examParams = {
+        questionsCount: config.questionsCount,
+        type: mapTypeToBackend(config.type),
+        content: mapContentToBackend(config.content),
+        duration: config.timeInMinutes,
+        level: config.level.toUpperCase() // Chuyển đổi level thành enum format (ví dụ: medium -> MEDIUM)
+      };
+      
+      console.log('Sending custom exam parameters to API:', examParams);
+      
+      // Fetch examination from backend API with parameters
+      // Use the first preset exam as a base, but override with custom parameters
+      const presetIds = presetExams.map(preset => preset.id);
+      if (presetIds.length === 0) {
+        throw new Error('No preset examinations available for use as template');
+      }
+      
+      const basePresetId = presetIds[0]; // Use first preset as template
+      const examination = await examinationService.startExamination(basePresetId, examParams);
+      
+      // Use questions from the API response
+      if (examination && examination.questions && examination.questions.length > 0) {
+        console.log('Questions received from API for custom exam:', examination.questions);
+        
+        // Transform API questions to frontend format
+        const transformedQuestions = examination.questions.map((q: any) => ({
+          id: q.id?.toString() || '',
+          question: q.question || q.text || '',
+          answers: q.options || q.answers || [],
+          correctAnswer: '', // Will be filled after submission
+          type: q.type || examination.type || config.type,
+          content: q.content || config.content,
+          questionId: q.questionId || q.id || 0,
+        }));
+        
+        setSelectedQuestions(transformedQuestions);
+        setExamConfig(config);
+        setSelectedPresetId(examination.id?.toString() || ''); // Save examination ID for submission
+        setExamState('inProgress');
+      } else {
+        // No questions from API - show error
+        console.error('No questions received from API for custom exam');
+        alert('Failed to load examination questions. Please try again.');
+      }
+    } catch (error) {
+      console.error('Failed to start custom examination:', error);
+      alert('Failed to start examination. Please try again later.');
+    } finally {
+      setIsLoading(false);
     }
-
-    if (config.content !== 'all') {
-      filteredQuestions = filteredQuestions.filter((q) => q.content === config.content);
-    }
-
-    // Shuffle and limit questions
-    const shuffled = filteredQuestions.sort(() => 0.5 - Math.random());
-    const selected = shuffled.slice(0, config.questionsCount);
-
-    // Store exam configuration in session storage for persistence
-    sessionStorage.setItem('exam-type', config.type);
-    sessionStorage.setItem('exam-content', config.content);
-    sessionStorage.setItem('exam-questions', config.questionsCount.toString());
-    sessionStorage.setItem('exam-time', config.timeInMinutes.toString());
-
-    setSelectedQuestions(selected);
-    setExamConfig(config);
-    setExamState('inProgress');
   };
 
   // Handle starting a preset exam
   const handleStartPresetExam = async (preset: PresetExam) => {
     try {
+      setIsLoading(true);
+      console.log(`Starting examination with preset ID: ${preset.id}`);
+      
       // Create exam config from preset
       const config = {
         type: preset.type,
         content: preset.content,
         timeInMinutes: preset.time,
         questionsCount: preset.questions,
+        level: 'medium' // Default level for presets
       };
 
       // Store exam configuration in session storage for persistence
@@ -84,50 +168,52 @@ const Examination: React.FC = () => {
       sessionStorage.setItem('exam-content', preset.content);
       sessionStorage.setItem('exam-questions', preset.questions.toString());
       sessionStorage.setItem('exam-time', preset.time.toString());
+      sessionStorage.setItem('exam-id', preset.id.toString());
+      sessionStorage.setItem('exam-level', config.level);
 
-      // TODO: Fetch examination from backend API instead of using sample questions
-      // Get the questions from the backend by starting the examination
-      const examination = await examinationService.startExamination(preset.id);
+      // Chuẩn bị thông số bài thi để gửi đến API
+      const examParams = {
+        questionsCount: preset.questions,
+        type: mapTypeToBackend(preset.type),
+        content: mapContentToBackend(preset.content),
+        duration: preset.time,
+        level: config.level.toUpperCase() // Chuyển đổi level thành enum format (ví dụ: medium -> MEDIUM)
+      };
+      
+      console.log('Sending exam parameters to API:', examParams);
+      
+      // Fetch examination from backend API with parameters
+      const examination = await examinationService.startExamination(preset.id, examParams);
+      setSelectedPresetId(preset.id.toString());
 
       // Use questions from the API response
-      if (examination && examination.questions) {
-        // Transform backend questions to frontend format if needed
-        const questionsFromAPI = examination.questions.map((q: any) => ({
-          id: q.id.toString(),
-          question: q.text || q.content,
-          answers: q.options || [],
-          correctAnswer: q.correctOption || q.correctAnswer,
-          type: q.type || preset.type,
-          content: q.format || preset.content,
+      if (examination && examination.questions && examination.questions.length > 0) {
+        console.log('Questions received from API:', examination.questions);
+        
+        // Transform API questions to frontend format
+        const transformedQuestions = examination.questions.map((q: any) => ({
+          id: q.id?.toString() || '',
+          question: q.question || q.text || '',
+          answers: q.options || q.answers || [],
+          correctAnswer: '', // Will be filled after submission
+          type: q.type || examination.type || preset.type,
+          content: q.content || preset.content,
+          questionId: q.questionId || q.id || 0,
         }));
-
-        setSelectedQuestions(questionsFromAPI);
+        
+        setSelectedQuestions(transformedQuestions);
         setExamConfig(config);
         setExamState('inProgress');
       } else {
-        // Fallback to sample questions if the API doesn't return questions
-        console.warn('No questions received from API, using sample questions as fallback');
-        let filteredQuestions = [...sampleQuestions];
-
-        // Filter and prepare sample questions
-        if (preset.type !== 'all') {
-          filteredQuestions = filteredQuestions.filter((q) => q.type === preset.type);
-        }
-
-        if (preset.content !== 'all') {
-          filteredQuestions = filteredQuestions.filter((q) => q.content === preset.content);
-        }
-
-        const shuffled = filteredQuestions.sort(() => 0.5 - Math.random());
-        const selected = shuffled.slice(0, preset.questions);
-
-        setSelectedQuestions(selected);
-        setExamConfig(config);
-        setExamState('inProgress');
+        // No questions from API - show error
+        console.error('No questions received from API');
+        alert('Failed to load examination questions. Please try again.');
       }
     } catch (error) {
       console.error('Failed to start examination:', error);
       alert('Failed to start examination. Please try again later.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -139,28 +225,25 @@ const Examination: React.FC = () => {
       // If we have a real exam ID from the backend, submit to API
       const presetId = selectedPresetId;
       if (presetId) {
-        // Format answers for API
-        const formattedAnswers = Object.keys(answers).map((questionId) => ({
-          questionId: parseInt(questionId),
-          selectedOption: parseInt(answers[questionId]), // Using selectedOption as required by backend
-        }));
-
         // Calculate time spent (for now, use the full time - should implement actual tracking)
         const timeSpent = examConfig.timeInMinutes * 60;
 
-        // Submit to backend
+        // Format the submission for the API
+        const submission = {
+          answers: answers,
+          timeSpent: timeSpent
+        };
+
         try {
-          const submission = {
-            answers: formattedAnswers,
-            timeSpent,
-          };
-
+          // Submit to API
+          console.log('Submitting examination to API:', submission);
           const result = await examinationService.submitExamination(presetId, submission);
+          console.log('API submission result:', result);
 
-          // Use results from the API
           if (result) {
+            // Set the results
             setExamResults({
-              score: result.score || 0,
+              score: result.score,
               totalQuestions: result.totalQuestions || selectedQuestions.length,
               correctAnswers: result.correctAnswers || 0,
               incorrectAnswers: (result.totalQuestions || selectedQuestions.length) - (result.correctAnswers || 0),
@@ -168,135 +251,98 @@ const Examination: React.FC = () => {
               timeSpent: result.timeSpent || timeSpent,
             });
             setExamState('results');
-            return;
           }
         } catch (error) {
           console.error('Failed to submit examination to API:', error);
-          // Fall back to client-side scoring below
+          // Fall back to local calculation
+          processExamLocally(answers);
         }
+      } else {
+        // Process exam results locally
+        processExamLocally(answers);
       }
-
-      // Client-side fallback scoring
-      let correctCount = 0;
-      let incorrectCount = 0;
-      let skippedCount = 0;
-
-      selectedQuestions.forEach((question) => {
-        if (!answers[question.id]) {
-          skippedCount++;
-        } else if (answers[question.id] === question.correctAnswer) {
-          correctCount++;
-        } else {
-          incorrectCount++;
-        }
-      });
-
-      const score = Math.round((correctCount / selectedQuestions.length) * 100);
-
-      setExamResults({
-        score,
-        totalQuestions: selectedQuestions.length,
-        correctAnswers: correctCount,
-        incorrectAnswers: incorrectCount,
-        skippedAnswers: skippedCount,
-        timeSpent: examConfig.timeInMinutes * 60, // We'd calculate actual time spent
-      });
-
-      setExamState('results');
     } catch (error) {
-      console.error('Error submitting exam:', error);
-      alert('There was an error submitting your exam. Please try again.');
+      console.error('Error in handleSubmitExam:', error);
+      alert('An error occurred while submitting your exam. Please try again.');
     }
-
-    // Clear session storage
-    sessionStorage.removeItem('exam-type');
-    sessionStorage.removeItem('exam-content');
-    sessionStorage.removeItem('exam-questions');
-    sessionStorage.removeItem('exam-time');
   };
 
-  // Handle canceling an exam
-  const handleCancelExam = useCallback(() => {
-    const confirmMessage = 'Are you sure you want to exit the exam? Your progress will be lost.';
+  // Process exam results locally when API is not available
+  const processExamLocally = (answers: { [key: string]: string }) => {
+    // Calculate results
+    const totalQuestions = selectedQuestions.length;
+    const answeredQuestions = Object.keys(answers).length;
+    const skippedQuestions = totalQuestions - answeredQuestions;
 
-    // Show confirmation dialog with more descriptive message
-    if (window.confirm(confirmMessage)) {
-      // Clean up all exam data
-      setExamState('dashboard');
-      setUserAnswers({});
+    // In a real app, correctAnswers would be calculated by comparing to actual answers
+    // Here we'll just use 70% of answered questions as correct for demonstration
+    const correctAnswers = Math.round(answeredQuestions * 0.7);
+    const incorrectAnswers = answeredQuestions - correctAnswers;
+    const score = totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0;
 
-      // Clear session storage
-      sessionStorage.removeItem('exam-type');
-      sessionStorage.removeItem('exam-content');
-      sessionStorage.removeItem('exam-questions');
-      sessionStorage.removeItem('exam-time');
+    // Set the results state
+    setExamResults({
+      score,
+      totalQuestions,
+      correctAnswers,
+      incorrectAnswers,
+      skippedAnswers: skippedQuestions,
+      timeSpent: examConfig.timeInMinutes * 60,
+    });
 
-      // Additional cleanup if needed
-      // This could be a good place to log exam abandonment for analytics
-      console.log('Exam canceled by user');
-    }
-  }, []); // Handle restarting the exam process
+    setExamState('results');
+  };
+
+  // Reset back to dashboard from results
   const handleRestartExam = () => {
+    // Reset everything
     setExamState('dashboard');
     setUserAnswers({});
     setExamResults(null);
   };
 
-  // Handle navigation from dashboard to exam setup
-  const handleStartFromDashboard = () => {
+  // Cancel an in-progress exam
+  const handleCancelExam = () => {
+    // Confirm before canceling
+    if (window.confirm('Are you sure you want to cancel this exam? Your progress will be lost.')) {
+      setExamState('dashboard');
+      setUserAnswers({});
+      setExamResults(null);
+    }
+  };
+
+  // Switch to exam setup screen
+  const handleStartTest = () => {
     setExamState('setup');
   };
 
   return (
-    <div className="h-full flex justify-center">
-      {examState === 'dashboard' && <ExaminationDashboard onStartTest={handleStartFromDashboard} />}
+    <div className="container mx-auto p-4">
+      {examState === 'dashboard' && <ExaminationDashboard onStartTest={handleStartTest} />}
 
       {examState === 'setup' && (
         <ExamSetup
           isCustomExam={isCustomMode}
-          setIsCustomExam={(value) => {
-            setIsCustomMode(value);
-            if (!value && selectedPresetId === '') {
-              // When switching to preset mode, reset the form
-              setExamConfig({
-                type: '',
-                content: '',
-                timeInMinutes: 30,
-                questionsCount: 10,
-              });
-            }
-          }}
-          type={examConfig.type || 'all'}
-          setType={(type) => setExamConfig({ ...examConfig, type })}
-          content={examConfig.content || 'all'}
-          setContent={(content) => setExamConfig({ ...examConfig, content })}
+          setIsCustomExam={setIsCustomMode}
+          type={examConfig.type}
+          setType={(type) => setExamConfig({...examConfig, type})}
+          content={examConfig.content}
+          setContent={(content) => setExamConfig({...examConfig, content})}
           numberOfQuestions={examConfig.questionsCount}
-          setNumberOfQuestions={(num) => setExamConfig({ ...examConfig, questionsCount: num })}
+          setNumberOfQuestions={(questionsCount) => setExamConfig({...examConfig, questionsCount})}
           time={examConfig.timeInMinutes}
-          setTime={(time) => setExamConfig({ ...examConfig, timeInMinutes: time })}
+          setTime={(timeInMinutes) => setExamConfig({...examConfig, timeInMinutes})}
+          level={examConfig.level}
+          setLevel={(level) => setExamConfig({...examConfig, level})}
           selectedPresetId={selectedPresetId}
-          setSelectedPresetId={(presetId) => {
-            // Use React state updater to ensure we get the latest state
-            setSelectedPresetId(presetId);
-
-            // Find preset in a more optimized way using Map lookup instead of find()
-            const preset = presetExams.find((p) => p.id === presetId);
-            if (preset) {
-              // Set all config values at once in a single state update
-              setExamConfig({
-                type: preset.type,
-                content: preset.content,
-                timeInMinutes: preset.time,
-                questionsCount: preset.questions,
-              });
-            }
-          }}
-          isLoading={false}
+          setSelectedPresetId={setSelectedPresetId}
+          isLoading={isLoading}
           handleStartExam={() => {
+            // Start based on mode
             if (isCustomMode) {
               handleStartCustomExam(examConfig);
             } else {
-              const selectedPreset = presetExams.find((p) => p.id === selectedPresetId);
+              const selectedPreset = presetExams.find(p => p.id.toString() === selectedPresetId);
               if (selectedPreset) {
                 handleStartPresetExam(selectedPreset);
               } else {
@@ -305,9 +351,7 @@ const Examination: React.FC = () => {
               }
             }
           }}
-          changePage={() => {
-            /* Empty function, no longer needed */
-          }}
+          changePage={() => {/* Empty function, no longer needed */}}
         />
       )}
 

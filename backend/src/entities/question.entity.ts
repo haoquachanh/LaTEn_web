@@ -24,11 +24,19 @@ export enum QuestionMode {
 }
 
 export enum QuestionFormat {
+  TEXT = 'text',
+  IMAGE = 'image',
+  AUDIO = 'audio',
+  VIDEO = 'video',
   READING = 'reading',
   LISTENING = 'listening',
 }
 
 export enum DifficultyLevel {
+  EASY = 'easy',
+  MEDIUM = 'medium',
+  HARD = 'hard',
+  EXPERT = 'expert',
   LEVEL_1 = 'level_1',
   LEVEL_2 = 'level_2',
   LEVEL_3 = 'level_3',
@@ -50,11 +58,11 @@ export class Question {
   @Column({ type: 'enum', enum: QuestionMode })
   mode: QuestionMode;
 
-  @Column({ type: 'enum', enum: QuestionFormat, default: QuestionFormat.READING })
+  @Column({ type: 'enum', enum: QuestionFormat, default: QuestionFormat.TEXT })
   format: QuestionFormat;
 
-  @Column({ type: 'enum', enum: DifficultyLevel, default: DifficultyLevel.LEVEL_1 })
-  difficulty: DifficultyLevel;
+  @Column({ type: 'enum', enum: DifficultyLevel, default: DifficultyLevel.MEDIUM })
+  difficultyLevel: DifficultyLevel;
 
   @Column('text', { nullable: true })
   explanation: string;

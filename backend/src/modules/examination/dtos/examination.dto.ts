@@ -1,5 +1,5 @@
-import { IsNotEmpty, IsEnum, IsOptional, IsNumber, IsInt, Min } from 'class-validator';
-import { QuestionType, QuestionMode } from '../../../entities/question.entity';
+import { IsNotEmpty, IsEnum, IsOptional, IsNumber, IsInt, Min, IsString, IsArray } from 'class-validator';
+import { QuestionType, QuestionMode, DifficultyLevel } from '../../../entities/question.entity';
 
 export class CreateExaminationDto {
   @IsNotEmpty()
@@ -19,28 +19,101 @@ export class CreateExaminationDto {
   @IsNumber()
   @Min(1)
   durationSeconds: number;
+
+  @IsNotEmpty()
+  @IsString()
+  title: string;
+
+  @IsOptional()
+  @IsString()
+  description?: string;
+
+  @IsOptional()
+  @IsEnum(DifficultyLevel)
+  difficultyLevel?: DifficultyLevel;
+
+  @IsOptional()
+  @IsArray()
+  questionIds?: number[];
 }
 
-export class SubmitExaminationDto {
+export class UpdateExaminationDto {
+  @IsOptional()
+  @IsString()
+  title?: string;
+
+  @IsOptional()
+  @IsString()
+  description?: string;
+
+  @IsOptional()
+  @IsEnum(QuestionType)
+  questionType?: QuestionType;
+
+  @IsOptional()
+  @IsEnum(QuestionMode)
+  mode?: QuestionMode;
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  totalQuestions?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(1)
+  durationSeconds?: number;
+
+  @IsOptional()
+  @IsEnum(DifficultyLevel)
+  difficultyLevel?: DifficultyLevel;
+
+  @IsOptional()
+  @IsArray()
+  questionIds?: number[];
+}
+
+export class PresetExaminationDto {
+  @IsNotEmpty()
+  @IsString()
+  title: string;
+
+  @IsOptional()
+  @IsString()
+  description?: string;
+
+  @IsNotEmpty()
+  @IsEnum(QuestionType)
+  type: QuestionType;
+
+  @IsNotEmpty()
+  @IsInt()
+  @Min(1)
+  totalQuestions: number;
+
+  @IsNotEmpty()
+  @IsInt()
+  @Min(1)
+  duration: number;
+}
+
+export class ExaminationResultDto {
   @IsNotEmpty()
   examinationId: number;
 
   @IsNotEmpty()
-  answers: ExaminationAnswerDto[];
+  @IsNumber()
+  score: number;
+
+  @IsNotEmpty()
+  @IsNumber()
+  correctAnswers: number;
+
+  @IsNotEmpty()
+  @IsNumber()
+  totalQuestions: number;
 
   @IsOptional()
   @IsNumber()
-  @Min(0)
   timeSpent?: number;
-}
-
-export class ExaminationAnswerDto {
-  @IsNotEmpty()
-  questionId: number;
-
-  @IsOptional()
-  selectedOptionId?: number;
-
-  @IsOptional()
-  answerText?: string;
 }

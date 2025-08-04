@@ -6,6 +6,7 @@
  */
 import api from './api';
 import {
+  ApiExaminationSubmission,
   Examination,
   ExaminationAnswer,
   ExaminationLevel,
@@ -201,28 +202,58 @@ class ExaminationService {
    * Start an examination session
    *
    * @param id Examination ID
+   * @param examParams Thông số của bài thi (số câu hỏi, loại câu hỏi, v.v.)
    * @returns Promise with examination details including questions
    */
-  async startExamination(id: number | string): Promise<Examination> {
+  async startExamination(
+    id: number | string, 
+    examParams?: {
+      questionsCount?: number;
+      type?: string;
+      content?: string;
+      duration?: number;
+      level?: string;
+    }
+  ): Promise<Examination> {
     try {
-      const response = await api.post(`${this.basePath}/${id}/start`);
+      console.log(`Starting examination with ID: ${id}`, examParams ? `with params: ${JSON.stringify(examParams)}` : '');
+      
+      // Gửi yêu cầu tới API endpoint /examinations/:id/start kèm theo thông số bài thi
+      const response = await api.post(`${this.basePath}/${id}/start`, examParams || {});
+      console.log('Start examination response:', response.data);
 
       // Transform backend response to match frontend Examination interface
       const examination = response.data;
 
-      // Map questions from backend format to frontend format
-      if (examination.questions) {
-        examination.questions = examination.questions.map((q: any) => ({
-          id: q.id,
-          text: q.content,
-          options: q.options || [],
-          correctOption: q.correctAnswer, // This will be used for validation after submission
-          explanation: q.explanation,
-          type: q.type,
-          format: q.format,
-          difficulty: q.difficulty,
-          points: q.points || 1,
-        }));
+      // Kiểm tra xem đã có câu hỏi chưa, nếu chưa thì tải câu hỏi từ endpoint questions
+      if (!examination.questions || examination.questions.length === 0) {
+        try {
+          console.log(`Loading questions for examination ${id}`);
+          const questionsResponse = await api.get(`${this.basePath}/${id}/questions`);
+          console.log('Questions response:', questionsResponse.data);
+          examination.questions = questionsResponse.data;
+        } catch (error) {
+          console.error(`Error loading questions for examination ${id}:`, error);
+        }
+      }
+
+      // Map questions từ định dạng backend sang định dạng frontend
+      if (examination.questions && examination.questions.length > 0) {
+        console.log('Raw questions from API:', JSON.stringify(examination.questions));
+        examination.questions = examination.questions.map((q: any) => {
+          const questionObject = {
+            id: q.id ? q.id.toString() : (q.questionId ? q.questionId.toString() : ''),
+            question: q.text || q.content || q.question || '',
+            options: Array.isArray(q.options) ? q.options : [],
+            correctOption: '', // Ẩn đáp án đúng khi bắt đầu bài thi
+            type: examination.type || this.mapExamType(q.type || 'multiple'),
+            content: q.format?.toLowerCase() || examination.content || 'reading',
+            explanation: q.explanation || '',
+            questionId: q.id || q.questionId || 0, // Lưu ID gốc của câu hỏi để submit
+          };
+          console.log('Mapped question:', questionObject);
+          return questionObject;
+        });
       }
 
       return examination;
@@ -239,8 +270,44 @@ class ExaminationService {
    */
   async submitExamination(id: number | string, submission: ExaminationSubmission): Promise<ExaminationResult> {
     try {
-      const response = await api.post(`${this.basePath}/${id}/submit`, submission);
-      return response.data;
+      console.log(`Submitting examination ${id} answers:`, submission);
+      
+      // Format answers for API
+      const formattedAnswers = Object.keys(submission.answers).map((questionId) => {
+        const answer = submission.answers[questionId];
+        console.log(`Answer for question ${questionId}:`, answer);
+        return {
+          questionId: parseInt(questionId),
+          selectedOptionId: parseInt(answer),
+          answerText: answer,
+        };
+      });
+
+      // Build API submission format
+      const apiSubmission: ApiExaminationSubmission = {
+        answers: formattedAnswers,
+        timeSpent: submission.timeSpent || 0,
+      };
+      
+      console.log('API submission payload:', apiSubmission);
+
+      const response = await api.post(`${this.basePath}/${id}/submit`, apiSubmission);
+      console.log('Submission response:', response.data);
+
+      // Transform response to match frontend ExaminationResult format if needed
+      const result: ExaminationResult = {
+        id: response.data.id,
+        score: response.data.score || (response.data.correctAnswers / response.data.totalQuestions) * 100,
+        totalQuestions: response.data.totalQuestions,
+        correctAnswers: response.data.correctAnswers,
+        incorrectAnswers: response.data.totalQuestions - response.data.correctAnswers,
+        skippedAnswers: response.data.skippedAnswers || 0,
+        timeSpent: response.data.timeSpent || submission.timeSpent || 0,
+        completedAt: response.data.completedAt || new Date().toISOString(),
+        updatedAt: response.data.updatedAt || new Date().toISOString(),
+      };
+
+      return result;
     } catch (error) {
       console.error(`Error submitting examination ${id}:`, error);
       throw error;

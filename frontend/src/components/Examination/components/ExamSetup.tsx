@@ -18,6 +18,8 @@ interface ExamSetupProps {
   setNumberOfQuestions: (num: number) => void;
   time: number;
   setTime: (time: number) => void;
+  level?: string;
+  setLevel?: (level: string) => void;
   selectedPresetId: string;
   setSelectedPresetId: (id: string) => void;
   isLoading: boolean;
@@ -36,6 +38,8 @@ const ExamSetup: React.FC<ExamSetupProps> = ({
   setNumberOfQuestions,
   time,
   setTime,
+  level = 'medium',
+  setLevel = () => {},
   selectedPresetId,
   setSelectedPresetId,
   isLoading,
@@ -117,6 +121,8 @@ const ExamSetup: React.FC<ExamSetupProps> = ({
             setNumberOfQuestions={setNumberOfQuestions}
             time={time}
             setTime={setTime}
+            level={level}
+            setLevel={setLevel}
             changePage={changePage}
           />
         ) : (

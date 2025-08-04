@@ -30,7 +30,7 @@ export class QuestionService {
         throw new NotFoundException(`Category with ID ${createQuestionDto.categoryId} not found`);
       }
     }
-
+    
     // Find bank if bankId is provided
     let bank = null;
     if (createQuestionDto.bankId) {
@@ -49,7 +49,7 @@ export class QuestionService {
     question.difficultyLevel = createQuestionDto.difficultyLevel || DifficultyLevel.MEDIUM;
     question.explanation = createQuestionDto.explanation;
     question.category = category;
-
+    
     // Save the question first
     const createdQuestion = await this.questionRepository.save(question);
 
@@ -66,7 +66,7 @@ export class QuestionService {
 
     // Add to bank if specified
     if (bank) {
-      bank.questions = [...(bank.questions || []), createdQuestion];
+      bank.questions = [...bank.questions || [], createdQuestion];
       await this.bankRepository.save(bank);
     }
 
@@ -74,8 +74,7 @@ export class QuestionService {
   }
 
   async getAllQuestions(filter: QuestionFilterDto, page: number = 1, limit: number = 10) {
-    const query = this.questionRepository
-      .createQueryBuilder('question')
+    const query = this.questionRepository.createQueryBuilder('question')
       .leftJoinAndSelect('question.options', 'option')
       .leftJoinAndSelect('question.category', 'category');
 
@@ -86,25 +85,24 @@ export class QuestionService {
     if (filter.mode) {
       query.andWhere('question.mode = :mode', { mode: filter.mode });
     }
-
+    
     if (filter.format) {
       query.andWhere('question.format = :format', { format: filter.format });
     }
-
+    
     if (filter.difficultyLevel) {
       query.andWhere('question.difficultyLevel = :level', { level: filter.difficultyLevel });
     }
-
+    
     if (filter.categoryId) {
       query.andWhere('question.categoryId = :categoryId', { categoryId: filter.categoryId });
     }
-
+    
     if (filter.bankId) {
-      query
-        .innerJoin('question_bank_questions', 'qbq', 'qbq.question_id = question.id')
+      query.innerJoin('question_bank_questions', 'qbq', 'qbq.question_id = question.id')
         .andWhere('qbq.bank_id = :bankId', { bankId: filter.bankId });
     }
-
+    
     if (filter.searchTerm) {
       query.andWhere('question.content LIKE :searchTerm', { searchTerm: `%${filter.searchTerm}%` });
     }
@@ -139,23 +137,23 @@ export class QuestionService {
 
     return question;
   }
-
+  
   async getQuestionById(id: number): Promise<Question> {
     return this.findQuestionById(id);
   }
-
+  
   async getQuestionsByCategory(categoryId: number, page: number = 1, limit: number = 10) {
     const filter = new QuestionFilterDto();
     filter.categoryId = categoryId;
     return this.getAllQuestions(filter, page, limit);
   }
-
+  
   async getQuestionsByBank(bankId: number, page: number = 1, limit: number = 10) {
     const filter = new QuestionFilterDto();
     filter.bankId = bankId;
     return this.getAllQuestions(filter, page, limit);
   }
-
+  
   async updateQuestion(id: number, updateQuestionDto: UpdateQuestionDto): Promise<Question> {
     const question = await this.findQuestionById(id);
 
@@ -182,7 +180,7 @@ export class QuestionService {
     if (updateQuestionDto.explanation !== undefined) {
       question.explanation = updateQuestionDto.explanation;
     }
-
+    
     // Update category if provided
     if (updateQuestionDto.categoryId !== undefined) {
       if (updateQuestionDto.categoryId) {
@@ -195,21 +193,21 @@ export class QuestionService {
         question.category = null;
       }
     }
-
+    
     // Update bank if provided
     if (updateQuestionDto.bankId !== undefined) {
       if (updateQuestionDto.bankId) {
-        const bank = await this.bankRepository.findOne({
+        const bank = await this.bankRepository.findOne({ 
           where: { id: updateQuestionDto.bankId },
-          relations: ['questions'],
+          relations: ['questions']
         });
         if (!bank) {
           throw new NotFoundException(`Question bank with ID ${updateQuestionDto.bankId} not found`);
         }
-
+        
         // Remove from old banks and add to new bank
         // This would require more complex logic in a real application
-        bank.questions = [...(bank.questions || []), question];
+        bank.questions = [...bank.questions || [], question];
         await this.bankRepository.save(bank);
       }
     }
@@ -220,14 +218,14 @@ export class QuestionService {
     if (updateQuestionDto.options && updateQuestionDto.options.length > 0) {
       // First, find existing options
       const existingOptions = await this.optionRepository.find({
-        where: { question: { id } },
+        where: { question: { id } }
       });
-
+      
       // Process each option in the DTO
       for (const optionDto of updateQuestionDto.options) {
         if (optionDto.id) {
           // Update existing option
-          const existingOption = existingOptions.find((o) => o.id === optionDto.id);
+          const existingOption = existingOptions.find(o => o.id === optionDto.id);
           if (existingOption) {
             if (optionDto.text !== undefined) existingOption.text = optionDto.text;
             if (optionDto.isCorrect !== undefined) existingOption.isCorrect = optionDto.isCorrect;
@@ -242,12 +240,15 @@ export class QuestionService {
           await this.optionRepository.save(newOption);
         }
       }
-
+      
       // Remove options that weren't included in the update
-      const updatedOptionIds = updateQuestionDto.options.filter((o) => o.id).map((o) => o.id);
-
-      const optionsToDelete = existingOptions.filter((o) => !updatedOptionIds.includes(o.id));
-
+      const updatedOptionIds = updateQuestionDto.options
+        .filter(o => o.id)
+        .map(o => o.id);
+        
+      const optionsToDelete = existingOptions
+        .filter(o => !updatedOptionIds.includes(o.id));
+        
       if (optionsToDelete.length > 0) {
         await this.optionRepository.remove(optionsToDelete);
       }
@@ -269,7 +270,7 @@ export class QuestionService {
     // Delete the question
     await this.questionRepository.remove(question);
   }
-
+  
   async getRandomQuestions(count: number, type?: QuestionType, mode?: QuestionMode): Promise<Question[]> {
     const query = this.questionRepository
       .createQueryBuilder('question')

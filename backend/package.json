@@ -39,7 +39,9 @@
     "migration:revert": "ts-node src/database/migration-runner.ts revert",
     "db:start:test": "docker-compose -f docker-compose.test.yml up -d",
     "db:stop:test": "docker-compose -f docker-compose.test.yml down",
-    "seed:admin": "ts-node -r tsconfig-paths/register src/seeds/run-admin-seed.ts"
+    "seed:admin": "ts-node -r tsconfig-paths/register src/seeds/run-admin-seed.ts",
+    "seed:question": "ts-node -r tsconfig-paths/register src/seeds/run-question-seed.ts",
+    "fix:question": "ts-node -r tsconfig-paths/register src/seeds/fix-question-seed.ts"
   },
   "dependencies": {
     "@nestjs/common": "^8.4.7",
