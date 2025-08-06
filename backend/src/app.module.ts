@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { ClassSerializerInterceptor, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { typeOrmConfig } from './common/config/typeorm.config';
@@ -8,6 +8,8 @@ import { QuestionModule } from '@modules/question/question.module';
 import { CommentModule } from '@modules/comment/comment.module';
 import { HealthModule } from '@modules/health/health.module';
 import { AppConfigService } from './config/app-config.service';
+import { ExaminationModule } from '@modules/examination/examination.module';
+import { APP_INTERCEPTOR } from '@nestjs/core';
 
 @Module({
   imports: [
@@ -20,11 +22,17 @@ import { AppConfigService } from './config/app-config.service';
     AuthModule,
     UserModule,
     QuestionModule,
-    // ExaminationModule,
+    ExaminationModule,
     CommentModule,
   ],
   controllers: [],
-  providers: [AppConfigService],
+  providers: [
+    AppConfigService,
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: ClassSerializerInterceptor,
+    },
+  ],
   exports: [AppConfigService],
 })
 export class AppModule {}

@@ -206,51 +206,74 @@ class ExaminationService {
    * @returns Promise with examination details including questions
    */
   async startExamination(
-    id: number | string, 
+    id: number | string,
     examParams?: {
       questionsCount?: number;
       type?: string;
       content?: string;
       duration?: number;
       level?: string;
-    }
+    },
   ): Promise<Examination> {
     try {
-      console.log(`Starting examination with ID: ${id}`, examParams ? `with params: ${JSON.stringify(examParams)}` : '');
-      
-      // Gửi yêu cầu tới API endpoint /examinations/:id/start kèm theo thông số bài thi
-      const response = await api.post(`${this.basePath}/${id}/start`, examParams || {});
-      console.log('Start examination response:', response.data);
+      console.log(
+        `Starting examination with ID: ${id}`,
+        examParams ? `with params: ${JSON.stringify(examParams)}` : '',
+      );
+
+      // Fetch the examination directly from the endpoint
+      // Using GET instead of POST since the API already has the data ready
+      const response = await api.get(`${this.basePath}/${id}`);
+      console.log('Examination response:', response.data);
 
       // Transform backend response to match frontend Examination interface
-      const examination = response.data;
+      const examination: Examination = {
+        id: response.data.id,
+        title: response.data.title,
+        description: response.data.description,
+        duration: response.data.durationSeconds / 60, // Convert seconds to minutes
+        totalQuestions: response.data.totalQuestions,
+        type: response.data.type || 'multiple',
+        level: response.data.level || 'medium',
+        content: response.data.mode || 'reading',
+        score: response.data.score,
+        createdAt: response.data.createdAt,
+        updatedAt: response.data.updatedAt,
+        startedAt: response.data.startedAt,
+        completedAt: response.data.completedAt,
+        questions: [],
+      };
 
-      // Kiểm tra xem đã có câu hỏi chưa, nếu chưa thì tải câu hỏi từ endpoint questions
-      if (!examination.questions || examination.questions.length === 0) {
-        try {
-          console.log(`Loading questions for examination ${id}`);
-          const questionsResponse = await api.get(`${this.basePath}/${id}/questions`);
-          console.log('Questions response:', questionsResponse.data);
-          examination.questions = questionsResponse.data;
-        } catch (error) {
-          console.error(`Error loading questions for examination ${id}:`, error);
-        }
-      }
+      // Extract and map questions from examinationQuestions array
+      if (response.data.examinationQuestions && response.data.examinationQuestions.length > 0) {
+        console.log('Raw questions from API:', JSON.stringify(response.data.examinationQuestions));
 
-      // Map questions từ định dạng backend sang định dạng frontend
-      if (examination.questions && examination.questions.length > 0) {
-        console.log('Raw questions from API:', JSON.stringify(examination.questions));
-        examination.questions = examination.questions.map((q: any) => {
+        examination.questions = response.data.examinationQuestions.map((eq: any) => {
+          const q = eq.question; // Get the actual question object
+
+          // For true_false questions, create two options
+          let options = [];
+          if (q.type === 'true_false') {
+            options = [
+              { id: 'true', text: 'True' },
+              { id: 'false', text: 'False' },
+            ];
+          } else if (Array.isArray(q.options)) {
+            options = q.options;
+          }
+
           const questionObject = {
-            id: q.id ? q.id.toString() : (q.questionId ? q.questionId.toString() : ''),
-            question: q.text || q.content || q.question || '',
-            options: Array.isArray(q.options) ? q.options : [],
-            correctOption: '', // Ẩn đáp án đúng khi bắt đầu bài thi
-            type: examination.type || this.mapExamType(q.type || 'multiple'),
-            content: q.format?.toLowerCase() || examination.content || 'reading',
+            id: eq.id.toString(), // Use the examinationQuestion ID
+            question: q.content || '',
+            options: options,
+            correctOption: '', // Hide correct answer during the exam
+            type: q.type || 'multiple',
+            content: q.mode || 'reading',
             explanation: q.explanation || '',
-            questionId: q.id || q.questionId || 0, // Lưu ID gốc của câu hỏi để submit
+            questionId: q.id, // Store the original question ID for submission
+            examinationQuestionId: eq.id, // Store the examinationQuestion ID for submission
           };
+
           console.log('Mapped question:', questionObject);
           return questionObject;
         });
@@ -271,40 +294,66 @@ class ExaminationService {
   async submitExamination(id: number | string, submission: ExaminationSubmission): Promise<ExaminationResult> {
     try {
       console.log(`Submitting examination ${id} answers:`, submission);
-      
-      // Format answers for API
+
+      // Format answers for API - Use examinationQuestionId as the key
       const formattedAnswers = Object.keys(submission.answers).map((questionId) => {
         const answer = submission.answers[questionId];
         console.log(`Answer for question ${questionId}:`, answer);
         return {
-          questionId: parseInt(questionId),
-          selectedOptionId: parseInt(answer),
-          answerText: answer,
+          examinationQuestionId: parseInt(questionId),
+          userAnswer: answer,
         };
       });
 
       // Build API submission format
-      const apiSubmission: ApiExaminationSubmission = {
+      const apiSubmission = {
         answers: formattedAnswers,
         timeSpent: submission.timeSpent || 0,
       };
-      
+
       console.log('API submission payload:', apiSubmission);
 
-      const response = await api.post(`${this.basePath}/${id}/submit`, apiSubmission);
-      console.log('Submission response:', response.data);
+      // For this API, use PATCH to update each examination question with user's answer
+      // This simulates a submission by updating each question individually
+      const updatePromises = formattedAnswers.map((answer) =>
+        api.patch(`${this.basePath}/questions/${answer.examinationQuestionId}`, {
+          userAnswer: answer.userAnswer,
+        }),
+      );
 
-      // Transform response to match frontend ExaminationResult format if needed
+      await Promise.all(updatePromises);
+
+      // Then mark the examination as completed
+      const completeResponse = await api.patch(`${this.basePath}/${id}`, {
+        completedAt: new Date().toISOString(),
+      });
+
+      console.log('Completion response:', completeResponse.data);
+
+      // Get updated examination data to calculate score
+      const examResponse = await api.get(`${this.basePath}/${id}`);
+      const updatedExam = examResponse.data;
+
+      // Calculate score based on correct answers
+      const correctAnswers = updatedExam.examinationQuestions?.filter((q: any) => q.isCorrect).length || 0;
+      const score = (correctAnswers / updatedExam.totalQuestions) * 100;
+
+      // Update the score in the examination
+      await api.patch(`${this.basePath}/${id}`, {
+        score: score,
+      });
+
+      // Transform response to match frontend ExaminationResult format
       const result: ExaminationResult = {
-        id: response.data.id,
-        score: response.data.score || (response.data.correctAnswers / response.data.totalQuestions) * 100,
-        totalQuestions: response.data.totalQuestions,
-        correctAnswers: response.data.correctAnswers,
-        incorrectAnswers: response.data.totalQuestions - response.data.correctAnswers,
-        skippedAnswers: response.data.skippedAnswers || 0,
-        timeSpent: response.data.timeSpent || submission.timeSpent || 0,
-        completedAt: response.data.completedAt || new Date().toISOString(),
-        updatedAt: response.data.updatedAt || new Date().toISOString(),
+        id: updatedExam.id,
+        score: score,
+        totalQuestions: updatedExam.totalQuestions,
+        correctAnswers: correctAnswers,
+        incorrectAnswers: updatedExam.totalQuestions - correctAnswers,
+        skippedAnswers: 0,
+        timeSpent: submission.timeSpent || 0,
+        completedAt: updatedExam.completedAt || new Date().toISOString(),
+        updatedAt: updatedExam.updatedAt,
       };
 
       return result;

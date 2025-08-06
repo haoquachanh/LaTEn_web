@@ -64,9 +64,7 @@ const CustomExamForm: React.FC<CustomExamFormProps> = ({
             <div
               key={subject.id}
               className={`flex items-center p-4 rounded-lg cursor-pointer transition-all duration-300 ${
-                content === subject.id
-                  ? `bg-${subject.color} text-${subject.color}-content shadow-lg`
-                  : 'bg-base-200 hover:bg-base-300'
+                content === subject.id ? 'bg-primary text-primary-content shadow-lg' : 'bg-base-200 hover:bg-base-300'
               }`}
               onClick={() => setContent(subject.id)}
             >
@@ -138,7 +136,7 @@ const CustomExamForm: React.FC<CustomExamFormProps> = ({
           </div>
         </div>
       </div>
-      
+
       {/* Difficulty Level Selection */}
       <div className="mb-8">
         <h3 className="text-lg font-medium mb-2">Difficulty Level</h3>

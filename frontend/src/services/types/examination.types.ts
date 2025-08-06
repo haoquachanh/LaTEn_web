@@ -32,18 +32,24 @@ export interface Examination {
   id: number;
   title: string;
   description?: string;
-  type: ExaminationType;
-  level: ExaminationLevel;
-  duration: number;
+  type?: string;
+  level?: string;
+  duration?: number;
+  durationSeconds?: number;
   totalQuestions: number;
-  passingScore: number;
-  isActive: boolean;
+  passingScore?: number;
+  isActive?: boolean;
   createdBy?: {
     id: number;
     email: string;
     fullname?: string;
   };
   questions?: Question[];
+  startedAt?: string;
+  completedAt?: string;
+  score?: number;
+  mode?: string;
+  content?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -52,15 +58,23 @@ export interface Examination {
  * Question type for examination questions
  */
 export interface Question {
-  id: number;
-  text: string;
-  options: string[];
-  correctOption: number;
+  id: string | number;
+  question?: string;
+  text?: string;
+  content?: string;
+  options?: any[];
+  correctOption?: string | number;
+  correctAnswer?: string;
   explanation?: string;
   type?: string;
+  mode?: string;
   format?: string;
+  difficultyLevel?: string;
   difficulty?: string;
   points?: number;
+  audioUrl?: string | null;
+  questionId?: number; // Original question ID
+  examinationQuestionId?: number; // ExaminationQuestion ID
 }
 
 /**

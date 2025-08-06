@@ -84,24 +84,63 @@ const QuestionDisplay: React.FC<QuestionDisplayProps> = ({
         {/* Answer Options */}
         <div className="flex-1">
           <div className="space-y-3">
-            {currentQuestion?.answers?.map((answer, idx) => (
-              <div
-                key={idx}
-                className={`p-4 rounded-lg cursor-pointer transition-all duration-300 ${
-                  userAnswers[currentQuestion.id] === answer
-                    ? 'bg-primary text-primary-content'
-                    : 'bg-base-200 hover:bg-base-300'
-                }`}
-                onClick={() => handleAnswerChange(currentQuestion.id, answer)}
-              >
-                <div className="flex items-center">
-                  <div className="w-6 h-6 flex items-center justify-center rounded-full mr-3 border border-current">
-                    {String.fromCharCode(65 + idx)}
+            {/* Handle true-false questions */}
+            {currentQuestion?.type === 'true_false' ? (
+              <>
+                {/* True option */}
+                <div
+                  className={`p-4 rounded-lg cursor-pointer transition-all duration-300 ${
+                    userAnswers[currentQuestion.id] === 'true'
+                      ? 'bg-primary text-primary-content'
+                      : 'bg-base-200 hover:bg-base-300'
+                  }`}
+                  onClick={() => handleAnswerChange(currentQuestion.id, 'true')}
+                >
+                  <div className="flex items-center">
+                    <div className="w-6 h-6 flex items-center justify-center rounded-full mr-3 border border-current">
+                      T
+                    </div>
+                    <span>True</span>
                   </div>
-                  <span>{answer}</span>
                 </div>
-              </div>
-            ))}
+                {/* False option */}
+                <div
+                  className={`p-4 rounded-lg cursor-pointer transition-all duration-300 ${
+                    userAnswers[currentQuestion.id] === 'false'
+                      ? 'bg-primary text-primary-content'
+                      : 'bg-base-200 hover:bg-base-300'
+                  }`}
+                  onClick={() => handleAnswerChange(currentQuestion.id, 'false')}
+                >
+                  <div className="flex items-center">
+                    <div className="w-6 h-6 flex items-center justify-center rounded-full mr-3 border border-current">
+                      F
+                    </div>
+                    <span>False</span>
+                  </div>
+                </div>
+              </>
+            ) : (
+              /* Handle multiple choice questions */
+              currentQuestion?.answers?.map((answer, idx) => (
+                <div
+                  key={idx}
+                  className={`p-4 rounded-lg cursor-pointer transition-all duration-300 ${
+                    userAnswers[currentQuestion.id] === answer
+                      ? 'bg-primary text-primary-content'
+                      : 'bg-base-200 hover:bg-base-300'
+                  }`}
+                  onClick={() => handleAnswerChange(currentQuestion.id, answer)}
+                >
+                  <div className="flex items-center">
+                    <div className="w-6 h-6 flex items-center justify-center rounded-full mr-3 border border-current">
+                      {String.fromCharCode(65 + idx)}
+                    </div>
+                    <span>{answer}</span>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
 
