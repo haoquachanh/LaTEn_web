@@ -9,9 +9,7 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { UserEntity } from './user.entity';
-import { QuestionType, QuestionMode, DifficultyLevel } from './question.entity';
 import { ExaminationQuestion } from './examination-question.entity';
-
 @Entity('examinations')
 export class Examination {
   @PrimaryGeneratedColumn()
@@ -20,12 +18,6 @@ export class Examination {
   @ManyToOne(() => UserEntity, (user) => user.examinations)
   @JoinColumn({ name: 'userId' })
   user: UserEntity;
-
-  @Column({ type: 'enum', enum: QuestionType })
-  questionType: QuestionType;
-
-  @Column({ type: 'enum', enum: QuestionMode })
-  mode: QuestionMode;
 
   @Column('int')
   totalQuestions: number;
@@ -48,24 +40,8 @@ export class Examination {
   @Column('text', { nullable: true })
   description: string;
 
-  @Column({ type: 'enum', enum: DifficultyLevel, default: DifficultyLevel.MEDIUM })
-  difficultyLevel: DifficultyLevel;
-
-  @Column('boolean', { default: false })
-  isPreset: boolean;
-
-  @Column('int', { nullable: true })
-  presetExaminationId: number;
-
-  @ManyToOne(() => Examination, { nullable: true })
-  @JoinColumn({ name: 'presetExaminationId' })
-  presetExamination: Examination;
-
   @Column('float', { default: 0 })
   score: number;
-
-  @Column('int', { default: 0 })
-  timeSpent: number;
 
   @OneToMany(() => ExaminationQuestion, (examQuestion) => examQuestion.examination)
   examinationQuestions: ExaminationQuestion[];

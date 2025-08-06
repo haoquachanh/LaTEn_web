@@ -10,12 +10,23 @@ import {
   IsBoolean,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { QuestionType, QuestionMode, QuestionFormat, DifficultyLevel } from '../../../entities/question.entity';
-import { CreateQuestionOptionDto } from './question-option.dto';
+import { DifficultyLevel, QuestionMode, QuestionType } from '@common/typings/question-type.enum';
+import { CreateQuestionOptionDto } from './create-question-option.dto';
+import { UserEntity } from '@entities/user.entity';
+
+class QuestionOptionDto {
+  @IsString()
+  @IsNotEmpty()
+  label: string;
+
+  @IsString()
+  @IsNotEmpty()
+  value: string;
+}
 
 export class CreateQuestionDto {
-  @IsNotEmpty()
   @IsString()
+  @IsNotEmpty()
   content: string;
 
   @IsEnum(QuestionType)
@@ -24,93 +35,37 @@ export class CreateQuestionDto {
   @IsEnum(QuestionMode)
   mode: QuestionMode;
 
-  @IsOptional()
-  @IsEnum(QuestionFormat)
-  format?: QuestionFormat;
-
-  @IsOptional()
   @IsEnum(DifficultyLevel)
-  difficulty?: DifficultyLevel;
-
   @IsOptional()
-  @IsUrl()
-  audioUrl?: string;
+  difficultyLevel?: DifficultyLevel;
 
-  @IsOptional()
   @IsString()
+  @IsOptional()
   explanation?: string;
 
-  @IsOptional()
   @IsString()
+  @IsOptional()
   correctAnswer?: string;
 
+  @IsUrl()
   @IsOptional()
-  @IsArray()
-  acceptableAnswers?: string[];
+  audioUrl?: string;
 
+  @IsString()
   @IsOptional()
-  @IsInt()
-  points?: number;
+  category?: string;
 
-  @IsOptional()
-  @IsInt()
-  categoryId?: number;
-
-  @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => CreateQuestionOptionDto)
+  @IsOptional()
   options?: CreateQuestionOptionDto[];
-}
 
-export class UpdateQuestionDto {
-  @IsOptional()
-  @IsString()
-  content?: string;
-
-  @IsOptional()
-  @IsEnum(QuestionType)
-  type?: QuestionType;
-
-  @IsOptional()
-  @IsEnum(QuestionMode)
-  mode?: QuestionMode;
-
-  @IsOptional()
-  @IsEnum(QuestionFormat)
-  format?: QuestionFormat;
-
-  @IsOptional()
-  @IsEnum(DifficultyLevel)
-  difficulty?: DifficultyLevel;
-
-  @IsOptional()
-  @IsUrl()
-  audioUrl?: string;
-
-  @IsOptional()
-  @IsString()
-  explanation?: string;
-
-  @IsOptional()
-  @IsString()
-  correctAnswer?: string;
-
-  @IsOptional()
-  @IsArray()
-  acceptableAnswers?: string[];
-
-  @IsOptional()
   @IsInt()
-  points?: number;
-
   @IsOptional()
-  @IsInt()
   categoryId?: number;
 
+  @IsInt()
   @IsOptional()
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => CreateQuestionOptionDto)
-  options?: CreateQuestionOptionDto[];
+  createdBy?: UserEntity;
 }

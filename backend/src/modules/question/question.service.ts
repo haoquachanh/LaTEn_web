@@ -1,12 +1,13 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Like, In } from 'typeorm';
-import { Question, QuestionType, QuestionMode, QuestionFormat, DifficultyLevel } from '@entities/question.entity';
+import { Question } from '@entities/question.entity';
 import { QuestionOption } from '@entities/question-option.entity';
 import { QuestionCategory } from '@entities/question-category.entity';
 import { QuestionBank } from '@entities/question-bank.entity';
-import { UserEntity } from '@entities/user.entity';
-import { CreateQuestionDto, UpdateQuestionDto, QuestionFilterDto } from './dtos/question.dto';
+import { DifficultyLevel, QuestionMode, QuestionType } from '@common/typings/question-type.enum';
+import { CreateQuestionDto } from './dtos/create-question.dto';
+import { UpdateQuestionDto } from './dtos/update-question.dto';
 
 @Injectable()
 export class QuestionService {
@@ -21,116 +22,56 @@ export class QuestionService {
     private readonly bankRepository: Repository<QuestionBank>,
   ) {}
 
-  async createQuestion(createQuestionDto: CreateQuestionDto): Promise<Question> {
-    // Find category if categoryId is provided
-    let category = null;
-    if (createQuestionDto.categoryId) {
-      category = await this.categoryRepository.findOne({ where: { id: createQuestionDto.categoryId } });
-      if (!category) {
-        throw new NotFoundException(`Category with ID ${createQuestionDto.categoryId} not found`);
-      }
-    }
+  // src/question/question.service.ts
+  async create(createDto: CreateQuestionDto): Promise<Question> {
+    // let category: QuestionCategory = null;
 
-    // Find bank if bankId is provided
-    let bank = null;
-    if (createQuestionDto.bankId) {
-      bank = await this.bankRepository.findOne({ where: { id: createQuestionDto.bankId } });
-      if (!bank) {
-        throw new NotFoundException(`Question bank with ID ${createQuestionDto.bankId} not found`);
-      }
-    }
+    // if (createDto.categoryId) {
+    //   category = await this.categoryRepository.findOne({ where: { id: createDto.categoryId } });
+    //   if (!category) {
+    //     throw new NotFoundException(`Category with ID ${createDto.categoryId} not found`);
+    //   }
+    // }
 
-    // Create question
-    const question = new Question();
-    question.content = createQuestionDto.content;
-    question.type = createQuestionDto.type;
-    question.mode = createQuestionDto.mode;
-    question.format = createQuestionDto.format || QuestionFormat.TEXT;
-    question.difficultyLevel = createQuestionDto.difficultyLevel || DifficultyLevel.MEDIUM;
-    question.explanation = createQuestionDto.explanation;
-    question.category = category;
+    const question = this.questionRepository.create({
+      content: createDto.content,
+      type: createDto.type,
+      mode: createDto.mode,
+      difficultyLevel: createDto.difficultyLevel || DifficultyLevel.MEDIUM,
+      explanation: createDto.explanation,
+      correctAnswer: createDto.correctAnswer,
+      audioUrl: createDto.audioUrl,
+      // category,
+      createdBy: createDto.createdBy, // phải set từ controller
+    });
 
-    // Save the question first
     const createdQuestion = await this.questionRepository.save(question);
 
-    // Create options for multiple choice or true/false questions
-    if (createQuestionDto.options && createQuestionDto.options.length > 0) {
-      for (const optionDto of createQuestionDto.options) {
-        const option = new QuestionOption();
-        option.question = createdQuestion;
-        option.text = optionDto.text;
-        option.isCorrect = optionDto.isCorrect;
-        await this.optionRepository.save(option);
-      }
+    if (createDto.options?.length > 0) {
+      const options = createDto.options.map((opt) =>
+        this.optionRepository.create({
+          content: opt.content,
+          isCorrect: opt.isCorrect,
+          question: createdQuestion,
+        }),
+      );
+      await this.optionRepository.save(options);
+      createdQuestion.options = options;
     }
 
-    // Add to bank if specified
-    if (bank) {
-      bank.questions = [...(bank.questions || []), createdQuestion];
-      await this.bankRepository.save(bank);
-    }
-
-    return this.findQuestionById(createdQuestion.id);
+    return createdQuestion;
   }
 
-  async getAllQuestions(filter: QuestionFilterDto, page: number = 1, limit: number = 10) {
-    const query = this.questionRepository
-      .createQueryBuilder('question')
-      .leftJoinAndSelect('question.options', 'option')
-      .leftJoinAndSelect('question.category', 'category');
-
-    if (filter.type) {
-      query.andWhere('question.type = :type', { type: filter.type });
-    }
-
-    if (filter.mode) {
-      query.andWhere('question.mode = :mode', { mode: filter.mode });
-    }
-
-    if (filter.format) {
-      query.andWhere('question.format = :format', { format: filter.format });
-    }
-
-    if (filter.difficultyLevel) {
-      query.andWhere('question.difficultyLevel = :level', { level: filter.difficultyLevel });
-    }
-
-    if (filter.categoryId) {
-      query.andWhere('question.categoryId = :categoryId', { categoryId: filter.categoryId });
-    }
-
-    if (filter.bankId) {
-      query
-        .innerJoin('question_bank_questions', 'qbq', 'qbq.question_id = question.id')
-        .andWhere('qbq.bank_id = :bankId', { bankId: filter.bankId });
-    }
-
-    if (filter.searchTerm) {
-      query.andWhere('question.content LIKE :searchTerm', { searchTerm: `%${filter.searchTerm}%` });
-    }
-
-    const [items, total] = await query
-      .orderBy('question.createdAt', 'DESC')
-      .skip((page - 1) * limit)
-      .take(limit)
-      .getManyAndCount();
-
-    return {
-      items,
-      meta: {
-        totalItems: total,
-        itemCount: items.length,
-        itemsPerPage: limit,
-        totalPages: Math.ceil(total / limit),
-        currentPage: page,
-      },
-    };
+  async findAll(): Promise<Question[]> {
+    return this.questionRepository.find({
+      relations: ['options'],
+    });
   }
 
-  async findQuestionById(id: number): Promise<Question> {
+  async findOne(id: number): Promise<Question> {
     const question = await this.questionRepository.findOne({
       where: { id },
-      relations: ['options', 'category'],
+      relations: ['options'],
     });
 
     if (!question) {
@@ -139,152 +80,58 @@ export class QuestionService {
 
     return question;
   }
-
-  async getQuestionById(id: number): Promise<Question> {
-    return this.findQuestionById(id);
-  }
-
-  async getQuestionsByCategory(categoryId: number, page: number = 1, limit: number = 10) {
-    const filter = new QuestionFilterDto();
-    filter.categoryId = categoryId;
-    return this.getAllQuestions(filter, page, limit);
-  }
-
-  async getQuestionsByBank(bankId: number, page: number = 1, limit: number = 10) {
-    const filter = new QuestionFilterDto();
-    filter.bankId = bankId;
-    return this.getAllQuestions(filter, page, limit);
-  }
-
-  async updateQuestion(id: number, updateQuestionDto: UpdateQuestionDto): Promise<Question> {
-    const question = await this.findQuestionById(id);
+  async update(id: number, updateDto: UpdateQuestionDto): Promise<Question> {
+    const question = await this.questionRepository.findOne({
+      where: { id },
+      relations: ['options'],
+    });
 
     if (!question) {
       throw new NotFoundException(`Question with ID ${id} not found`);
     }
 
-    // Update question properties
-    if (updateQuestionDto.content !== undefined) {
-      question.content = updateQuestionDto.content;
-    }
-    if (updateQuestionDto.type !== undefined) {
-      question.type = updateQuestionDto.type;
-    }
-    if (updateQuestionDto.mode !== undefined) {
-      question.mode = updateQuestionDto.mode;
-    }
-    if (updateQuestionDto.format !== undefined) {
-      question.format = updateQuestionDto.format;
-    }
-    if (updateQuestionDto.difficultyLevel !== undefined) {
-      question.difficultyLevel = updateQuestionDto.difficultyLevel;
-    }
-    if (updateQuestionDto.explanation !== undefined) {
-      question.explanation = updateQuestionDto.explanation;
-    }
+    // Update main fields
+    Object.assign(question, {
+      content: updateDto.content,
+      type: updateDto.type,
+      mode: updateDto.mode,
+      explanation: updateDto.explanation,
+      correctAnswer: updateDto.correctAnswer,
+      difficultyLevel: updateDto.difficultyLevel || question.difficultyLevel,
+      audioUrl: updateDto.audioUrl,
+    });
 
-    // Update category if provided
-    if (updateQuestionDto.categoryId !== undefined) {
-      if (updateQuestionDto.categoryId) {
-        const category = await this.categoryRepository.findOne({ where: { id: updateQuestionDto.categoryId } });
-        if (!category) {
-          throw new NotFoundException(`Category with ID ${updateQuestionDto.categoryId} not found`);
-        }
-        question.category = category;
-      } else {
-        question.category = null;
-      }
+    const updatedQuestion = await this.questionRepository.save(question);
+
+    // Remove old options
+    await this.optionRepository.delete({ question: { id: question.id } });
+
+    // Add new options
+    if (updateDto.options?.length > 0) {
+      const newOptions = updateDto.options.map((opt) =>
+        this.optionRepository.create({
+          content: opt.content,
+          isCorrect: opt.isCorrect,
+          question,
+        }),
+      );
+      await this.optionRepository.save(newOptions);
+      updatedQuestion.options = newOptions;
+    } else {
+      updatedQuestion.options = [];
     }
 
-    // Update bank if provided
-    if (updateQuestionDto.bankId !== undefined) {
-      if (updateQuestionDto.bankId) {
-        const bank = await this.bankRepository.findOne({
-          where: { id: updateQuestionDto.bankId },
-          relations: ['questions'],
-        });
-        if (!bank) {
-          throw new NotFoundException(`Question bank with ID ${updateQuestionDto.bankId} not found`);
-        }
-
-        // Remove from old banks and add to new bank
-        // This would require more complex logic in a real application
-        bank.questions = [...(bank.questions || []), question];
-        await this.bankRepository.save(bank);
-      }
-    }
-
-    await this.questionRepository.save(question);
-
-    // Update options if provided
-    if (updateQuestionDto.options && updateQuestionDto.options.length > 0) {
-      // First, find existing options
-      const existingOptions = await this.optionRepository.find({
-        where: { question: { id } },
-      });
-
-      // Process each option in the DTO
-      for (const optionDto of updateQuestionDto.options) {
-        if (optionDto.id) {
-          // Update existing option
-          const existingOption = existingOptions.find((o) => o.id === optionDto.id);
-          if (existingOption) {
-            if (optionDto.text !== undefined) existingOption.text = optionDto.text;
-            if (optionDto.isCorrect !== undefined) existingOption.isCorrect = optionDto.isCorrect;
-            await this.optionRepository.save(existingOption);
-          }
-        } else {
-          // Create new option
-          const newOption = new QuestionOption();
-          newOption.question = question;
-          newOption.text = optionDto.text;
-          newOption.isCorrect = optionDto.isCorrect;
-          await this.optionRepository.save(newOption);
-        }
-      }
-
-      // Remove options that weren't included in the update
-      const updatedOptionIds = updateQuestionDto.options.filter((o) => o.id).map((o) => o.id);
-
-      const optionsToDelete = existingOptions.filter((o) => !updatedOptionIds.includes(o.id));
-
-      if (optionsToDelete.length > 0) {
-        await this.optionRepository.remove(optionsToDelete);
-      }
-    }
-
-    return this.findQuestionById(id);
+    return updatedQuestion;
   }
 
-  async deleteQuestion(id: number): Promise<void> {
-    const question = await this.findQuestionById(id);
+  async remove(id: number): Promise<void> {
+    const question = await this.questionRepository.findOne({ where: { id } });
 
     if (!question) {
       throw new NotFoundException(`Question with ID ${id} not found`);
     }
 
-    // Delete options first
     await this.optionRepository.delete({ question: { id } });
-
-    // Delete the question
-    await this.questionRepository.remove(question);
-  }
-
-  async getRandomQuestions(count: number, type?: QuestionType, mode?: QuestionMode): Promise<Question[]> {
-    const query = this.questionRepository
-      .createQueryBuilder('question')
-      .leftJoinAndSelect('question.options', 'options')
-      .orderBy('RAND()')
-      .take(count);
-
-    if (type) {
-      query.andWhere('question.type = :type', { type });
-    }
-
-    if (mode) {
-      query.andWhere('question.mode = :mode', { mode });
-    }
-
-    return query.getMany();
+    await this.questionRepository.delete(id);
   }
 }

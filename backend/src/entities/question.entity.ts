@@ -10,39 +10,9 @@ import {
 } from 'typeorm';
 import { UserEntity } from './user.entity';
 import { QuestionCategory } from './question-category.entity';
-
-export enum QuestionType {
-  TRUE_FALSE = 'true_false',
-  MULTIPLE_CHOICE = 'multiple_choice',
-  SHORT_ANSWER = 'short_answer',
-  ESSAY = 'essay',
-}
-
-export enum QuestionMode {
-  READING = 'reading',
-  LISTENING = 'listening',
-}
-
-export enum QuestionFormat {
-  TEXT = 'text',
-  IMAGE = 'image',
-  AUDIO = 'audio',
-  VIDEO = 'video',
-  READING = 'reading',
-  LISTENING = 'listening',
-}
-
-export enum DifficultyLevel {
-  EASY = 'easy',
-  MEDIUM = 'medium',
-  HARD = 'hard',
-  EXPERT = 'expert',
-  LEVEL_1 = 'level_1',
-  LEVEL_2 = 'level_2',
-  LEVEL_3 = 'level_3',
-  LEVEL_4 = 'level_4',
-  LEVEL_5 = 'level_5',
-}
+import { DifficultyLevel, QuestionMode, QuestionType } from '@common/typings/question-type.enum';
+import { QuestionOption } from './question-option.entity';
+import { ExaminationQuestion } from './examination-question.entity';
 
 @Entity('questions')
 export class Question {
@@ -58,23 +28,14 @@ export class Question {
   @Column({ type: 'enum', enum: QuestionMode })
   mode: QuestionMode;
 
-  @Column({ type: 'enum', enum: QuestionFormat, default: QuestionFormat.TEXT })
-  format: QuestionFormat;
-
   @Column({ type: 'enum', enum: DifficultyLevel, default: DifficultyLevel.MEDIUM })
-  difficultyLevel: DifficultyLevel;
+  difficultyLevel?: DifficultyLevel;
 
   @Column('text', { nullable: true })
   explanation: string;
 
   @Column('text', { nullable: true })
   correctAnswer: string;
-
-  @Column('simple-array', { nullable: true })
-  acceptableAnswers: string[];
-
-  @Column('int', { default: 1 })
-  points: number;
 
   @Column({ type: 'text', nullable: true })
   audioUrl: string; // For listening questions
@@ -83,11 +44,11 @@ export class Question {
   @JoinColumn({ name: 'createdById' })
   createdBy: UserEntity;
 
-  @OneToMany('QuestionOption', 'question')
-  options: any[];
+  @OneToMany(() => QuestionOption, (o) => o.question, { cascade: true })
+  options: QuestionOption[];
 
-  @OneToMany('ExaminationQuestion', 'question')
-  examinationQuestions: any[];
+  @OneToMany(() => ExaminationQuestion, (e) => e.question)
+  examinationQuestions: ExaminationQuestion[];
 
   @ManyToOne(() => QuestionCategory, (category) => category.questions, { nullable: true })
   @JoinColumn({ name: 'categoryId' })

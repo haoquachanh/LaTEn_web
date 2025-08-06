@@ -6,12 +6,12 @@ export class QuestionOption {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => Question, (question) => question.options, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Question, (question) => question.options, { onDelete: 'CASCADE', eager: false })
   @JoinColumn({ name: 'questionId' })
   question: Question;
 
   @Column('text')
-  text: string;
+  content: string;
 
   @Column('boolean')
   isCorrect: boolean;

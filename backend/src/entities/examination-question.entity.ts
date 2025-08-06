@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, ManyToOne, JoinColumn, Column } from 'typeorm';
 import { Examination } from './examination.entity';
 import { Question } from './question.entity';
 
@@ -15,6 +15,9 @@ export class ExaminationQuestion {
   @JoinColumn({ name: 'questionId' })
   question: Question;
 
-  @OneToMany('ExaminationAnswer', 'examinationQuestion')
-  answers: any[];
+  @Column({ type: 'text', nullable: true })
+  userAnswer: string;
+
+  @Column({ type: 'boolean', nullable: true })
+  isCorrect: boolean;
 }
