@@ -30,11 +30,11 @@ const ExaminationDashboard: React.FC<ExaminationDashboardProps> = ({ onStartTest
   // Get past exams from API
   const [pastExams, setPastExams] = useState<PastExam[]>([]);
   const { data: resultsData, isLoading } = useExaminationResultsApi();
-  
+
   // Transform examination results to PastExam format when data is available
   useEffect(() => {
     if (resultsData?.data) {
-      const formattedExams = resultsData.data.map(result => ({
+      const formattedExams = resultsData.data.map((result) => ({
         id: result.id.toString(),
         title: result.examination?.title || 'Unnamed Examination',
         date: new Date(result.completedAt).toISOString().split('T')[0],
@@ -43,7 +43,7 @@ const ExaminationDashboard: React.FC<ExaminationDashboardProps> = ({ onStartTest
         timeSpent: formatTimeSpent(result.timeSpent),
         type: result.examination?.type || 'Unknown',
       }));
-      
+
       setPastExams(formattedExams);
     }
   }, [resultsData]);
@@ -253,48 +253,6 @@ const ExaminationDashboard: React.FC<ExaminationDashboardProps> = ({ onStartTest
               </Link>
             </div>
           )}
-        </div>
-      </div>
-
-      {/* Recommended Tests Section */}
-      <div className="mt-8">
-        <h2 className="text-xl font-bold mb-4">Recommended Tests</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="card bg-base-100 shadow-lg">
-            <div className="card-body">
-              <h3 className="card-title">IELTS Preparation</h3>
-              <p className="text-base-content/70 mb-4">Practice your skills for the IELTS exam</p>
-              <div className="card-actions justify-end">
-                <button className="btn btn-primary" onClick={onStartTest}>
-                  Take Test
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div className="card bg-base-100 shadow-lg">
-            <div className="card-body">
-              <h3 className="card-title">Advanced Grammar</h3>
-              <p className="text-base-content/70 mb-4">Improve your grammar with challenging questions</p>
-              <div className="card-actions justify-end">
-                <button className="btn btn-primary" onClick={onStartTest}>
-                  Take Test
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div className="card bg-base-100 shadow-lg">
-            <div className="card-body">
-              <h3 className="card-title">Business English</h3>
-              <p className="text-base-content/70 mb-4">Learn vocabulary and phrases for business contexts</p>
-              <div className="card-actions justify-end">
-                <button className="btn btn-primary" onClick={onStartTest}>
-                  Take Test
-                </button>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>

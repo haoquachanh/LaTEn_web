@@ -40,8 +40,8 @@ const Examination: React.FC = () => {
   const [examState, setExamState] = useState<'dashboard' | 'setup' | 'inProgress' | 'results'>('dashboard');
   const [selectedQuestions, setSelectedQuestions] = useState<Question[]>([]);
   const [examConfig, setExamConfig] = useState({
-    type: '',
-    content: '',
+    type: 'multiple',
+    content: 'reading',
     timeInMinutes: 30,
     questionsCount: 10,
     level: 'medium',
@@ -330,12 +330,9 @@ const Examination: React.FC = () => {
 
   // Cancel an in-progress exam
   const handleCancelExam = () => {
-    // Confirm before canceling
-    if (window.confirm('Are you sure you want to cancel this exam? Your progress will be lost.')) {
-      setExamState('dashboard');
-      setUserAnswers({});
-      setExamResults(null);
-    }
+    setExamState('dashboard');
+    setUserAnswers({});
+    setExamResults(null);
   };
 
   // Switch to exam setup screen

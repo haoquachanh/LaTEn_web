@@ -1,9 +1,7 @@
 'use client';
 
-import { useState } from 'react';
 import Image from 'next/image';
 import { examTypes, subjects } from '../data/examData';
-import { useExamination } from '@/hooks/useExamination';
 
 interface CustomExamFormProps {
   type: string;
@@ -20,9 +18,9 @@ interface CustomExamFormProps {
 }
 
 const CustomExamForm: React.FC<CustomExamFormProps> = ({
-  type,
+  type = 'multiple',
   setType,
-  content,
+  content = 'reading',
   setContent,
   numberOfQuestions,
   setNumberOfQuestions,

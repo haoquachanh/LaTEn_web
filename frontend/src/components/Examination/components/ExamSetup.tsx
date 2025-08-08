@@ -30,9 +30,9 @@ interface ExamSetupProps {
 const ExamSetup: React.FC<ExamSetupProps> = ({
   isCustomExam,
   setIsCustomExam,
-  type,
+  type = 'multiple',
   setType,
-  content,
+  content = 'reading',
   setContent,
   numberOfQuestions,
   setNumberOfQuestions,
@@ -50,6 +50,8 @@ const ExamSetup: React.FC<ExamSetupProps> = ({
   const handlePresetSelect = (preset: PresetExam) => {
     // Just call setSelectedPresetId which will trigger all other updates in the parent
     setSelectedPresetId(preset.id);
+    setType('multiple');
+    setContent('reading');
     // No need to call other setters as they'll be handled by the parent component
   };
 
