@@ -2,6 +2,8 @@
 import { useContext } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import 'swiper/css';
 import { AuthContext } from '@/contexts/AuthContext';
 import ExaminationList from '@/components/Examination/ExaminationList';
 
@@ -280,6 +282,80 @@ export default function HomeContent() {
               </div>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* How It Works Section */}
+      <div className="py-16 bg-base-200">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl sm:text-4xl font-bold mb-4 text-primary">How It Works</h2>
+            <p className="text-lg text-base-content/70 max-w-2xl mx-auto">
+              Start your journey in just a few simple steps.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="flex flex-col items-center">
+              <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mb-4">
+                <span className="text-2xl font-bold text-primary">1</span>
+              </div>
+              <h3 className="font-semibold text-lg mb-2">Sign Up</h3>
+              <p className="text-base-content/70 text-center">Create your free account and join our community.</p>
+            </div>
+            <div className="flex flex-col items-center">
+              <div className="w-16 h-16 bg-secondary/20 rounded-full flex items-center justify-center mb-4">
+                <span className="text-2xl font-bold text-secondary">2</span>
+              </div>
+              <h3 className="font-semibold text-lg mb-2">Choose a Course</h3>
+              <p className="text-base-content/70 text-center">Browse our catalog and pick what interests you.</p>
+            </div>
+            <div className="flex flex-col items-center">
+              <div className="w-16 h-16 bg-accent/20 rounded-full flex items-center justify-center mb-4">
+                <span className="text-2xl font-bold text-accent">3</span>
+              </div>
+              <h3 className="font-semibold text-lg mb-2">Start Learning</h3>
+              <p className="text-base-content/70 text-center">
+                Engage with lessons, track progress, and earn certificates.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Our Partners Slide Section */}
+      <div className="py-16 bg-base-100">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl sm:text-4xl font-bold mb-4 text-primary">Our Partners</h2>
+            <p className="text-lg text-base-content/70 max-w-2xl mx-auto">
+              We collaborate with leading organizations to bring you the best learning experience.
+            </p>
+          </div>
+          <Swiper
+            spaceBetween={30}
+            slidesPerView={2}
+            breakpoints={{
+              640: { slidesPerView: 2 },
+              768: { slidesPerView: 3 },
+              1024: { slidesPerView: 4 },
+            }}
+            loop={true}
+            autoplay={{ delay: 2500, disableOnInteraction: false }}
+            className="w-full max-w-4xl mx-auto"
+          >
+            <SwiperSlide>
+              <Image src="/images/1.png" alt="Partner 1" width={120} height={60} />
+            </SwiperSlide>
+            <SwiperSlide>
+              <Image src="/images/2.png" alt="Partner 2" width={120} height={60} />
+            </SwiperSlide>
+            <SwiperSlide>
+              <Image src="/images/3.png" alt="Partner 3" width={120} height={60} />
+            </SwiperSlide>
+            <SwiperSlide>
+              <Image src="/images/4.png" alt="Partner 4" width={120} height={60} />
+            </SwiperSlide>
+          </Swiper>
         </div>
       </div>
 
