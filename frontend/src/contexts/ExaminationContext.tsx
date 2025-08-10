@@ -8,7 +8,7 @@
  */
 import React, { createContext, ReactNode, useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import examinationService from '@/services/examination.service';
+import examinationAttemptService from '@/services/examination-attempt.service';
 import {
   Examination,
   ExaminationAnswer,
@@ -29,21 +29,15 @@ interface ExaminationContextProps {
   totalPages: number;
   timeRemaining: number;
   totalTime: number;
-  answers: Record<number, number>;
+  answers: Record<string, string | number>; // Cập nhật kiểu dữ liệu phù hợp hơn
   isSubmitting: boolean;
   result: ExaminationResult | null;
 
   // Actions
   loadExamination: (id: number | string) => Promise<Examination>;
-  startExamination: (id: number | string, examParams?: {
-    questionsCount?: number;
-    type?: string;
-    content?: string;
-    duration?: number;
-    level?: string;
-  }) => Promise<Examination>;
+  startExamination: (templateId: number | string) => Promise<Examination>; // Đơn giản hóa interface
   submitExamination: () => Promise<ExaminationResult | undefined>;
-  handleAnswer: (questionId: number, selectedOption: number) => void;
+  handleAnswer: (questionId: string, selectedOption: string | number) => void; // Cập nhật kiểu dữ liệu
   goToPage: (page: number) => void;
   nextPage: () => void;
   previousPage: () => void;
@@ -63,13 +57,7 @@ const ExaminationContext = createContext<ExaminationContextProps>({
   result: null,
 
   loadExamination: async (id: number | string) => ({}) as Examination,
-  startExamination: async (id: number | string, examParams?: {
-    questionsCount?: number;
-    type?: string;
-    content?: string;
-    duration?: number;
-    level?: string;
-  }) => ({}) as Examination,
+  startExamination: async (templateId: number | string) => ({}) as Examination,
   submitExamination: async () => undefined,
   handleAnswer: () => {},
   goToPage: () => {},
@@ -94,7 +82,7 @@ export function ExaminationProvider({ children }: Props) {
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [totalTime, setTotalTime] = useState(0);
   const [startTime, setStartTime] = useState<Date | null>(null);
-  const [answers, setAnswers] = useState<Record<number, number>>({});
+  const [answers, setAnswers] = useState<Record<string, string | number>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [result, setResult] = useState<ExaminationResult | null>(null);
   const [timerId, setTimerId] = useState<NodeJS.Timeout | null>(null);
@@ -159,9 +147,34 @@ export function ExaminationProvider({ children }: Props) {
   const loadExamination = useCallback(
     async (id: number | string) => {
       try {
-        const exam = await examinationService.getExaminationById(id);
-        setCurrentExam(exam);
-        return exam;
+        const examDetail = await examinationAttemptService.getExaminationDetail(id);
+
+        // Transform the ExaminationResult to a compatible Examination type
+        const transformedExam: Examination = {
+          id: examDetail.id,
+          title: examDetail.examination?.title || 'Untitled Examination',
+          description: examDetail.examination?.description || '',
+          type: examDetail.examination?.type || 'multiple',
+          level: examDetail.examination?.level || 'medium',
+          duration: Math.ceil(examDetail.timeSpent / 60),
+          durationSeconds: examDetail.timeSpent,
+          totalQuestions: examDetail.totalQuestions,
+          questions:
+            examDetail.detailedResults?.map((detail) => ({
+              id: detail.questionId.toString(),
+              question: 'Question content', // Default value
+              options: [],
+              correctAnswer: detail.correctOption?.toString() || '',
+              type: 'multiple_choice',
+              content: 'text',
+            })) || [],
+          score: examDetail.score,
+          createdAt: examDetail.examination?.createdAt || new Date().toISOString(),
+          updatedAt: examDetail.updatedAt,
+        };
+
+        setCurrentExam(transformedExam);
+        return transformedExam;
       } catch (error) {
         console.error('Error loading examination:', error);
         showToast('Error loading examination', 'error');
@@ -172,40 +185,58 @@ export function ExaminationProvider({ children }: Props) {
   );
 
   /**
-   * Start an examination
+   * Start an examination from a template
    */
   const startExamination = useCallback(
-    async (id: number | string, examParams?: {
-      questionsCount?: number;
-      type?: string;
-      content?: string;
-      duration?: number;
-      level?: string;
-    }) => {
+    async (templateId: number | string) => {
       try {
         setIsSubmitting(false);
         setResult(null);
         setAnswers({});
         setCurrentPage(0);
 
-        console.log(`Context: Starting examination with ID ${id}`, examParams ? `with params: ${JSON.stringify(examParams)}` : '');
-        
-        // Load exam with questions, passing examParams
-        const exam = await examinationService.startExamination(id, examParams);
+        console.log(`Context: Starting examination with template ID ${templateId}`);
+
+        // Bắt đầu bài thi từ template
+        const exam = await examinationAttemptService.startExamination(templateId);
         console.log('Context: Examination data received:', exam);
-        
+
         setCurrentExam(exam);
-        
-        if (exam.questions && exam.questions.length > 0) {
-          console.log(`Context: ${exam.questions.length} questions loaded`);
-          setQuestions(exam.questions);
+
+        // Chuyển đổi examinationQuestions thành questions
+        if (exam.examinationQuestions && exam.examinationQuestions.length > 0) {
+          const mappedQuestions = exam.examinationQuestions.map((eq: any) => {
+            const q = eq.question;
+
+            // Xử lý options dựa vào loại câu hỏi
+            let options = [];
+            if (q.type === 'true_false') {
+              options = ['true', 'false'];
+            } else if (q.type === 'multiple_choice' && q.options?.length > 0) {
+              options = q.options.map((opt: any) => opt.content || opt.text || '');
+            }
+
+            return {
+              id: eq.id.toString(),
+              question: q.content || '',
+              answers: options,
+              correctAnswer: '', // Ẩn đáp án đúng trong quá trình làm bài
+              type: q.type || '',
+              content: q.content || '',
+              questionId: q.id,
+              examinationQuestionId: eq.id,
+            };
+          });
+
+          console.log(`Context: ${mappedQuestions.length} questions loaded`);
+          setQuestions(mappedQuestions);
         } else {
           console.error('Context: No questions received from API');
           showToast('Error: No questions available for this examination', 'error');
         }
 
-        // Set up timer
-        const durationInSeconds = exam.duration * 60;
+        // Thiết lập thời gian làm bài
+        const durationInSeconds = exam.durationSeconds || (exam.duration ? exam.duration * 60 : 3600);
         setTimeRemaining(durationInSeconds);
         setTotalTime(durationInSeconds);
         setStartTime(new Date());
@@ -230,28 +261,20 @@ export function ExaminationProvider({ children }: Props) {
       setIsSubmitting(true);
 
       console.log('Preparing to submit exam answers');
-      
-      // Format answers for API submission
-      // Chuyển từ { questionId: selectedOption } sang định dạng mà API mong đợi
-      const formattedAnswers: { [key: string]: string } = {};
-      
-      Object.keys(answers).forEach((questionId) => {
-        formattedAnswers[questionId] = answers[parseInt(questionId)].toString();
-      });
-      
+
       // Calculate time spent
       const timeSpent = startTime ? Math.round((Date.now() - startTime.getTime()) / 1000) : totalTime - timeRemaining;
-      
+
       console.log('Time spent:', timeSpent);
-      console.log('Answers:', formattedAnswers);
+      console.log('Answers:', answers);
 
-      // Submit answers
-      const submission: ExaminationSubmission = {
-        answers: formattedAnswers,
-        timeSpent,
-      };
+      // Gửi từng câu trả lời
+      for (const questionId in answers) {
+        await examinationAttemptService.submitAnswer(currentExam.id, questionId, answers[questionId]);
+      }
 
-      const examResult = await examinationService.submitExamination(currentExam.id, submission);
+      // Hoàn thành bài thi
+      const examResult = await examinationAttemptService.completeExamination(currentExam.id);
 
       setResult(examResult);
       showToast('Examination submitted successfully', 'success');
@@ -284,7 +307,7 @@ export function ExaminationProvider({ children }: Props) {
   /**
    * Handle answering a question
    */
-  const handleAnswer = useCallback((questionId: number, selectedOption: number) => {
+  const handleAnswer = useCallback((questionId: string, selectedOption: string | number) => {
     setAnswers((prev) => ({
       ...prev,
       [questionId]: selectedOption,

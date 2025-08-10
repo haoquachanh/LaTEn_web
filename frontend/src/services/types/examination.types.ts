@@ -52,6 +52,8 @@ export interface Examination {
   content?: string;
   createdAt: string;
   updatedAt: string;
+  // Additional properties for frontend use
+  examinationQuestions?: any[]; // Raw questions from API
 }
 
 /**

@@ -1,13 +1,33 @@
-import { Controller, Post, Get, Body, Patch, Param, Query, ParseIntPipe, Request, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Body,
+  Patch,
+  Param,
+  Query,
+  ParseIntPipe,
+  Request,
+  UseGuards,
+  Put,
+  Delete,
+} from '@nestjs/common';
 import { ExaminationService } from './examination.service';
 import { CreateExaminationDto } from './dtos/create-examination.dto';
 import { SubmitAnswerDto } from './dtos/submit-answer.dto';
 import { Examination } from '@entities/examination.entity';
 import { JwtAuthGuard } from '@common/security/jwt.guard';
+import { CreateExamTemplateDto } from '../examination-attempt/dtos/template/create-exam-template.dto';
+import { UpdateExamTemplateDto } from '../examination-attempt/dtos/template/update-exam-template.dto';
+import { GetExamTemplatesDto } from '../examination-attempt/dtos/template/get-exam-templates.dto';
+import { ExaminationAttemptService } from '../examination-attempt/examination-attempt.service';
 
 @Controller('examinations')
 export class ExaminationController {
-  constructor(private readonly examinationService: ExaminationService) {}
+  constructor(
+    private readonly examinationService: ExaminationService,
+    private readonly examinationAttemptService: ExaminationAttemptService,
+  ) {}
 
   @UseGuards(JwtAuthGuard)
   @Post()
@@ -54,5 +74,45 @@ export class ExaminationController {
   @Get(':id')
   getExamination(@Param('id', ParseIntPipe) id: number) {
     return this.examinationService.getExaminationById(id);
+  }
+
+  // PRESETS-EXAM ENDPOINTS
+
+  // GET ALL PRESETS: Lấy danh sách các bài thi mẫu (public endpoint, không yêu cầu xác thực)
+  @Get('presets')
+  getExamPresets(@Query() query: GetExamTemplatesDto, @Request() req) {
+    const userId = req.user?.id || null; // userId sẽ là null nếu không có xác thực
+    return this.examinationAttemptService.getExamTemplates(query, userId);
+  }
+
+  // GET PRESET BY ID: Lấy chi tiết một bài thi mẫu (public endpoint, không yêu cầu xác thực)
+  @Get('presets/:id')
+  getExamPresetById(@Param('id', ParseIntPipe) presetId: number) {
+    return this.examinationAttemptService.getExamTemplateById(presetId);
+  }
+
+  // CREATE PRESET: Tạo một bài thi mẫu mới
+  @UseGuards(JwtAuthGuard)
+  @Post('presets')
+  createExamPreset(@Body() createPresetDto: CreateExamTemplateDto, @Request() req) {
+    return this.examinationAttemptService.createExamTemplate(createPresetDto, req.user.id);
+  }
+
+  // UPDATE PRESET: Cập nhật bài thi mẫu
+  @UseGuards(JwtAuthGuard)
+  @Put('presets/:id')
+  updateExamPreset(
+    @Param('id', ParseIntPipe) presetId: number,
+    @Body() updatePresetDto: UpdateExamTemplateDto,
+    @Request() req,
+  ) {
+    return this.examinationAttemptService.updateExamTemplate(presetId, updatePresetDto, req.user.id);
+  }
+
+  // DELETE PRESET: Xóa bài thi mẫu
+  @UseGuards(JwtAuthGuard)
+  @Delete('presets/:id')
+  deleteExamPreset(@Param('id', ParseIntPipe) presetId: number, @Request() req) {
+    return this.examinationAttemptService.deleteExamTemplate(presetId, req.user.id);
   }
 }

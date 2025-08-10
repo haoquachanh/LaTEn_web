@@ -42,19 +42,19 @@ export function useStartExaminationApi() {
   const { trigger: triggerMutation } = useApiMutation<any, Examination>(`${EXAMINATIONS_API}/dummy-url`);
 
   const startExam = async (
-    examinationId: string | number, 
+    templateId: string | number,
     examParams?: {
       questionsCount?: number;
       type?: string;
       content?: string;
       duration?: number;
       level?: string;
-    }
+    },
   ) => {
     try {
-      // Sử dụng examination.service.ts thay vì hook api mutation
-      const examinationService = (await import('@/services/examination.service')).default;
-      return await examinationService.startExamination(examinationId, examParams);
+      // Sử dụng service mới
+      const examinationAttemptService = (await import('@/services/examination-attempt.service')).default;
+      return await examinationAttemptService.startExamination(templateId);
     } catch (error) {
       throw error;
     }
