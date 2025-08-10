@@ -10,6 +10,7 @@ import {
 } from 'typeorm';
 import { UserEntity } from './user.entity';
 import { ExaminationQuestion } from './examination-question.entity';
+import { ExaminationStatus } from './enums/examination-status.enum';
 @Entity('examinations')
 export class Examination {
   @PrimaryGeneratedColumn()
@@ -42,6 +43,12 @@ export class Examination {
 
   @Column('float', { default: 0 })
   score: number;
+
+  @Column('enum', { enum: ExaminationStatus, default: ExaminationStatus.CREATED })
+  status: ExaminationStatus;
+
+  @Column('text', { nullable: true })
+  feedback: string;
 
   @OneToMany(() => ExaminationQuestion, (examQuestion) => examQuestion.examination)
   examinationQuestions: ExaminationQuestion[];

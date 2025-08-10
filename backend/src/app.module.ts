@@ -9,6 +9,7 @@ import { CommentModule } from '@modules/comment/comment.module';
 import { HealthModule } from '@modules/health/health.module';
 import { AppConfigService } from './config/app-config.service';
 import { ExaminationModule } from '@modules/examination/examination.module';
+import { ExaminationAttemptModule } from '@modules/examination-attempt/examination-attempt.module';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 
 @Module({
@@ -24,6 +25,7 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
     QuestionModule,
     ExaminationModule,
     CommentModule,
+    ExaminationAttemptModule,
   ],
   controllers: [],
   providers: [
