@@ -25,6 +25,7 @@ interface ExamSetupProps {
   isLoading: boolean;
   handleStartExam: () => void;
   changePage: (page: number) => void;
+  presetExams?: PresetExam[]; // Thêm mới prop này
 }
 
 const ExamSetup: React.FC<ExamSetupProps> = ({
@@ -45,11 +46,16 @@ const ExamSetup: React.FC<ExamSetupProps> = ({
   isLoading,
   handleStartExam,
   changePage,
+  presetExams,
 }) => {
   // Use useCallback to memoize the preset selection handler
   const handlePresetSelect = (preset: PresetExam) => {
+    console.log('ExamSetup: Selecting preset:', preset);
     // Just call setSelectedPresetId which will trigger all other updates in the parent
-    setSelectedPresetId(preset.id);
+    // Đảm bảo ID luôn được lưu dưới dạng string
+    const presetIdString = preset.id.toString();
+    console.log('Setting selectedPresetId to:', presetIdString);
+    setSelectedPresetId(presetIdString);
     setType('multiple');
     setContent('reading');
     // No need to call other setters as they'll be handled by the parent component
@@ -128,7 +134,11 @@ const ExamSetup: React.FC<ExamSetupProps> = ({
             changePage={changePage}
           />
         ) : (
-          <PresetExamForm selectedPresetId={selectedPresetId} handlePresetSelect={handlePresetSelect} />
+          <PresetExamForm
+            selectedPresetId={selectedPresetId}
+            handlePresetSelect={handlePresetSelect}
+            presetExams={presetExams}
+          />
         )}
 
         {/* Start Button */}

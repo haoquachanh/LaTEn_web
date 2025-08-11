@@ -9,12 +9,17 @@ import { env } from '@/env';
 interface PresetExamFormProps {
   selectedPresetId: string;
   handlePresetSelect: (preset: PresetExam) => void;
+  presetExams?: PresetExam[]; // Thêm prop mới để nhận danh sách bài thi từ parent
 }
 
 /**
  * PresetExamForm hiển thị danh sách các bài thi mẫu từ API
  */
-const PresetExamForm: React.FC<PresetExamFormProps> = ({ selectedPresetId, handlePresetSelect }) => {
+const PresetExamForm: React.FC<PresetExamFormProps> = ({
+  selectedPresetId,
+  handlePresetSelect,
+  presetExams: propPresets,
+}) => {
   const [presetExams, setPresetExams] = useState<PresetExam[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -22,6 +27,15 @@ const PresetExamForm: React.FC<PresetExamFormProps> = ({ selectedPresetId, handl
   // Sử dụng useCallback để tối ưu performance khi re-render
   const fetchPresetExams = useCallback(async () => {
     try {
+      // Nếu đã có danh sách từ props, sử dụng luôn
+      if (propPresets && propPresets.length > 0) {
+        console.log('Using preset exams from props:', propPresets);
+        setPresetExams(propPresets);
+        setError(null);
+        setLoading(false);
+        return;
+      }
+
       setLoading(true);
 
       // Chạy môi trường development và không có dữ liệu API, sử dụng dữ liệu mẫu
@@ -109,7 +123,7 @@ const PresetExamForm: React.FC<PresetExamFormProps> = ({ selectedPresetId, handl
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [propPresets]);
 
   useEffect(() => {
     fetchPresetExams();
@@ -177,7 +191,7 @@ const PresetExamForm: React.FC<PresetExamFormProps> = ({ selectedPresetId, handl
               <div
                 key={preset.id}
                 className={`flex items-center justify-between p-4 rounded-lg cursor-pointer transition-all duration-200 ${
-                  selectedPresetId === preset.id
+                  String(selectedPresetId) === String(preset.id)
                     ? 'bg-primary text-primary-content shadow-lg border-2 border-primary-focus'
                     : 'bg-base-200 hover:bg-base-300'
                 }`}

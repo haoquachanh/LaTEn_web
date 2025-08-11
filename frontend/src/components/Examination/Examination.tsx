@@ -9,8 +9,8 @@ import ExamContainer from './components/ExamContainer';
 import ExamResults from './components/ExamResults';
 import ExaminationDashboard from './components/ExaminationDashboard';
 import examinationAttemptService from '@/services/examination-attempt.service';
-// Define examinationService as an alias to examinationAttemptService for legacy code
-const examinationService = examinationAttemptService;
+import examinationService from '@/services/examination.service';
+// Giữ lại examinationService làm dịch vụ chính để tương thích với mã cũ
 
 /**
  * Helper function to map frontend exam type to backend QuestionType enum
@@ -68,8 +68,11 @@ const Examination: React.FC = () => {
   useEffect(() => {
     const fetchPresetExams = async () => {
       try {
-        const response = await examinationAttemptService.getExamTemplates();
-        setPresetExams(response.data);
+        console.log('Fetching preset exams from API...');
+        // Import từ services/examination.service.ts
+        const presets = await examinationService.getPresetExaminations();
+        console.log('Preset exams received:', presets);
+        setPresetExams(presets);
       } catch (error) {
         console.error('Failed to fetch preset exams:', error);
       }
@@ -164,7 +167,7 @@ const Examination: React.FC = () => {
   const handleStartPresetExam = async (preset: PresetExam) => {
     try {
       setIsLoading(true);
-      console.log(`Starting examination with preset ID: ${preset.id}`);
+      console.log(`Starting examination with preset ID: ${preset.id}, Type: ${typeof preset.id}`);
 
       // Create exam config from preset with default values for optional properties
       const config = {
@@ -180,17 +183,15 @@ const Examination: React.FC = () => {
       sessionStorage.setItem('exam-content', config.content);
       sessionStorage.setItem('exam-questions', config.questionsCount.toString());
       sessionStorage.setItem('exam-time', config.timeInMinutes.toString());
-      sessionStorage.setItem('exam-id', preset.id);
+      sessionStorage.setItem('exam-id', String(preset.id));
       sessionStorage.setItem('exam-level', config.level);
 
-      // For this implementation, use API at http://localhost:3001/api/examinations/11
-      // as requested by the user
-      const examinationId = '11'; // Using the ID from the API sample provided
-      console.log('Using examination ID:', examinationId);
+      // Sử dụng ID thực tế của preset để khởi tạo bài thi
+      console.log('Using preset ID for examination:', preset.id);
 
-      // Fetch examination from backend API
-      const examination = await examinationService.startExamination(examinationId);
-      setSelectedPresetId(examinationId);
+      // Fetch examination from backend API with the actual preset ID
+      const examination = await examinationService.startExamination(preset.id);
+      setSelectedPresetId(String(preset.id));
 
       // Use questions from the API response
       if (examination && examination.questions && examination.questions.length > 0) {
@@ -369,18 +370,43 @@ const Examination: React.FC = () => {
           setLevel={(level) => setExamConfig({ ...examConfig, level })}
           selectedPresetId={selectedPresetId}
           setSelectedPresetId={setSelectedPresetId}
+          presetExams={presetExams}
           isLoading={isLoading}
           handleStartExam={() => {
             // Start based on mode
             if (isCustomMode) {
               handleStartCustomExam(examConfig);
             } else {
-              const selectedPreset = presetExams.find((p) => p.id.toString() === selectedPresetId);
+              // Tìm preset đã chọn dựa trên ID, kiểm tra presetExams để đảm bảo dữ liệu đã được tải
+              console.log('Looking for preset ID:', selectedPresetId, 'in presetExams:', presetExams);
+
+              if (!selectedPresetId) {
+                console.error('No preset ID selected');
+                alert('Please select a preset exam first');
+                return;
+              }
+
+              if (!presetExams || presetExams.length === 0) {
+                console.error('No preset exams loaded');
+                alert('No preset exams available. Please try again later.');
+                return;
+              }
+
+              // In ra các ID trong presetExams để debug
+              console.log(
+                'Available preset IDs:',
+                presetExams.map((p) => ({ id: p.id, idType: typeof p.id })),
+              );
+
+              // Sử dụng == thay vì === để so sánh giữa string và number
+              const selectedPreset = presetExams.find((p) => String(p.id) === String(selectedPresetId));
+
               if (selectedPreset) {
+                console.log('Found selected preset:', selectedPreset);
                 handleStartPresetExam(selectedPreset);
               } else {
-                console.error('No preset exam selected');
-                alert('Please select a preset exam first');
+                console.error(`No preset exam found with ID: ${selectedPresetId}`);
+                alert('Cannot find the selected preset exam. Please try again.');
               }
             }
           }}
