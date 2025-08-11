@@ -8,7 +8,9 @@ import ExamSetup from './components/ExamSetup';
 import ExamContainer from './components/ExamContainer';
 import ExamResults from './components/ExamResults';
 import ExaminationDashboard from './components/ExaminationDashboard';
-import examinationService from '@/services/examination.service';
+import examinationAttemptService from '@/services/examination-attempt.service';
+// Define examinationService as an alias to examinationAttemptService for legacy code
+const examinationService = examinationAttemptService;
 
 /**
  * Helper function to map frontend exam type to backend QuestionType enum
@@ -66,8 +68,8 @@ const Examination: React.FC = () => {
   useEffect(() => {
     const fetchPresetExams = async () => {
       try {
-        const exams = await examinationService.getPresetExaminations();
-        setPresetExams(exams);
+        const response = await examinationAttemptService.getExamTemplates();
+        setPresetExams(response.data);
       } catch (error) {
         console.error('Failed to fetch preset exams:', error);
       }
@@ -164,21 +166,21 @@ const Examination: React.FC = () => {
       setIsLoading(true);
       console.log(`Starting examination with preset ID: ${preset.id}`);
 
-      // Create exam config from preset
+      // Create exam config from preset with default values for optional properties
       const config = {
-        type: preset.type,
-        content: preset.content,
-        timeInMinutes: preset.time,
-        questionsCount: preset.questions,
+        type: preset.type || 'multiple',
+        content: preset.content || 'reading',
+        timeInMinutes: preset.time || Math.ceil(preset.durationSeconds / 60),
+        questionsCount: preset.questions || preset.totalQuestions,
         level: 'medium', // Default level for presets
       };
 
       // Store exam configuration in session storage for persistence
-      sessionStorage.setItem('exam-type', preset.type);
-      sessionStorage.setItem('exam-content', preset.content);
-      sessionStorage.setItem('exam-questions', preset.questions.toString());
-      sessionStorage.setItem('exam-time', preset.time.toString());
-      sessionStorage.setItem('exam-id', preset.id.toString());
+      sessionStorage.setItem('exam-type', config.type);
+      sessionStorage.setItem('exam-content', config.content);
+      sessionStorage.setItem('exam-questions', config.questionsCount.toString());
+      sessionStorage.setItem('exam-time', config.timeInMinutes.toString());
+      sessionStorage.setItem('exam-id', preset.id);
       sessionStorage.setItem('exam-level', config.level);
 
       // For this implementation, use API at http://localhost:3001/api/examinations/11
@@ -217,15 +219,15 @@ const Examination: React.FC = () => {
           };
         });
 
-        // Update exam config with actual values from the API
+        // Update exam config with actual values from the API, ensuring all values have defaults
         const apiConfig = {
-          type: examination.type || config.type,
-          content: examination.content || examination.mode || config.content,
+          type: examination.type || config.type || 'multiple',
+          content: examination.content || examination.mode || config.content || 'reading',
           timeInMinutes:
             examination.duration ||
-            (examination.durationSeconds ? examination.durationSeconds / 60 : config.timeInMinutes),
-          questionsCount: examination.totalQuestions || transformedQuestions.length,
-          level: examination.level || config.level,
+            (examination.durationSeconds ? Math.ceil(examination.durationSeconds / 60) : config.timeInMinutes || 30),
+          questionsCount: examination.totalQuestions || transformedQuestions.length || 10,
+          level: examination.level || config.level || 'medium',
         };
 
         setSelectedQuestions(transformedQuestions);
@@ -262,9 +264,16 @@ const Examination: React.FC = () => {
         };
 
         try {
-          // Submit to API
+          // Submit to API - use completeExamination from examinationAttemptService
           console.log('Submitting examination to API:', submission);
-          const result = await examinationService.submitExamination(presetId, submission);
+
+          // Submit each answer before completing
+          for (const questionId in answers) {
+            await examinationService.submitAnswer(presetId, questionId, answers[questionId]);
+          }
+
+          // Complete the examination
+          const result = await examinationService.completeExamination(presetId);
           console.log('API submission result:', result);
 
           if (result) {

@@ -1,10 +1,25 @@
-import { Controller, Post, Get, Body, Param, ParseIntPipe, Request, UseGuards, Query } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Put,
+  Delete,
+  Body,
+  Param,
+  ParseIntPipe,
+  Request,
+  UseGuards,
+  Query,
+} from '@nestjs/common';
 import { ExaminationAttemptService } from './examination-attempt.service';
 import { JwtAuthGuard } from '@common/security/jwt.guard';
 import { StartExaminationDto } from './dtos/start-examination.dto';
 import { SubmitAnswerDto } from './dtos/submit-answer.dto';
+import { CreateExamTemplateDto } from './dtos/template/create-exam-template.dto';
+import { UpdateExamTemplateDto } from './dtos/template/update-exam-template.dto';
+import { GetExamTemplatesDto } from './dtos/template/get-exam-templates.dto';
 
-@Controller('examination-attempts')
+@Controller('examinations')
 export class ExaminationAttemptController {
   constructor(private readonly examinationAttemptService: ExaminationAttemptService) {}
 
@@ -12,7 +27,7 @@ export class ExaminationAttemptController {
   @UseGuards(JwtAuthGuard)
   @Post('start')
   startExamination(@Body() startExamDto: StartExaminationDto, @Request() req) {
-    return this.examinationAttemptService.startExamination(startExamDto.examId, req.user.id);
+    return this.examinationAttemptService.startExamination(startExamDto.templateId, req.user.id);
   }
 
   // SUBMIT

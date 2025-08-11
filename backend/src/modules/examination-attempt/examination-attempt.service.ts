@@ -1,13 +1,18 @@
 import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, In } from 'typeorm';
+import { Repository, In, Like } from 'typeorm';
 import { Examination } from '@entities/examination.entity';
 import { ExaminationQuestion } from '@entities/examination-question.entity';
+import { ExaminationTemplate } from '@entities/examination-template.entity';
 import { ExaminationStatus } from '@entities/enums/examination-status.enum';
 import { QuestionType } from '@common/typings/question-type.enum';
 import { QuestionOption } from '@entities/question-option.entity';
+import { Question } from '@entities/question.entity';
 import { SubmitAnswerDto } from './dtos/submit-answer.dto';
 import { AnswerResponse, ExaminationSummary } from './interfaces/examination.interface';
+import { CreateExamTemplateDto } from './dtos/template/create-exam-template.dto';
+import { UpdateExamTemplateDto } from './dtos/template/update-exam-template.dto';
+import { GetExamTemplatesDto, getSortOrder, ExamTemplateSort } from './dtos/template/get-exam-templates.dto';
 
 @Injectable()
 export class ExaminationAttemptService {
@@ -16,9 +21,13 @@ export class ExaminationAttemptService {
     private readonly examinationRepository: Repository<Examination>,
     @InjectRepository(ExaminationQuestion)
     private readonly examQuestionRepository: Repository<ExaminationQuestion>,
+    @InjectRepository(ExaminationTemplate)
+    private readonly examTemplateRepository: Repository<ExaminationTemplate>,
+    @InjectRepository(Question)
+    private readonly questionRepository: Repository<Question>,
   ) {}
 
-  async startExamination(examId: number, userId: number) {
+  async startExamination(examTemplateId: number, userId: number) {
     // Kiểm tra xem người dùng có bài thi nào đang làm dở không
     const ongoingExam = await this.examinationRepository.findOne({
       where: {
@@ -31,25 +40,92 @@ export class ExaminationAttemptService {
       throw new BadRequestException('You have an ongoing examination. Please complete it before starting a new one');
     }
 
-    // Tạo một bản ghi examination mới với thông tin từ template hoặc config
-    // Ở đây ta giả định rằng examId là một template hoặc cấu hình cho bài thi
+    // Lấy template dựa vào examTemplateId
+    const template = await this.examTemplateRepository.findOne({
+      where: {
+        id: examTemplateId,
+        isActive: true,
+      },
+    });
 
+    if (!template) {
+      throw new NotFoundException(`Examination template with ID ${examTemplateId} not found or inactive`);
+    }
+
+    // Tạo một bản ghi examination mới với thông tin từ template
     const newExamination = this.examinationRepository.create({
       user: { id: userId },
       startedAt: new Date(),
       status: ExaminationStatus.IN_PROGRESS,
-      totalQuestions: 0, // Cần tính toán dựa trên số lượng câu hỏi
-      durationSeconds: 3600, // 1 giờ (hoặc lấy từ cấu hình)
-      title: 'New Examination', // Cần lấy từ template hoặc cấu hình
+      totalQuestions: template.totalQuestions,
+      durationSeconds: template.durationSeconds,
+      title: template.title,
+      description: template.description,
     });
 
     await this.examinationRepository.save(newExamination);
 
-    // TODO: Tạo các examination question từ nguồn câu hỏi
-    // Ví dụ cách tạo câu hỏi (cần triển khai chi tiết hơn):
-    // 1. Lấy danh sách câu hỏi từ ngân hàng câu hỏi hoặc từ cấu hình
-    // 2. Tạo các examination question liên kết với bài thi mới
-    // 3. Cập nhật totalQuestions
+    // Lấy câu hỏi từ template
+    let questions: Question[] = [];
+
+    if (template.questionIds && template.questionIds.length > 0) {
+      // Nếu template đã có danh sách câu hỏi cụ thể
+      questions = await this.questionRepository.findByIds(template.questionIds);
+
+      // Nếu có cấu hình randomize, trộn câu hỏi
+      if (template.config?.randomize) {
+        questions = this.shuffleArray([...questions]);
+      }
+    } else if (template.config?.categoriesDistribution) {
+      // Nếu template có phân phối theo danh mục
+      for (const categoryDist of template.config.categoriesDistribution) {
+        // Lấy tất cả câu hỏi trong category
+        const allCategoryQuestions = await this.questionRepository.find({
+          where: {
+            category: { id: categoryDist.categoryId },
+          },
+          order: { id: 'ASC' },
+        });
+
+        let categoryQuestions: Question[] = [];
+
+        if (template.config.randomize) {
+          // Nếu cần trộn, trộn tất cả và lấy số lượng cần thiết
+          categoryQuestions = this.shuffleArray([...allCategoryQuestions]).slice(0, categoryDist.count);
+        } else {
+          // Nếu không trộn, lấy theo thứ tự đầu tiên
+          categoryQuestions = allCategoryQuestions.slice(0, categoryDist.count);
+        }
+
+        questions = [...questions, ...categoryQuestions];
+      }
+    } else {
+      // Nếu không có cấu hình đặc biệt, lấy các câu hỏi
+      const allQuestions = await this.questionRepository.find();
+
+      // Randomize nếu cần
+      let selectedQuestions = allQuestions;
+      if (template.config?.randomize || !template.config) {
+        selectedQuestions = this.shuffleArray([...allQuestions]);
+      }
+
+      // Lấy số lượng cần thiết
+      questions = selectedQuestions.slice(0, template.totalQuestions || 10);
+    }
+
+    // Tạo examination questions
+    const examQuestions = questions.map((question) => {
+      return this.examQuestionRepository.create({
+        examination: newExamination,
+        question: question,
+      });
+    });
+
+    await this.examQuestionRepository.save(examQuestions);
+
+    // Cập nhật totalQuestions
+    newExamination.totalQuestions = examQuestions.length;
+    await this.examinationRepository.save(newExamination);
 
     return this.examinationRepository.findOne({
       where: { id: newExamination.id },
@@ -342,5 +418,224 @@ export class ExaminationAttemptService {
     }
 
     await this.examinationRepository.save(examination);
+  }
+
+  /**
+   * Hàm tính toán số câu hỏi trong một template
+   * @param template Exam template object
+   * @returns Tổng số câu hỏi
+   */
+
+  /**
+   * Tính tổng số câu hỏi trong một template
+   * @param template Template cần tính số câu hỏi
+   * @returns Tổng số câu hỏi
+   */
+  private calculateTotalQuestions(template: ExaminationTemplate): number {
+    if (template.totalQuestions > 0) {
+      return template.totalQuestions;
+    }
+
+    if (template.questionIds?.length > 0) {
+      return template.questionIds.length;
+    }
+
+    if (template.config?.categoriesDistribution?.length > 0) {
+      return template.config.categoriesDistribution.reduce((sum, cat) => sum + cat.count, 0);
+    }
+
+    return 0;
+  }
+
+  // Hàm hỗ trợ để trộn ngẫu nhiên một mảng (Fisher-Yates shuffle algorithm)
+  private shuffleArray<T>(array: T[]): T[] {
+    const result = [...array];
+    for (let i = result.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [result[i], result[j]] = [result[j], result[i]];
+    }
+    return result;
+  }
+
+  // Các phương thức liên quan đến ExaminationTemplate
+
+  /**
+   * Lấy danh sách các bài thi mẫu (template) với pagination và filtering
+   * @param query Query parameters cho filtering và pagination
+   * @param userId ID của user hiện tại (có thể null nếu không đăng nhập)
+   * @returns Danh sách bài thi mẫu và metadata
+   */
+  async getExamTemplates(query: GetExamTemplatesDto, userId: number | null) {
+    const { page = 1, limit = 10, search, sort = ExamTemplateSort.NEWEST, activeOnly = true } = query;
+
+    const whereCondition: any = {};
+
+    // Chỉ lấy templates đang active nếu activeOnly = true
+    if (activeOnly) {
+      whereCondition.isActive = true;
+    }
+
+    // Tìm kiếm theo title hoặc description
+    if (search) {
+      whereCondition.title = Like(`%${search}%`);
+    }
+
+    // Chuyển đổi sort string thành câu lệnh ORDER BY
+    const orderColumn = getSortOrder(sort).split(' ')[0];
+    const orderDirection = getSortOrder(sort).split(' ')[1] as 'ASC' | 'DESC';
+
+    const [templates, total] = await this.examTemplateRepository.findAndCount({
+      where: whereCondition,
+      order: { [orderColumn]: orderDirection },
+      skip: (page - 1) * limit,
+      take: limit,
+      relations: ['createdBy'],
+    });
+
+    // Format kết quả phù hợp với frontend
+    return {
+      data: templates.map((template) => ({
+        id: template.id.toString(), // Chuyển sang string cho frontend
+        title: template.title,
+        description: template.description || '', // Đảm bảo không trả về null
+        totalQuestions: template.totalQuestions,
+        durationSeconds: template.durationSeconds,
+        isActive: template.isActive,
+        // Thêm các trường tương thích với UI cũ
+        type: 'multiple', // Giá trị mặc định
+        questions: template.totalQuestions,
+        questionsCount: template.totalQuestions,
+        time: Math.ceil(template.durationSeconds / 60), // Chuyển từ giây sang phút
+        content: 'reading', // Giá trị mặc định
+        config: template.config || {
+          randomize: false,
+          showCorrectAnswers: true,
+          passingScore: 0.7,
+        },
+        createdAt: template.createdAt,
+        updatedAt: template.updatedAt,
+        // Thông tin người tạo
+        updatedBy: template.createdBy
+          ? {
+              id: template.createdBy.id.toString(),
+              email: template.createdBy.email,
+            }
+          : undefined,
+      })),
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  }
+
+  async getExamTemplateById(id: number) {
+    const template = await this.examTemplateRepository.findOne({
+      where: { id },
+      relations: ['createdBy'],
+    });
+
+    if (!template) {
+      throw new NotFoundException(`Examination template with ID ${id} not found`);
+    }
+
+    // Lấy thêm thông tin về các câu hỏi
+    let questions = [];
+    if (template.questionIds && template.questionIds.length) {
+      questions = await this.questionRepository.findByIds(template.questionIds);
+    }
+
+    return {
+      ...template,
+      questions: questions.map((q) => ({
+        id: q.id,
+        content: q.content,
+        type: q.type,
+        difficultyLevel: q.difficultyLevel,
+      })),
+    };
+  }
+
+  async createExamTemplate(data: CreateExamTemplateDto, userId: number) {
+    // Kiểm tra questionIds
+    if (data.questionIds && data.questionIds.length) {
+      const questionCount = await this.questionRepository.count({
+        where: { id: In(data.questionIds) },
+      });
+
+      if (questionCount !== data.questionIds.length) {
+        throw new BadRequestException('Some question IDs are invalid');
+      }
+    }
+
+    const template = this.examTemplateRepository.create({
+      ...data,
+      createdBy: { id: userId },
+      totalQuestions: data.questionIds?.length || 0,
+    });
+
+    await this.examTemplateRepository.save(template);
+
+    return this.getExamTemplateById(template.id);
+  }
+
+  async updateExamTemplate(id: number, data: UpdateExamTemplateDto, userId: number) {
+    const template = await this.examTemplateRepository.findOne({
+      where: { id },
+      relations: ['createdBy'],
+    });
+
+    if (!template) {
+      throw new NotFoundException(`Examination template with ID ${id} not found`);
+    }
+
+    // Kiểm tra quyền - chỉ người tạo và admin có quyền sửa
+    // Logic này phụ thuộc vào cách bạn xác định admin
+    if (template.createdBy.id !== userId) {
+      throw new ForbiddenException('You do not have permission to update this template');
+    }
+
+    // Kiểm tra questionIds nếu có
+    if (data.questionIds && data.questionIds.length) {
+      const questionCount = await this.questionRepository.count({
+        where: { id: In(data.questionIds) },
+      });
+
+      if (questionCount !== data.questionIds.length) {
+        throw new BadRequestException('Some question IDs are invalid');
+      }
+
+      // Cập nhật totalQuestions
+      template.totalQuestions = data.questionIds.length;
+    }
+
+    // Cập nhật dữ liệu template
+    Object.assign(template, data);
+
+    await this.examTemplateRepository.save(template);
+
+    return this.getExamTemplateById(template.id);
+  }
+
+  async deleteExamTemplate(id: number, userId: number) {
+    const template = await this.examTemplateRepository.findOne({
+      where: { id },
+      relations: ['createdBy'],
+    });
+
+    if (!template) {
+      throw new NotFoundException(`Examination template with ID ${id} not found`);
+    }
+
+    // Kiểm tra quyền - chỉ người tạo và admin có quyền xóa
+    if (template.createdBy.id !== userId) {
+      throw new ForbiddenException('You do not have permission to delete this template');
+    }
+
+    await this.examTemplateRepository.remove(template);
+
+    return { success: true };
   }
 }

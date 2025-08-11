@@ -24,10 +24,25 @@ export type PresetExam = {
   id: string;
   title: string;
   description: string;
-  type: string;
-  questions: number; // Number of questions in the exam
-  questionsCount: number; // This is redundant but keeping for compatibility
-  time: number; // in minutes
-  content: string;
-  level?: string; // Difficulty level: easy, medium, hard, expert
+  totalQuestions: number; // Số lượng câu hỏi trong bài thi
+  durationSeconds: number; // Thời gian làm bài tính theo giây
+  isActive: boolean;
+  // Các field phụ để tương thích với UI
+  type?: string;
+  questions?: number; // Giữ lại để tương thích với UI cũ
+  questionsCount?: number; // Giữ lại để tương thích với UI cũ
+  time?: number; // Giữ lại để tương thích với UI cũ (phút)
+  content?: string;
+  level?: string;
+  config?: {
+    randomize?: boolean;
+    showCorrectAnswers?: boolean;
+    passingScore?: number;
+    categoriesDistribution?: { categoryId: number; count: number }[];
+  };
+  createdAt?: string;
+  updatedBy?: {
+    id: string;
+    email: string;
+  };
 };
