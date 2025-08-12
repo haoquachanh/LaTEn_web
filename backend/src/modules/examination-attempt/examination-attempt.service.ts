@@ -584,21 +584,27 @@ export class ExaminationAttemptService {
       isActive: data.isActive !== undefined ? data.isActive : true,
     };
 
-    // Xử lý questionFilters riêng để đảm bảo kiểu dữ liệu đúng
+    // Xử lý questionFilters và đưa vào cấu trúc config mới
     if (data.questionFilters) {
-      createData.questionFilters = {};
+      // Đảm bảo createData.config tồn tại
+      if (!createData.config) {
+        createData.config = {};
+      }
+
+      // Khởi tạo questionFilters trong config
+      createData.config.questionFilters = {};
 
       if (data.questionFilters.categories) {
-        createData.questionFilters.categories = data.questionFilters.categories;
+        createData.config.questionFilters.categories = data.questionFilters.categories;
       }
 
       if (data.questionFilters.types) {
-        createData.questionFilters.types = data.questionFilters.types;
+        createData.config.questionFilters.types = data.questionFilters.types;
       }
 
       // Xử lý chuyển đổi difficultyLevels từ string sang enum DifficultyLevel
       if (data.questionFilters.difficultyLevels) {
-        createData.questionFilters.difficultyLevels = data.questionFilters.difficultyLevels.map((level) => {
+        createData.config.questionFilters.difficultyLevels = data.questionFilters.difficultyLevels.map((level) => {
           if (typeof level === 'string') {
             // Nếu là chuỗi viết thường, chuyển thành viết hoa để khớp với enum
             const upperLevel = level.toUpperCase();
@@ -607,6 +613,9 @@ export class ExaminationAttemptService {
           return level;
         });
       }
+
+      // Loại bỏ questionFilters cũ ra khỏi dữ liệu tạo mới vì đã được chuyển vào config
+      delete createData.questionFilters;
     }
 
     // Thiết lập createdBy
@@ -660,23 +669,31 @@ export class ExaminationAttemptService {
     }
 
     try {
-      // Xử lý questionFilters trước khi cập nhật
+      // Xử lý questionFilters và đưa vào cấu trúc config mới
       if (data.questionFilters) {
-        const updatedQuestionFilters = { ...(template.questionFilters || {}) };
+        // Đảm bảo config tồn tại
+        if (!template.config) {
+          template.config = {};
+        }
+
+        // Đảm bảo questionFilters trong config tồn tại
+        if (!template.config.questionFilters) {
+          template.config.questionFilters = {};
+        }
 
         // Cập nhật categories nếu có
         if (data.questionFilters.categories) {
-          updatedQuestionFilters.categories = data.questionFilters.categories;
+          template.config.questionFilters.categories = data.questionFilters.categories;
         }
 
         // Cập nhật types nếu có
         if (data.questionFilters.types) {
-          updatedQuestionFilters.types = data.questionFilters.types;
+          template.config.questionFilters.types = data.questionFilters.types;
         }
 
         // Xử lý và cập nhật difficultyLevels
         if (data.questionFilters.difficultyLevels) {
-          updatedQuestionFilters.difficultyLevels = data.questionFilters.difficultyLevels.map((level) => {
+          template.config.questionFilters.difficultyLevels = data.questionFilters.difficultyLevels.map((level) => {
             if (typeof level === 'string') {
               // Chuyển đổi string sang enum
               const upperLevel = level.toUpperCase();
@@ -686,10 +703,7 @@ export class ExaminationAttemptService {
           });
         }
 
-        // Cập nhật questionFilters với dữ liệu đã được xử lý
-        template.questionFilters = updatedQuestionFilters;
-
-        // Loại bỏ questionFilters khỏi data để tránh ghi đè lại bằng dữ liệu không xử lý
+        // Loại bỏ questionFilters khỏi data để tránh ghi đè bằng dữ liệu không xử lý
         const { questionFilters, ...restData } = data;
         // Cập nhật các trường còn lại
         Object.assign(template, restData);

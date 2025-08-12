@@ -10,6 +10,20 @@ class CategoryDistribution {
   count: number;
 }
 
+class QuestionFiltersConfig {
+  @IsArray()
+  @IsOptional()
+  categories?: number[];
+
+  @IsArray()
+  @IsOptional()
+  difficultyLevels?: (DifficultyLevel | string)[];
+
+  @IsArray()
+  @IsOptional()
+  types?: string[];
+}
+
 class TemplateConfig {
   @IsBoolean()
   @IsOptional()
@@ -28,6 +42,12 @@ class TemplateConfig {
   @Type(() => CategoryDistribution)
   @IsOptional()
   categoriesDistribution?: CategoryDistribution[];
+
+  @IsObject()
+  @ValidateNested()
+  @Type(() => QuestionFiltersConfig)
+  @IsOptional()
+  questionFilters?: QuestionFiltersConfig;
 }
 
 export class CreateExamTemplateDto {
@@ -66,6 +86,8 @@ export class CreateExamTemplateDto {
   @IsOptional()
   config?: TemplateConfig;
 
+  // Để giữ khả năng tương thích ngược, chúng ta vẫn giữ lại thuộc tính này
+  // nhưng giá trị sẽ được chuyển vào config.questionFilters
   @IsObject()
   @IsOptional()
   questionFilters?: {

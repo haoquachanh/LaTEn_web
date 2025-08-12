@@ -34,6 +34,12 @@ export class CreateExaminationTemplateTable1695005800001 implements MigrationInt
     await queryRunner.query(`
       CREATE INDEX IDX_exam_template_active_type_level 
       ON examination_templates (is_active, type, level);
+      
+      CREATE INDEX IDX_exam_template_created_at
+      ON examination_templates (created_at);
+      
+      CREATE INDEX IDX_exam_template_title
+      ON examination_templates (title);
     `);
   }
 

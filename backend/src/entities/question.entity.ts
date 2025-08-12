@@ -53,9 +53,6 @@ export class Question {
   @Column({ type: 'boolean', default: true })
   isActive: boolean; // Trạng thái active để filter
 
-  @Column({ type: 'jsonb', nullable: true })
-  metadata: Record<string, any>; // Metadata bổ sung cho câu hỏi
-
   @ManyToOne(() => UserEntity)
   @JoinColumn({ name: 'createdById' })
   createdBy: UserEntity;

@@ -21,4 +21,10 @@ export class ExaminationQuestion {
 
   @Column({ type: 'boolean', nullable: true })
   isCorrect: boolean;
+
+  @Column({ type: 'integer', default: 0 })
+  orderIndex: number; // Thứ tự hiển thị câu hỏi trong bài thi
+
+  @Column({ type: 'text', nullable: true })
+  feedback: string; // Phản hồi cho câu trả lời
 }

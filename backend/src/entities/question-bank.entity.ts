@@ -34,8 +34,14 @@ export class QuestionBank {
   @JoinColumn({ name: 'creatorId' })
   creator: UserEntity;
 
-  @ManyToOne(() => QuestionCategory)
-  category: QuestionCategory;
+  // Thay đổi từ ManyToOne thành ManyToMany để một bank có thể thuộc nhiều category
+  @ManyToMany(() => QuestionCategory)
+  @JoinTable({
+    name: 'question_bank_categories',
+    joinColumn: { name: 'bank_id', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'category_id', referencedColumnName: 'id' },
+  })
+  categories: QuestionCategory[];
 
   @ManyToMany(() => Question)
   @JoinTable({

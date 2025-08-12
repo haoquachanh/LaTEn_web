@@ -11,8 +11,7 @@ export class UpdateQuestionRelations1695005799999 implements MigrationInterface 
     await queryRunner.query(`
       ALTER TABLE questions 
       ADD COLUMN IF NOT EXISTS points INTEGER DEFAULT 1,
-      ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT true,
-      ADD COLUMN IF NOT EXISTS metadata JSONB;
+      ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT true;
     `);
 
     // Tạo bảng trung gian cho quan hệ many-to-many giữa questions và categories
@@ -74,8 +73,7 @@ export class UpdateQuestionRelations1695005799999 implements MigrationInterface 
     await queryRunner.query(`
       ALTER TABLE questions 
       DROP COLUMN IF EXISTS points,
-      DROP COLUMN IF EXISTS is_active,
-      DROP COLUMN IF EXISTS metadata;
+      DROP COLUMN IF EXISTS is_active;
     `);
 
     // Xóa các trường mới từ question_categories

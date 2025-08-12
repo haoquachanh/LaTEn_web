@@ -7,11 +7,14 @@ import {
   ManyToOne,
   OneToMany,
   JoinColumn,
+  Index,
 } from 'typeorm';
 import { UserEntity } from './user.entity';
 import { ExaminationQuestion } from './examination-question.entity';
 import { ExaminationStatus } from './enums/examination-status.enum';
 @Entity('examinations')
+@Index(['status']) // Hỗ trợ filter theo trạng thái
+@Index(['createdAt']) // Hỗ trợ sorting theo thời gian tạo
 export class Examination {
   @PrimaryGeneratedColumn()
   id: number;
@@ -64,4 +67,24 @@ export class Examination {
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  // Helper method để tính thời gian làm bài (seconds)
+  getTimeSpent(): number {
+    if (!this.completedAt) {
+      const now = new Date();
+      return Math.round((now.getTime() - this.startedAt.getTime()) / 1000);
+    }
+    return Math.round((this.completedAt.getTime() - this.startedAt.getTime()) / 1000);
+  }
+
+  // Helper method để tính điểm theo tỷ lệ phần trăm
+  getPercentageScore(): number {
+    if (!this.totalQuestions || this.totalQuestions === 0) return 0;
+    return Math.round((this.correctAnswers / this.totalQuestions) * 100);
+  }
+
+  // Helper method để kiểm tra có vượt qua bài thi không (điểm đạt > 70%)
+  isPassed(): boolean {
+    return this.getPercentageScore() >= 70;
+  }
 }

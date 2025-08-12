@@ -16,6 +16,8 @@ import { DifficultyLevel } from '@common/typings/question-type.enum';
 
 @Entity('examination_templates')
 @Index(['isActive', 'type', 'level']) // Tối ưu cho việc filter
+@Index(['createdAt']) // Hỗ trợ sorting theo thời gian tạo
+@Index(['title']) // Hỗ trợ tìm kiếm theo tiêu đề
 export class ExaminationTemplate {
   @PrimaryGeneratedColumn()
   id: number;
@@ -42,17 +44,15 @@ export class ExaminationTemplate {
   durationSeconds: number;
 
   @Column('jsonb', { nullable: true })
-  questionFilters: {
-    categories?: number[];
-    difficultyLevels?: DifficultyLevel[];
-    types?: string[];
-  };
-
-  @Column('jsonb', { nullable: true })
   config: {
     randomize?: boolean;
     showCorrectAnswers?: boolean;
     passingScore?: number;
+    questionFilters?: {
+      categories?: number[];
+      difficultyLevels?: DifficultyLevel[];
+      types?: string[];
+    };
     categoriesDistribution?: {
       categoryId: number;
       count: number;
@@ -82,4 +82,25 @@ export class ExaminationTemplate {
 
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
+
+  // Helper method để kiểm tra xem một người dùng có quyền chỉnh sửa template này không
+  canEditBy(userId: number): boolean {
+    return this.createdBy?.id === userId;
+  }
+
+  // Helper method để chuyển đổi thời gian từ giây sang phút cho frontend
+  getTimeInMinutes(): number {
+    return Math.ceil(this.durationSeconds / 60);
+  }
+
+  // Helper method để lấy random questions theo config
+  getRandomQuestionIds(availableQuestionIds: number[]): number[] {
+    if (this.questionIds && this.questionIds.length > 0) {
+      return this.questionIds;
+    }
+
+    // Shuffle và lấy số lượng cần thiết
+    const shuffled = [...availableQuestionIds].sort(() => 0.5 - Math.random());
+    return shuffled.slice(0, this.totalQuestions);
+  }
 }
