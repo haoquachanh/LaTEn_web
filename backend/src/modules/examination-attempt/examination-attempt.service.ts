@@ -5,7 +5,7 @@ import { Examination } from '@entities/examination.entity';
 import { ExaminationQuestion } from '@entities/examination-question.entity';
 import { ExaminationTemplate } from '@entities/examination-template.entity';
 import { ExaminationStatus } from '@entities/enums/examination-status.enum';
-import { QuestionType } from '@common/typings/question-type.enum';
+import { QuestionType, DifficultyLevel } from '@common/typings/question-type.enum';
 import { QuestionOption } from '@entities/question-option.entity';
 import { Question } from '@entities/question.entity';
 import { SubmitAnswerDto } from './dtos/submit-answer.dto';
@@ -79,13 +79,13 @@ export class ExaminationAttemptService {
     } else if (template.config?.categoriesDistribution) {
       // Nếu template có phân phối theo danh mục
       for (const categoryDist of template.config.categoriesDistribution) {
-        // Lấy tất cả câu hỏi trong category
-        const allCategoryQuestions = await this.questionRepository.find({
-          where: {
-            category: { id: categoryDist.categoryId },
-          },
-          order: { id: 'ASC' },
-        });
+        // Lấy tất cả câu hỏi trong category sử dụng mối quan hệ many-to-many
+        const allCategoryQuestions = await this.questionRepository
+          .createQueryBuilder('question')
+          .innerJoin('question.categories', 'category')
+          .where('category.id = :categoryId', { categoryId: categoryDist.categoryId })
+          .orderBy('question.id', 'ASC')
+          .getMany();
 
         let categoryQuestions: Question[] = [];
 
@@ -570,15 +570,63 @@ export class ExaminationAttemptService {
       }
     }
 
-    const template = this.examTemplateRepository.create({
-      ...data,
-      createdBy: { id: userId },
-      totalQuestions: data.questionIds?.length || 0,
-    });
+    // Chuẩn bị dữ liệu để tạo template
+    const createData: any = {
+      title: data.title,
+      description: data.description,
+      type: data.type,
+      content: data.content,
+      level: data.level,
+      totalQuestions: data.totalQuestions,
+      durationSeconds: data.durationSeconds,
+      questionIds: data.questionIds,
+      config: data.config,
+      isActive: data.isActive !== undefined ? data.isActive : true,
+    };
 
-    await this.examTemplateRepository.save(template);
+    // Xử lý questionFilters riêng để đảm bảo kiểu dữ liệu đúng
+    if (data.questionFilters) {
+      createData.questionFilters = {};
 
-    return this.getExamTemplateById(template.id);
+      if (data.questionFilters.categories) {
+        createData.questionFilters.categories = data.questionFilters.categories;
+      }
+
+      if (data.questionFilters.types) {
+        createData.questionFilters.types = data.questionFilters.types;
+      }
+
+      // Xử lý chuyển đổi difficultyLevels từ string sang enum DifficultyLevel
+      if (data.questionFilters.difficultyLevels) {
+        createData.questionFilters.difficultyLevels = data.questionFilters.difficultyLevels.map((level) => {
+          if (typeof level === 'string') {
+            // Nếu là chuỗi viết thường, chuyển thành viết hoa để khớp với enum
+            const upperLevel = level.toUpperCase();
+            return DifficultyLevel[upperLevel as keyof typeof DifficultyLevel] || DifficultyLevel.MEDIUM;
+          }
+          return level;
+        });
+      }
+    }
+
+    // Thiết lập createdBy
+    createData.createdBy = { id: userId };
+
+    try {
+      // Tạo entity mới
+      const template = new ExaminationTemplate();
+
+      // Gán các thuộc tính từ createData
+      Object.assign(template, createData);
+
+      // Lưu vào database
+      const savedTemplate = await this.examTemplateRepository.save(template);
+
+      return this.getExamTemplateById(savedTemplate.id);
+    } catch (error) {
+      console.error('Error creating template:', error);
+      throw new BadRequestException(`Failed to create template: ${error.message}`);
+    }
   }
 
   async updateExamTemplate(id: number, data: UpdateExamTemplateDto, userId: number) {
@@ -611,12 +659,51 @@ export class ExaminationAttemptService {
       template.totalQuestions = data.questionIds.length;
     }
 
-    // Cập nhật dữ liệu template
-    Object.assign(template, data);
+    try {
+      // Xử lý questionFilters trước khi cập nhật
+      if (data.questionFilters) {
+        const updatedQuestionFilters = { ...(template.questionFilters || {}) };
 
-    await this.examTemplateRepository.save(template);
+        // Cập nhật categories nếu có
+        if (data.questionFilters.categories) {
+          updatedQuestionFilters.categories = data.questionFilters.categories;
+        }
 
-    return this.getExamTemplateById(template.id);
+        // Cập nhật types nếu có
+        if (data.questionFilters.types) {
+          updatedQuestionFilters.types = data.questionFilters.types;
+        }
+
+        // Xử lý và cập nhật difficultyLevels
+        if (data.questionFilters.difficultyLevels) {
+          updatedQuestionFilters.difficultyLevels = data.questionFilters.difficultyLevels.map((level) => {
+            if (typeof level === 'string') {
+              // Chuyển đổi string sang enum
+              const upperLevel = level.toUpperCase();
+              return DifficultyLevel[upperLevel as keyof typeof DifficultyLevel] || DifficultyLevel.MEDIUM;
+            }
+            return level;
+          });
+        }
+
+        // Cập nhật questionFilters với dữ liệu đã được xử lý
+        template.questionFilters = updatedQuestionFilters;
+
+        // Loại bỏ questionFilters khỏi data để tránh ghi đè lại bằng dữ liệu không xử lý
+        const { questionFilters, ...restData } = data;
+        // Cập nhật các trường còn lại
+        Object.assign(template, restData);
+      } else {
+        // Nếu không cập nhật questionFilters, cập nhật các trường khác bình thường
+        Object.assign(template, data);
+      }
+
+      await this.examTemplateRepository.save(template);
+      return this.getExamTemplateById(template.id);
+    } catch (error) {
+      console.error('Error updating template:', error);
+      throw new BadRequestException(`Failed to update template: ${error.message}`);
+    }
   }
 
   async deleteExamTemplate(id: number, userId: number) {

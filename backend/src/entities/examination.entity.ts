@@ -26,6 +26,12 @@ export class Examination {
   @Column('int', { default: 0 })
   correctAnswers: number;
 
+  @Column('int', { default: 0 })
+  incorrectAnswers: number;
+
+  @Column('int', { default: 0 })
+  skippedQuestions: number;
+
   @Column('int')
   durationSeconds: number;
 

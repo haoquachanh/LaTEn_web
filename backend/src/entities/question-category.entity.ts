@@ -1,7 +1,17 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  OneToMany,
+  ManyToMany,
+  Index,
+} from 'typeorm';
 import { Question } from './question.entity';
 
 @Entity('question_categories')
+@Index(['name']) // Hỗ trợ tìm kiếm theo tên
 export class QuestionCategory {
   @PrimaryGeneratedColumn()
   id: number;
@@ -12,7 +22,13 @@ export class QuestionCategory {
   @Column({ type: 'text', nullable: true })
   description: string;
 
-  @OneToMany(() => Question, (question) => question.category)
+  @Column({ type: 'boolean', default: true })
+  isActive: boolean;
+
+  @Column({ type: 'integer', nullable: true })
+  parentId: number; // Hỗ trợ cấu trúc phân cấp cho danh mục
+
+  @ManyToMany(() => Question, (question) => question.categories)
   questions: Question[];
 
   @CreateDateColumn()

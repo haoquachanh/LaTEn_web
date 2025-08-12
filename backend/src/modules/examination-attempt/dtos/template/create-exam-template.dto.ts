@@ -1,5 +1,6 @@
-import { IsString, IsOptional, IsNumber, IsBoolean, IsArray, ValidateNested, IsObject } from 'class-validator';
+import { IsString, IsOptional, IsNumber, IsBoolean, IsArray, ValidateNested, IsObject, IsEnum } from 'class-validator';
 import { Type } from 'class-transformer';
+import { DifficultyLevel } from '@common/typings/question-type.enum';
 
 class CategoryDistribution {
   @IsNumber()
@@ -37,6 +38,21 @@ export class CreateExamTemplateDto {
   @IsOptional()
   description?: string;
 
+  @IsString()
+  @IsOptional()
+  type?: string;
+
+  @IsString()
+  @IsOptional()
+  content?: string;
+
+  @IsString()
+  @IsOptional()
+  level?: string;
+
+  @IsNumber()
+  totalQuestions: number;
+
   @IsNumber()
   durationSeconds: number;
 
@@ -49,4 +65,16 @@ export class CreateExamTemplateDto {
   @Type(() => TemplateConfig)
   @IsOptional()
   config?: TemplateConfig;
+
+  @IsObject()
+  @IsOptional()
+  questionFilters?: {
+    categories?: number[];
+    difficultyLevels?: (DifficultyLevel | string)[];
+    types?: string[];
+  };
+
+  @IsBoolean()
+  @IsOptional()
+  isActive?: boolean;
 }
