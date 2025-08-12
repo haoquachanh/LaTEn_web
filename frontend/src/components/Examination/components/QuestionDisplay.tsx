@@ -3,8 +3,18 @@
 import { Question } from '../types';
 import { examTypes, subjects } from '../data/examData';
 
+// Extend Question type to include specific properties we need
+interface ExtendedQuestion extends Question {
+  options?: Array<{
+    id: string;
+    text: string;
+    isCorrect?: boolean;
+  }>;
+  answers?: string[];
+}
+
 interface QuestionDisplayProps {
-  currentQuestion: Question;
+  currentQuestion: ExtendedQuestion;
   currentQuestionIndex: number;
   questions: Question[];
   userAnswers: { [key: string]: string };
@@ -120,9 +130,30 @@ const QuestionDisplay: React.FC<QuestionDisplayProps> = ({
                   </div>
                 </div>
               </>
+            ) : /* Handle multiple choice questions */
+            currentQuestion?.options ? (
+              // Sử dụng options nếu có
+              currentQuestion.options.map((option, idx: number) => (
+                <div
+                  key={option.id || idx}
+                  className={`p-4 rounded-lg cursor-pointer transition-all duration-300 ${
+                    userAnswers[currentQuestion.id] === option.id
+                      ? 'bg-primary text-primary-content'
+                      : 'bg-base-200 hover:bg-base-300'
+                  }`}
+                  onClick={() => handleAnswerChange(currentQuestion.id, option.id)}
+                >
+                  <div className="flex items-center">
+                    <div className="w-6 h-6 flex items-center justify-center rounded-full mr-3 border border-current">
+                      {String.fromCharCode(65 + idx)}
+                    </div>
+                    <span>{option.text}</span>
+                  </div>
+                </div>
+              ))
             ) : (
-              /* Handle multiple choice questions */
-              currentQuestion?.answers?.map((answer, idx) => (
+              // Sử dụng answers nếu không có options (tương thích ngược)
+              currentQuestion?.answers?.map((answer: any, idx: number) => (
                 <div
                   key={idx}
                   className={`p-4 rounded-lg cursor-pointer transition-all duration-300 ${

@@ -38,9 +38,9 @@ const PresetExamForm: React.FC<PresetExamFormProps> = ({
 
       setLoading(true);
 
-      // Chạy môi trường development và không có dữ liệu API, sử dụng dữ liệu mẫu
-      if (env.isDevelopment && process.env.NEXT_PUBLIC_USE_SAMPLE_DATA === 'true') {
-        console.log('Using sample exam templates in development mode');
+      // Luôn sử dụng dữ liệu mẫu trong development nếu không có props
+      if (env.isDevelopment) {
+        console.log('Using sample exam templates in development mode (no props provided)');
         setPresetExams(sampleTemplates);
         setError(null);
         setLoading(false);

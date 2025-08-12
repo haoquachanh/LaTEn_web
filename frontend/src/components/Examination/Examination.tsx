@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Question, PresetExam } from './types';
 import { sampleQuestions } from './data/sampleQuestions';
+import { sampleExamination } from './data/sampleExamination';
 import { examTypes, subjects } from './data/examData';
 import ExamSetup from './components/ExamSetup';
 import ExamContainer from './components/ExamContainer';
@@ -10,6 +11,7 @@ import ExamResults from './components/ExamResults';
 import ExaminationDashboard from './components/ExaminationDashboard';
 import examinationAttemptService from '@/services/examination-attempt.service';
 import examinationService from '@/services/examination.service';
+import { env } from '@/env';
 // Giữ lại examinationService làm dịch vụ chính để tương thích với mã cũ
 
 /**
@@ -69,12 +71,38 @@ const Examination: React.FC = () => {
     const fetchPresetExams = async () => {
       try {
         console.log('Fetching preset exams from API...');
+
+        // Sử dụng dữ liệu mẫu trong môi trường development nếu cần
+        if (env.isDevelopment && process.env.NEXT_PUBLIC_USE_SAMPLE_DATA === 'true') {
+          console.log('Using sample exam templates in development mode');
+          // Import từ sampleTemplates trong components/Examination/data/sampleTemplates
+          const { sampleTemplates } = await import('./data/sampleTemplates');
+          console.log('Sample templates loaded:', sampleTemplates);
+          setPresetExams(sampleTemplates);
+          return;
+        }
+
         // Import từ services/examination.service.ts
         const presets = await examinationService.getPresetExaminations();
         console.log('Preset exams received:', presets);
-        setPresetExams(presets);
+
+        if (presets && presets.length > 0) {
+          setPresetExams(presets);
+        } else if (env.isDevelopment) {
+          // Nếu không có dữ liệu thực, sử dụng dữ liệu mẫu trong development
+          console.log('No preset exams from API, using sample data instead');
+          const { sampleTemplates } = await import('./data/sampleTemplates');
+          setPresetExams(sampleTemplates);
+        }
       } catch (error) {
         console.error('Failed to fetch preset exams:', error);
+
+        // Nếu lỗi trong development, sử dụng dữ liệu mẫu
+        if (env.isDevelopment) {
+          console.log('Error fetching preset exams, using sample data instead');
+          const { sampleTemplates } = await import('./data/sampleTemplates');
+          setPresetExams(sampleTemplates);
+        }
       }
     };
 
@@ -175,7 +203,7 @@ const Examination: React.FC = () => {
         content: preset.content || 'reading',
         timeInMinutes: preset.time || Math.ceil(preset.durationSeconds / 60),
         questionsCount: preset.questions || preset.totalQuestions,
-        level: 'medium', // Default level for presets
+        level: preset.level || 'medium', // Default level for presets
       };
 
       // Store exam configuration in session storage for persistence
@@ -186,20 +214,48 @@ const Examination: React.FC = () => {
       sessionStorage.setItem('exam-id', String(preset.id));
       sessionStorage.setItem('exam-level', config.level);
 
-      // Sử dụng ID thực tế của preset để khởi tạo bài thi
-      console.log('Using preset ID for examination:', preset.id);
+      let examination;
 
-      // Fetch examination from backend API with the actual preset ID
-      const examination = await examinationService.startExamination(preset.id);
+      // Trong môi trường development, sử dụng dữ liệu mẫu nếu cần
+      if (env.isDevelopment && (process.env.NEXT_PUBLIC_USE_SAMPLE_DATA === 'true' || preset.id === '1')) {
+        console.log('Using sample examination data in development mode');
+        examination = sampleExamination;
+
+        // Cập nhật ID để khớp với preset được chọn
+        examination.id = Number(preset.id);
+        examination.title = preset.title;
+        examination.description = preset.description;
+        examination.duration = Math.ceil(preset.durationSeconds / 60);
+        examination.durationSeconds = preset.durationSeconds;
+        examination.totalQuestions = preset.totalQuestions;
+      } else {
+        // Sử dụng ID thực tế của preset để khởi tạo bài thi
+        console.log('Using preset ID for examination:', preset.id);
+        // Fetch examination from backend API with the actual preset ID
+        examination = await examinationService.startExamination(preset.id);
+      }
+
       setSelectedPresetId(String(preset.id));
 
-      // Use questions from the API response
+      // Use questions from the examination
       if (examination && examination.questions && examination.questions.length > 0) {
-        console.log('Questions received from API:', examination.questions);
+        console.log('Questions from examination:', examination.questions);
 
-        // Transform API questions to frontend format
+        // Kiểm tra xem questions đã có định dạng đúng chưa
+        // Nếu là dữ liệu mẫu, có thể đã có định dạng đúng rồi
         const transformedQuestions = examination.questions.map((q: any) => {
-          // Generate options based on question type
+          // Nếu đã có options đúng định dạng, giữ nguyên
+          if (
+            q.options &&
+            Array.isArray(q.options) &&
+            q.options.length > 0 &&
+            'id' in q.options[0] &&
+            'text' in q.options[0]
+          ) {
+            return q;
+          }
+
+          // Ngược lại, tạo options mới
           let options = [];
 
           if (q.type === 'true_false') {
@@ -251,6 +307,7 @@ const Examination: React.FC = () => {
   const handleSubmitExam = async (answers: { [key: string]: string }) => {
     try {
       setUserAnswers(answers);
+      console.log('Submitting exam with answers:', answers);
 
       // If we have a real exam ID from the backend, submit to API
       const presetId = selectedPresetId;
@@ -268,6 +325,27 @@ const Examination: React.FC = () => {
           // Submit to API - use completeExamination from examinationAttemptService
           console.log('Submitting examination to API:', submission);
 
+          // Khi sử dụng dữ liệu mẫu, kiểm tra xem đây có phải là môi trường development không
+          if (env.isDevelopment && (process.env.NEXT_PUBLIC_USE_SAMPLE_DATA === 'true' || presetId === '1')) {
+            console.log('Using sample examination results in development mode');
+
+            // Import dữ liệu kết quả mẫu
+            const { sampleExaminationResult } = await import('./data/sampleExamination');
+
+            // Đặt kết quả
+            setExamResults({
+              score: sampleExaminationResult.score,
+              totalQuestions: sampleExaminationResult.totalQuestions,
+              correctAnswers: sampleExaminationResult.correctAnswers,
+              incorrectAnswers: sampleExaminationResult.incorrectAnswers,
+              skippedAnswers: sampleExaminationResult.skippedAnswers || 0,
+              timeSpent: sampleExaminationResult.timeSpent,
+            });
+
+            setExamState('results');
+            return;
+          }
+
           // Submit each answer before completing
           for (const questionId in answers) {
             await examinationService.submitAnswer(presetId, questionId, answers[questionId]);
@@ -279,12 +357,18 @@ const Examination: React.FC = () => {
 
           if (result) {
             // Set the results
+            // Calculate skipped questions
+            const skippedAnswers = selectedQuestions.length - Object.keys(answers).length;
+
+            // Calculate incorrect answers based only on answered questions, not counting skipped as wrong
+            const incorrectAnswers = Object.keys(answers).length - (result.correctAnswers || 0);
+
             setExamResults({
               score: result.score,
               totalQuestions: result.totalQuestions || selectedQuestions.length,
               correctAnswers: result.correctAnswers || 0,
-              incorrectAnswers: (result.totalQuestions || selectedQuestions.length) - (result.correctAnswers || 0),
-              skippedAnswers: selectedQuestions.length - Object.keys(answers).length,
+              incorrectAnswers: incorrectAnswers,
+              skippedAnswers: skippedAnswers,
               timeSpent: result.timeSpent || timeSpent,
             });
             setExamState('results');
@@ -314,7 +398,12 @@ const Examination: React.FC = () => {
     // In a real app, correctAnswers would be calculated by comparing to actual answers
     // Here we'll just use 70% of answered questions as correct for demonstration
     const correctAnswers = Math.round(answeredQuestions * 0.7);
+
+    // Calculate incorrect answers based only on answered questions, not counting unanswered as wrong
     const incorrectAnswers = answeredQuestions - correctAnswers;
+
+    // Calculate score based on correct answers out of total questions
+    // This keeps the scoring consistent but doesn't count unanswered questions as wrong
     const score = totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0;
 
     // Set the results state
@@ -351,7 +440,7 @@ const Examination: React.FC = () => {
   };
 
   return (
-    <div className="container mx-auto p-4">
+    <div className="container mx-auto p-4 flex flex-col items-center">
       {examState === 'dashboard' && <ExaminationDashboard onStartTest={handleStartTest} />}
 
       {examState === 'setup' && (

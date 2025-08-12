@@ -224,14 +224,21 @@ class ExaminationAttemptService {
     try {
       const response = await api.post(`${this.basePath}/${examinationId}/complete`);
 
+      // Tính toán số câu hỏi bỏ qua (nếu API trả về)
+      const skippedAnswers = response.data.skippedAnswers !== undefined ? response.data.skippedAnswers : 0;
+
+      // Tính toán số câu trả lời sai dựa trên số câu đã trả lời, không tính câu bỏ qua
+      const answeredQuestions = response.data.totalQuestions - skippedAnswers;
+      const incorrectAnswers = answeredQuestions - response.data.correctAnswers;
+
       // Chuyển đổi kết quả về định dạng ExaminationResult
       const result: ExaminationResult = {
         id: response.data.id,
         score: response.data.score * 10, // Chuyển từ thang điểm 10 sang 100
         totalQuestions: response.data.totalQuestions,
         correctAnswers: response.data.correctAnswers,
-        incorrectAnswers: response.data.totalQuestions - response.data.correctAnswers,
-        skippedAnswers: 0,
+        incorrectAnswers: incorrectAnswers,
+        skippedAnswers: skippedAnswers,
         timeSpent: response.data.timeSpent || 0,
         completedAt: response.data.completedAt,
         updatedAt: response.data.updatedAt || new Date().toISOString(),

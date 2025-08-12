@@ -62,7 +62,7 @@ const ExamSetup: React.FC<ExamSetupProps> = ({
   };
 
   return (
-    <div className="w-full lg:w-2/3 space-y-6">
+    <div className="w-full lg:w-2/3 mx-auto space-y-6">
       <div className="bg-base-100 rounded-box p-6 shadow-lg">
         <h2 className="text-2xl font-bold mb-6">Exam Setup</h2>
 
