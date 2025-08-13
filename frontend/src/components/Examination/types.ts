@@ -39,10 +39,11 @@ export interface PresetExam {
   isActive: boolean;
   type?: string;
   content?: string;
-  questions?: number;
+  questions?: number[] | any[];
   questionsCount?: number;
   time?: number;
   level?: string;
+  isPublic?: boolean;
   config?: {
     randomize?: boolean;
     showCorrectAnswers?: boolean;
@@ -51,8 +52,20 @@ export interface PresetExam {
       categoryId: number;
       count: number;
     }>;
+    resultDisplay?: {
+      showImmediately?: boolean;
+      showCorrectAnswers?: boolean;
+      showExplanation?: boolean;
+      showScoreBreakdown?: boolean;
+    };
+    security?: {
+      preventCopy?: boolean;
+      preventTabSwitch?: boolean;
+      timeoutWarning?: number;
+      shuffleOptions?: boolean;
+    };
   };
-  createdAt: string;
+  createdAt?: string; // Làm thành optional để tương thích với dữ liệu mẫu
   updatedAt?: string;
 }
 

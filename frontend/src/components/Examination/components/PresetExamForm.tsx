@@ -4,6 +4,7 @@ import { memo, useState, useEffect, useCallback } from 'react';
 import { PresetExam } from '../types';
 import examinationAttemptService from '@/services/examination-attempt.service';
 import { sampleTemplates } from '../data/sampleTemplates';
+import { samplePresetExams } from '../data/samplePresetExams';
 import { env } from '@/env';
 
 interface PresetExamFormProps {
@@ -40,8 +41,8 @@ const PresetExamForm: React.FC<PresetExamFormProps> = ({
 
       // Luôn sử dụng dữ liệu mẫu trong development nếu không có props
       if (env.isDevelopment) {
-        console.log('Using sample exam templates in development mode (no props provided)');
-        setPresetExams(sampleTemplates);
+        console.log('Using sample preset exams in development mode (no props provided)');
+        setPresetExams(samplePresetExams);
         setError(null);
         setLoading(false);
         return;

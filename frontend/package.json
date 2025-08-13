@@ -24,6 +24,10 @@
     "ci": "npm run lint && npm run type-check && npm run test && npm run build"
   },
   "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/icons-material": "^7.3.2",
+    "@mui/material": "^7.3.2",
     "@vercel/speed-insights": "^1.0.10",
     "axios": "^1.6.8",
     "class-validator": "^0.14.0",

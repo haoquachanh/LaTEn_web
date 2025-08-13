@@ -1,8 +1,8 @@
 /**
  * Examination Attempt Service
  *
- * Service để tương tác với API examination-attempt và examination-templates
- * Cung cấp các phương thức cho việc làm bài thi từ template
+ * Service để tương tác với API examination-attempt, examination-templates và examination-presets
+ * Cung cấp các phương thức cho việc làm bài thi từ template hoặc preset
  */
 import api from './api';
 import { ExaminationResult, Examination, Question } from './types/examination.types';
@@ -48,6 +48,7 @@ interface TemplateDto {
 class ExaminationAttemptService {
   private basePath = '/examination-attempt';
   private templatePath = '/examination-templates';
+  private presetPath = '/examinations/presets';
 
   /**
    * Lấy danh sách các bài thi mẫu (templates)
@@ -88,7 +89,6 @@ class ExaminationAttemptService {
       isActive: template.isActive,
       // Các trường tương thích với UI cũ
       type: 'multiple',
-      questions: template.totalQuestions,
       questionsCount: template.totalQuestions,
       time: Math.ceil(template.durationSeconds / 60), // Chuyển từ giây sang phút
       content: 'reading',
