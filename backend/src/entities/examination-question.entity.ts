@@ -25,6 +25,12 @@ export class ExaminationQuestion {
   @Column({ type: 'integer', default: 0 })
   orderIndex: number; // Thứ tự hiển thị câu hỏi trong bài thi
 
+  @Column({ type: 'jsonb', nullable: true })
+  optionsOrder: number[]; // Thứ tự hiển thị các lựa chọn
+
   @Column({ type: 'text', nullable: true })
   feedback: string; // Phản hồi cho câu trả lời
+
+  @Column({ type: 'float', default: 0 })
+  score: number; // Điểm số đạt được cho câu hỏi
 }

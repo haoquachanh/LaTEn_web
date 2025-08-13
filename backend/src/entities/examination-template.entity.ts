@@ -57,6 +57,18 @@ export class ExaminationTemplate {
       categoryId: number;
       count: number;
     }[];
+    resultDisplay?: {
+      showImmediately?: boolean; // Hiển thị kết quả ngay sau khi nộp
+      showCorrectAnswers?: boolean; // Hiển thị đáp án đúng hay không
+      showExplanation?: boolean; // Hiển thị giải thích đáp án
+      showScoreBreakdown?: boolean; // Hiển thị điểm chi tiết từng câu
+    };
+    security?: {
+      preventCopy?: boolean; // Ngăn copy-paste
+      preventTabSwitch?: boolean; // Phát hiện chuyển tab
+      timeoutWarning?: number; // Cảnh báo khi sắp hết giờ (phút)
+      shuffleOptions?: boolean; // Xáo trộn thứ tự các lựa chọn
+    };
   };
 
   @Column('simple-array', { nullable: true })

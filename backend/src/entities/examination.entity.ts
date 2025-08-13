@@ -11,7 +11,9 @@ import {
 } from 'typeorm';
 import { UserEntity } from './user.entity';
 import { ExaminationQuestion } from './examination-question.entity';
+import { ExaminationTemplate } from './examination-template.entity';
 import { ExaminationStatus } from './enums/examination-status.enum';
+import { ExaminationMetadata } from '@common/typings/examination-metadata';
 @Entity('examinations')
 @Index(['status']) // Hỗ trợ filter theo trạng thái
 @Index(['createdAt']) // Hỗ trợ sorting theo thời gian tạo
@@ -22,6 +24,13 @@ export class Examination {
   @ManyToOne(() => UserEntity, (user) => user.examinations)
   @JoinColumn({ name: 'userId' })
   user: UserEntity;
+
+  @ManyToOne(() => ExaminationTemplate)
+  @JoinColumn({ name: 'templateId' })
+  template: ExaminationTemplate;
+
+  @Column('jsonb', { nullable: true })
+  metadata: ExaminationMetadata;
 
   @Column('int')
   totalQuestions: number;

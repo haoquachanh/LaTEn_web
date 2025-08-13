@@ -4,15 +4,20 @@ import { Repository, In, Like } from 'typeorm';
 import { Examination } from '@entities/examination.entity';
 import { ExaminationQuestion } from '@entities/examination-question.entity';
 import { ExaminationTemplate } from '@entities/examination-template.entity';
+import { ExaminationPreset } from '@entities/examination-preset.entity';
 import { ExaminationStatus } from '@entities/enums/examination-status.enum';
 import { QuestionType, DifficultyLevel } from '@common/typings/question-type.enum';
 import { QuestionOption } from '@entities/question-option.entity';
 import { Question } from '@entities/question.entity';
+import { QuestionCategory } from '@entities/question-category.entity';
 import { SubmitAnswerDto } from './dtos/submit-answer.dto';
 import { AnswerResponse, ExaminationSummary } from './interfaces/examination.interface';
 import { CreateExamTemplateDto } from './dtos/template/create-exam-template.dto';
 import { UpdateExamTemplateDto } from './dtos/template/update-exam-template.dto';
 import { GetExamTemplatesDto, getSortOrder, ExamTemplateSort } from './dtos/template/get-exam-templates.dto';
+import { CreateExamPresetDto } from './dtos/preset/create-exam-preset.dto';
+import { UpdateExamPresetDto } from './dtos/preset/update-exam-preset.dto';
+import { GetExamPresetsDto, getPresetSortOrder } from './dtos/preset/get-exam-presets.dto';
 
 @Injectable()
 export class ExaminationAttemptService {
@@ -23,8 +28,12 @@ export class ExaminationAttemptService {
     private readonly examQuestionRepository: Repository<ExaminationQuestion>,
     @InjectRepository(ExaminationTemplate)
     private readonly examTemplateRepository: Repository<ExaminationTemplate>,
+    @InjectRepository(ExaminationPreset)
+    private readonly examPresetRepository: Repository<ExaminationPreset>,
     @InjectRepository(Question)
     private readonly questionRepository: Repository<Question>,
+    @InjectRepository(QuestionCategory)
+    private readonly categoryRepository: Repository<QuestionCategory>,
   ) {}
 
   async startExamination(examTemplateId: number, userId: number) {
@@ -55,6 +64,7 @@ export class ExaminationAttemptService {
     // Tạo một bản ghi examination mới với thông tin từ template
     const newExamination = this.examinationRepository.create({
       user: { id: userId },
+      template: { id: examTemplateId }, // Lưu tham chiếu đến template
       startedAt: new Date(),
       status: ExaminationStatus.IN_PROGRESS,
       totalQuestions: template.totalQuestions,
@@ -241,6 +251,15 @@ export class ExaminationAttemptService {
 
     // Cập nhật kết quả
     question.isCorrect = isCorrect;
+    question.userAnswer = typeof answerDto.answer === 'string' ? answerDto.answer : JSON.stringify(answerDto.answer);
+
+    // Tính điểm cho câu hỏi
+    if (isCorrect === true) {
+      question.score = question.question.getPoints();
+    } else {
+      question.score = 0;
+    }
+
     await this.examQuestionRepository.save(question);
 
     // Cập nhật số câu trả lời đúng trong bài thi
@@ -259,7 +278,7 @@ export class ExaminationAttemptService {
   async completeExamination(examinationId: number, userId: number): Promise<ExaminationSummary> {
     const examination = await this.examinationRepository.findOne({
       where: { id: examinationId },
-      relations: ['user', 'examinationQuestions'],
+      relations: ['user', 'examinationQuestions', 'template'],
     });
 
     if (!examination) {
@@ -289,7 +308,7 @@ export class ExaminationAttemptService {
     const endTime = new Date(savedExamination.completedAt).getTime();
     const timeSpent = Math.floor((endTime - startTime) / 1000); // Chuyển đổi từ ms sang seconds
 
-    // Trả về tổng kết
+    // Trả về kết quả cơ bản (không kèm đáp án chi tiết)
     return {
       id: savedExamination.id,
       title: savedExamination.title,
@@ -738,5 +757,408 @@ export class ExaminationAttemptService {
     await this.examTemplateRepository.remove(template);
 
     return { success: true };
+  }
+
+  // ========= EXAMINATION PRESET METHODS =========
+
+  /**
+   * Tạo một bài thi preset mới với câu hỏi được chọn trước
+   */
+  async createExamPreset(data: CreateExamPresetDto, userId: number) {
+    // Kiểm tra questionIds
+    if (!data.questionIds?.length) {
+      throw new BadRequestException('At least one question is required for a preset exam');
+    }
+
+    // Kiểm tra questionIds có hợp lệ không
+    const questions = await this.questionRepository.findByIds(data.questionIds);
+    if (questions.length !== data.questionIds.length) {
+      throw new BadRequestException('Some question IDs are invalid');
+    }
+
+    // Kiểm tra và lấy các categories nếu có
+    let categories = [];
+    if (data.categoryIds?.length) {
+      categories = await this.categoryRepository.findByIds(data.categoryIds);
+      if (categories.length !== data.categoryIds.length) {
+        throw new BadRequestException('Some category IDs are invalid');
+      }
+    }
+
+    try {
+      // Tạo preset mới
+      const preset = this.examPresetRepository.create({
+        title: data.title,
+        description: data.description,
+        type: data.type,
+        content: data.content,
+        level: data.level,
+        durationSeconds: data.durationSeconds,
+        totalQuestions: data.questionIds.length,
+        config: data.config || {
+          randomize: false,
+          showCorrectAnswers: true,
+          passingScore: 70,
+          resultDisplay: {
+            showImmediately: true,
+            showCorrectAnswers: true,
+            showExplanation: true,
+            showScoreBreakdown: true,
+          },
+          security: {
+            preventCopy: false,
+            preventTabSwitch: false,
+            timeoutWarning: 5,
+            shuffleOptions: false,
+          },
+        },
+        isActive: data.isActive !== undefined ? data.isActive : true,
+        isPublic: data.isPublic !== undefined ? data.isPublic : false,
+        createdBy: { id: userId },
+        questions,
+        categories,
+      });
+
+      await this.examPresetRepository.save(preset);
+
+      return this.getExamPresetById(preset.id);
+    } catch (error) {
+      console.error('Error creating preset exam:', error);
+      throw new BadRequestException(`Failed to create preset exam: ${error.message}`);
+    }
+  }
+
+  /**
+   * Lấy danh sách các bài thi preset theo các tiêu chí lọc
+   */
+  async getExamPresets(queryParams: GetExamPresetsDto, userId: number) {
+    try {
+      const { page = 1, limit = 10, search, type, level, isActive, isPublic, sort } = queryParams;
+      const skip = (page - 1) * limit;
+
+      // Xây dựng câu truy vấn với các điều kiện lọc
+      const queryBuilder = this.examPresetRepository
+        .createQueryBuilder('preset')
+        .leftJoinAndSelect('preset.questions', 'questions')
+        .leftJoinAndSelect('preset.categories', 'categories')
+        .leftJoinAndSelect('preset.createdBy', 'createdBy');
+
+      // Điều kiện lọc theo người dùng (chỉ xem được preset của mình hoặc public)
+      queryBuilder.where('(preset.createdBy.id = :userId OR preset.isPublic = true)', { userId });
+
+      // Áp dụng các bộ lọc nếu có
+      if (search) {
+        queryBuilder.andWhere('(preset.title ILIKE :search OR preset.description ILIKE :search)', {
+          search: `%${search}%`,
+        });
+      }
+
+      if (type) {
+        queryBuilder.andWhere('preset.type = :type', { type });
+      }
+
+      if (level) {
+        queryBuilder.andWhere('preset.level = :level', { level });
+      }
+
+      if (isActive !== undefined) {
+        queryBuilder.andWhere('preset.isActive = :isActive', { isActive });
+      }
+
+      if (isPublic !== undefined) {
+        queryBuilder.andWhere('preset.isPublic = :isPublic', { isPublic });
+      }
+
+      // Áp dụng sắp xếp
+      const sortOrder = getPresetSortOrder(sort);
+      Object.entries(sortOrder).forEach(([key, value]) => {
+        queryBuilder.orderBy(`preset.${key}`, value as 'ASC' | 'DESC');
+      }); // Thêm phân trang
+      queryBuilder.skip(skip).take(limit);
+
+      // Thực hiện truy vấn
+      const [items, total] = await queryBuilder.getManyAndCount();
+
+      return {
+        items,
+        meta: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit),
+        },
+      };
+    } catch (error) {
+      console.error('Error getting preset exams:', error);
+      throw new BadRequestException(`Failed to get preset exams: ${error.message}`);
+    }
+  }
+
+  /**
+   * Lấy chi tiết một bài thi preset theo ID
+   */
+  async getExamPresetById(id: number) {
+    const preset = await this.examPresetRepository.findOne({
+      where: { id },
+      relations: ['questions', 'categories', 'createdBy'],
+    });
+
+    if (!preset) {
+      throw new NotFoundException(`Examination preset with ID ${id} not found`);
+    }
+
+    return preset;
+  }
+
+  /**
+   * Cập nhật thông tin bài thi preset
+   */
+  async updateExamPreset(id: number, data: UpdateExamPresetDto, userId: number) {
+    const preset = await this.examPresetRepository.findOne({
+      where: { id },
+      relations: ['questions', 'categories', 'createdBy'],
+    });
+
+    if (!preset) {
+      throw new NotFoundException(`Examination preset with ID ${id} not found`);
+    }
+
+    // Kiểm tra quyền
+    if (preset.createdBy.id !== userId) {
+      throw new ForbiddenException('You do not have permission to update this preset');
+    }
+
+    try {
+      // Cập nhật các câu hỏi nếu được cung cấp
+      if (data.questionIds?.length) {
+        const questions = await this.questionRepository.findByIds(data.questionIds);
+        if (questions.length !== data.questionIds.length) {
+          throw new BadRequestException('Some question IDs are invalid');
+        }
+        preset.questions = questions;
+        preset.totalQuestions = data.questionIds.length;
+      }
+
+      // Cập nhật categories nếu có
+      if (data.categoryIds?.length) {
+        const categories = await this.categoryRepository.findByIds(data.categoryIds);
+        if (categories.length !== data.categoryIds.length) {
+          throw new BadRequestException('Some category IDs are invalid');
+        }
+        preset.categories = categories;
+      }
+
+      // Cập nhật các thuộc tính khác
+      const updatableProps = [
+        'title',
+        'description',
+        'type',
+        'content',
+        'level',
+        'durationSeconds',
+        'config',
+        'isActive',
+        'isPublic',
+      ];
+
+      for (const prop of updatableProps) {
+        if (data[prop] !== undefined) {
+          preset[prop] = data[prop];
+        }
+      }
+
+      await this.examPresetRepository.save(preset);
+      return this.getExamPresetById(id);
+    } catch (error) {
+      console.error('Error updating preset exam:', error);
+      throw new BadRequestException(`Failed to update preset exam: ${error.message}`);
+    }
+  }
+
+  /**
+   * Xóa một bài thi preset
+   */
+  async deleteExamPreset(id: number, userId: number) {
+    const preset = await this.examPresetRepository.findOne({
+      where: { id },
+      relations: ['createdBy'],
+    });
+
+    if (!preset) {
+      throw new NotFoundException(`Examination preset with ID ${id} not found`);
+    }
+
+    // Kiểm tra quyền
+    if (preset.createdBy.id !== userId) {
+      throw new ForbiddenException('You do not have permission to delete this preset');
+    }
+
+    await this.examPresetRepository.remove(preset);
+    return { success: true };
+  }
+
+  /**
+   * Bắt đầu làm bài thi từ một preset exam
+   */
+  async startPresetExam(presetId: number, userId: number) {
+    // Kiểm tra xem người dùng có bài thi đang làm không
+    const ongoingExam = await this.examinationRepository.findOne({
+      where: {
+        user: { id: userId },
+        status: ExaminationStatus.IN_PROGRESS,
+      },
+    });
+
+    if (ongoingExam) {
+      throw new BadRequestException('You have an ongoing examination. Please complete it before starting a new one');
+    }
+
+    // Lấy thông tin preset
+    const preset = await this.examPresetRepository.findOne({
+      where: { id: presetId, isActive: true },
+      relations: ['questions'],
+    });
+
+    if (!preset) {
+      throw new NotFoundException(`Examination preset with ID ${presetId} not found or inactive`);
+    }
+
+    try {
+      // Tạo bản ghi examination mới
+      const examination = this.examinationRepository.create({
+        user: { id: userId },
+        startedAt: new Date(),
+        status: ExaminationStatus.IN_PROGRESS,
+        totalQuestions: preset.totalQuestions,
+        durationSeconds: preset.durationSeconds,
+        title: preset.title,
+        description: preset.description,
+      });
+
+      const savedExam = await this.examinationRepository.save(examination);
+
+      // Lấy danh sách câu hỏi từ preset
+      let questions = [...preset.questions];
+
+      // Nếu cấu hình có randomize, trộn câu hỏi
+      if (preset.config?.randomize) {
+        questions = this.shuffleArray(questions);
+      }
+
+      // Tạo các examination question từ danh sách câu hỏi
+      const examQuestions = questions.map((question, index) => {
+        return this.examQuestionRepository.create({
+          examination: savedExam,
+          question: question,
+          orderIndex: index + 1,
+        });
+      });
+
+      await this.examQuestionRepository.save(examQuestions);
+
+      // Trả về examination đã tạo với đầy đủ thông tin
+      return this.examinationRepository.findOne({
+        where: { id: savedExam.id },
+        relations: ['user', 'examinationQuestions', 'examinationQuestions.question'],
+      });
+    } catch (error) {
+      console.error('Error starting preset exam:', error);
+      throw new BadRequestException(`Failed to start preset exam: ${error.message}`);
+    }
+  }
+
+  /**
+   * Lấy kết quả chi tiết của bài thi dựa trên cấu hình hiển thị
+   * Phương thức này sẽ hiển thị/ẩn thông tin dựa vào cấu hình của template bài thi
+   */
+  async getExaminationDetailedResults(examinationId: number, userId: number) {
+    const examination = await this.examinationRepository.findOne({
+      where: { id: examinationId },
+      relations: [
+        'user',
+        'template',
+        'examinationQuestions',
+        'examinationQuestions.question',
+        'examinationQuestions.question.options',
+      ],
+    });
+
+    if (!examination) {
+      throw new NotFoundException('Examination not found');
+    }
+
+    if (examination.user.id !== userId) {
+      throw new ForbiddenException('You do not have permission to view this examination');
+    }
+
+    if (examination.status !== ExaminationStatus.COMPLETED && examination.status !== ExaminationStatus.GRADED) {
+      throw new BadRequestException('This examination has not been completed');
+    }
+
+    // Lấy cấu hình hiển thị kết quả từ template (nếu có)
+    const resultDisplay = examination.template?.config?.resultDisplay || {
+      showImmediately: true,
+      showCorrectAnswers: true,
+      showExplanation: true,
+      showScoreBreakdown: true,
+    };
+
+    // Chuẩn bị kết quả cơ bản
+    const result: any = {
+      id: examination.id,
+      title: examination.title,
+      totalQuestions: examination.totalQuestions,
+      correctAnswers: examination.correctAnswers,
+      incorrectAnswers: examination.incorrectAnswers,
+      skippedQuestions: examination.skippedQuestions,
+      score: examination.score,
+      percentageScore: examination.getPercentageScore(),
+      isPassed: examination.isPassed(),
+      status: examination.status,
+      startedAt: examination.startedAt,
+      completedAt: examination.completedAt,
+      timeSpent: examination.getTimeSpent(),
+      feedback: examination.feedback,
+    };
+
+    // Chỉ thêm chi tiết câu hỏi nếu cấu hình cho phép
+    if (resultDisplay.showCorrectAnswers || resultDisplay.showExplanation || resultDisplay.showScoreBreakdown) {
+      result.questions = examination.examinationQuestions.map((q) => {
+        const questionResult: any = {
+          id: q.id,
+          questionId: q.question.id,
+          content: q.question.content,
+          type: q.question.type,
+          userAnswer: q.userAnswer,
+          isCorrect: q.isCorrect,
+        };
+
+        // Chỉ hiển thị đáp án đúng nếu cấu hình cho phép
+        if (resultDisplay.showCorrectAnswers) {
+          if (q.question.type === QuestionType.MULTIPLE_CHOICE) {
+            const correctOptions = q.question.options.filter((opt) => opt.isCorrect).map((opt) => opt.id);
+            questionResult.correctAnswer = correctOptions;
+          } else {
+            questionResult.correctAnswer = q.question.correctAnswer;
+          }
+        }
+
+        // Chỉ hiển thị giải thích nếu cấu hình cho phép
+        if (resultDisplay.showExplanation) {
+          questionResult.explanation = q.question.explanation;
+          questionResult.feedback = q.feedback;
+        }
+
+        // Chỉ hiển thị điểm số cho từng câu nếu cấu hình cho phép
+        if (resultDisplay.showScoreBreakdown) {
+          questionResult.score = q.score;
+          questionResult.maxScore = q.question.points || 1;
+        }
+
+        return questionResult;
+      });
+    }
+
+    return result;
   }
 }

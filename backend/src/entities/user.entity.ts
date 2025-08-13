@@ -42,6 +42,11 @@ export class UserEntity {
   @IsString()
   @Column({ nullable: true })
   birth: string;
+  
+  @IsOptional()
+  @IsString()
+  @Column({ nullable: true })
+  username: string;
 
   @CreateDateColumn()
   createdAt: Date;
