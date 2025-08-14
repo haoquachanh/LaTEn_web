@@ -4,6 +4,7 @@ import '@/styles/globals.css';
 import AppLayout from '../../components/Layouts/AppLayout';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import AppProvider from '@/contexts/AppContext';
+import { ExamProvider } from '@/contexts/ExamContext';
 import { ClientOnly } from '@/utils/clientOnly';
 type Props = {
   children: ReactNode;
@@ -22,9 +23,11 @@ export default function RootLayout({ children, params: { locale } }: Props) {
         <SpeedInsights />
         <NextIntlClientProvider locale={locale} messages={messages}>
           <AppProvider>
-            <ClientOnly>
-              <AppLayout>{children}</AppLayout>
-            </ClientOnly>
+            <ExamProvider>
+              <ClientOnly>
+                <AppLayout>{children}</AppLayout>
+              </ClientOnly>
+            </ExamProvider>
           </AppProvider>
         </NextIntlClientProvider>
       </body>

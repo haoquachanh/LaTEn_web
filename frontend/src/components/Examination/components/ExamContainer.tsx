@@ -4,6 +4,8 @@ import { Question } from '../types';
 import { useCallback, useEffect, useState, createContext, useContext } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import ReviewModalContent from './ReviewModalContent';
+import ConfirmNavigation from '@/components/Common/ConfirmNavigation';
+import { useExamContext } from '@/contexts/ExamContext';
 
 interface ExamContainerProps {
   questions: Question[];
@@ -26,6 +28,7 @@ const ExamContainer: React.FC<ExamContainerProps> = ({ questions, examConfig, on
   const [timeLeft, setTimeLeft] = useState<number>(examConfig.timeInMinutes * 60);
   const [isReviewMode, setIsReviewMode] = useState<boolean>(false);
   const [showSubmitConfirm, setShowSubmitConfirm] = useState<boolean>(false);
+  const [showExitConfirm, setShowExitConfirm] = useState<boolean>(false);
   const [isMobileView, setIsMobileView] = useState<boolean>(false);
   const [showReviewModal, setShowReviewModal] = useState<boolean>(false);
 
@@ -56,21 +59,19 @@ const ExamContainer: React.FC<ExamContainerProps> = ({ questions, examConfig, on
     sessionStorage.removeItem('exam-time');
   }, []);
 
-  // Create a context to expose the exam state to child components
-  const [examInProgress, setExamInProgress] = useState(true);
+  // Get exam state from context
+  const { examInProgress, startExam, endExam, setShouldBlockNavigation } = useExamContext();
 
-  // Expose a global variable for other components to check
+  // Set exam in progress when component mounts
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      // @ts-ignore
-      window.__EXAM_IN_PROGRESS = true;
-
-      return () => {
-        // @ts-ignore
-        window.__EXAM_IN_PROGRESS = false;
-      };
-    }
-  }, []);
+    startExam();
+    setShouldBlockNavigation(true);
+    
+    return () => {
+      endExam();
+      setShouldBlockNavigation(false);
+    };
+  }, [startExam, endExam, setShouldBlockNavigation]);
 
   // Submit handlers
   const handleSubmitExam = useCallback(() => {
@@ -160,15 +161,20 @@ const ExamContainer: React.FC<ExamContainerProps> = ({ questions, examConfig, on
 
   return (
     <div className="flex flex-col h-full w-full">
+      {/* Navigation blocker */}
+      <ConfirmNavigation 
+        when={examInProgress} 
+        message="You have an exam in progress. If you leave this page, your progress may be lost. Are you sure you want to continue?"
+      />
+      
       {/* Top bar with timer and progress */}
       <div className="flex justify-between items-center p-2 bg-base-100 border-b border-base-200 mb-2 w-full">
         <div className="flex items-center gap-2">
           <button
             className="btn btn-sm btn-ghost"
             onClick={() => {
-              if (window.confirm('Are you sure you want to exit the exam? Your progress will be lost.')) {
-                onCancelExam();
-              }
+              // Use custom modal instead of window.confirm
+              setShowExitConfirm(true);
             }}
           >
             <svg
@@ -319,6 +325,24 @@ const ExamContainer: React.FC<ExamContainerProps> = ({ questions, examConfig, on
             }}
             onFlagToggle={handleFlagQuestion}
           />
+        </div>
+      )}
+      
+      {/* Exit confirmation modal */}
+      {showExitConfirm && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
+          <div className="bg-base-100 p-6 rounded-box shadow-lg max-w-md w-full">
+            <h3 className="font-bold text-lg mb-2">Exit Exam</h3>
+            <p className="py-2">Are you sure you want to exit the exam? Your progress will be lost.</p>
+            <div className="flex justify-end gap-2 mt-4">
+              <button className="btn btn-outline" onClick={() => setShowExitConfirm(false)}>
+                Cancel
+              </button>
+              <button className="btn btn-error" onClick={onCancelExam}>
+                Exit Exam
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

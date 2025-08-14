@@ -4,6 +4,7 @@ import NavBar from '../Navbar/NavBar';
 import { ThemeContext } from '@/contexts/ThemeContext';
 import AuthStateHandler from '../Auth/AuthStateHandler';
 import AuthLoadingIndicator from '../Auth/AuthLoadingIndicator';
+import NavigationMiddleware from '../Common/NavigationMiddleware';
 
 type Props = {
   children: ReactNode;
@@ -20,6 +21,9 @@ export default function AppLayout({ children }: Props) {
       {/* Hiển thị indicator khi đang kiểm tra trạng thái đăng nhập */}
       <AuthLoadingIndicator />
 
+      {/* Navigation middleware for handling route changes */}
+      <NavigationMiddleware />
+      
       <NavBar />
       <main className="w-full">{children}</main>
     </div>

@@ -12,6 +12,8 @@ import ExaminationDashboard from './components/ExaminationDashboard';
 import examinationAttemptService from '@/services/examination-attempt.service';
 import examinationService from '@/services/examination.service';
 import { env } from '@/env';
+import { useExamContext } from '@/contexts/ExamContext';
+import usePreventNavigation from '@/hooks/usePreventNavigation';
 // Giữ lại examinationService làm dịch vụ chính để tương thích với mã cũ
 
 /**
@@ -40,6 +42,12 @@ const mapContentToBackend = (content: string): string => {
 
 // Main Examination component that manages the overall exam flow
 const Examination: React.FC = () => {
+  // Get exam context
+  const { startExam, endExam, setShouldBlockNavigation } = useExamContext();
+  
+  // Use navigation prevention hook
+  usePreventNavigation();
+  
   // Exam state
   const [examState, setExamState] = useState<'dashboard' | 'setup' | 'inProgress' | 'results'>('dashboard');
   const [selectedQuestions, setSelectedQuestions] = useState<Question[]>([]);
@@ -120,6 +128,10 @@ const Examination: React.FC = () => {
     try {
       setIsLoading(true);
       console.log('Starting custom examination with config:', config);
+      
+      // Set exam in progress in the global context
+      startExam();
+      setShouldBlockNavigation(true);
 
       // Store exam configuration in session storage for persistence
       sessionStorage.setItem('exam-type', config.type);
@@ -196,6 +208,10 @@ const Examination: React.FC = () => {
     try {
       setIsLoading(true);
       console.log(`Starting examination with preset ID: ${preset.id}, Type: ${typeof preset.id}`);
+      
+      // Set exam in progress in the global context
+      startExam();
+      setShouldBlockNavigation(true);
 
       // Create exam config from preset with default values for optional properties
       const config = {
@@ -308,6 +324,10 @@ const Examination: React.FC = () => {
     try {
       setUserAnswers(answers);
       console.log('Submitting exam with answers:', answers);
+      
+      // End exam in global context
+      endExam();
+      setShouldBlockNavigation(false);
 
       // If we have a real exam ID from the backend, submit to API
       const presetId = selectedPresetId;
@@ -432,6 +452,10 @@ const Examination: React.FC = () => {
     setExamState('dashboard');
     setUserAnswers({});
     setExamResults(null);
+    
+    // End exam in global context
+    endExam();
+    setShouldBlockNavigation(false);
   };
 
   // Switch to exam setup screen
