@@ -66,7 +66,7 @@ const ExamContainer: React.FC<ExamContainerProps> = ({ questions, examConfig, on
   useEffect(() => {
     startExam();
     setShouldBlockNavigation(true);
-    
+
     return () => {
       endExam();
       setShouldBlockNavigation(false);
@@ -162,11 +162,11 @@ const ExamContainer: React.FC<ExamContainerProps> = ({ questions, examConfig, on
   return (
     <div className="flex flex-col h-full w-full">
       {/* Navigation blocker */}
-      <ConfirmNavigation 
-        when={examInProgress} 
+      <ConfirmNavigation
+        when={examInProgress}
         message="You have an exam in progress. If you leave this page, your progress may be lost. Are you sure you want to continue?"
       />
-      
+
       {/* Top bar with timer and progress */}
       <div className="flex justify-between items-center p-2 bg-base-100 border-b border-base-200 mb-2 w-full">
         <div className="flex items-center gap-2">
@@ -327,7 +327,7 @@ const ExamContainer: React.FC<ExamContainerProps> = ({ questions, examConfig, on
           />
         </div>
       )}
-      
+
       {/* Exit confirmation modal */}
       {showExitConfirm && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">

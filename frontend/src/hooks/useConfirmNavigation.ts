@@ -15,14 +15,14 @@ export const useConfirmNavigation = () => {
   const [pendingNavigation, setPendingNavigation] = useState<string | null>(null);
   const router = useRouter();
   const pathname = usePathname();
-  
+
   const shouldBlockNavigationFn = useExamNavigationBlocker();
 
   // Handle beforeunload event (browser tab close, refresh, etc.)
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (!shouldBlockNavigation || !examInProgress) return;
-      
+
       const message = 'You have an exam in progress. Are you sure you want to leave?';
       e.preventDefault();
       e.returnValue = message;
@@ -47,7 +47,7 @@ export const useConfirmNavigation = () => {
       setShowConfirmation(true);
       return false;
     }
-    
+
     // No need to block, navigate directly
     router.push(path);
     return true;
@@ -74,7 +74,7 @@ export const useConfirmNavigation = () => {
     confirmNavigation,
     cancelNavigation,
     shouldBlockNavigation,
-    examInProgress
+    examInProgress,
   };
 };
 

@@ -23,7 +23,7 @@ export default function AppLayout({ children }: Props) {
 
       {/* Navigation middleware for handling route changes */}
       <NavigationMiddleware />
-      
+
       <NavBar />
       <main className="w-full">{children}</main>
     </div>

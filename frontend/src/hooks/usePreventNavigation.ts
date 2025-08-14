@@ -7,11 +7,11 @@ import { useExamContext } from '@/contexts/ExamContext';
 /**
  * Hook to prevent navigation during exams using window.onbeforeunload
  * and router events
- * 
+ *
  * @param message - Optional custom message for the browser's confirmation dialog
  */
 export const usePreventNavigation = (
-  message = 'You have an exam in progress. Are you sure you want to leave? Your progress may be lost.'
+  message = 'You have an exam in progress. Are you sure you want to leave? Your progress may be lost.',
 ) => {
   const router = useRouter();
   const { examInProgress, shouldBlockNavigation } = useExamContext();
@@ -20,7 +20,7 @@ export const usePreventNavigation = (
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (!shouldBlockNavigation || !examInProgress) return;
-      
+
       e.preventDefault();
       e.returnValue = message;
       return message;
@@ -37,7 +37,7 @@ export const usePreventNavigation = (
 
   return {
     examInProgress,
-    shouldBlockNavigation
+    shouldBlockNavigation,
   };
 };
 

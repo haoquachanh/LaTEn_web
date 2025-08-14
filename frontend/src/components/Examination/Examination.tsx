@@ -44,10 +44,10 @@ const mapContentToBackend = (content: string): string => {
 const Examination: React.FC = () => {
   // Get exam context
   const { startExam, endExam, setShouldBlockNavigation } = useExamContext();
-  
+
   // Use navigation prevention hook
   usePreventNavigation();
-  
+
   // Exam state
   const [examState, setExamState] = useState<'dashboard' | 'setup' | 'inProgress' | 'results'>('dashboard');
   const [selectedQuestions, setSelectedQuestions] = useState<Question[]>([]);
@@ -128,7 +128,7 @@ const Examination: React.FC = () => {
     try {
       setIsLoading(true);
       console.log('Starting custom examination with config:', config);
-      
+
       // Set exam in progress in the global context
       startExam();
       setShouldBlockNavigation(true);
@@ -208,7 +208,7 @@ const Examination: React.FC = () => {
     try {
       setIsLoading(true);
       console.log(`Starting examination with preset ID: ${preset.id}, Type: ${typeof preset.id}`);
-      
+
       // Set exam in progress in the global context
       startExam();
       setShouldBlockNavigation(true);
@@ -324,7 +324,7 @@ const Examination: React.FC = () => {
     try {
       setUserAnswers(answers);
       console.log('Submitting exam with answers:', answers);
-      
+
       // End exam in global context
       endExam();
       setShouldBlockNavigation(false);
@@ -452,7 +452,7 @@ const Examination: React.FC = () => {
     setExamState('dashboard');
     setUserAnswers({});
     setExamResults(null);
-    
+
     // End exam in global context
     endExam();
     setShouldBlockNavigation(false);

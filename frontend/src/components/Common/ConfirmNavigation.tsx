@@ -12,15 +12,15 @@ interface ConfirmNavigationProps {
 /**
  * A component that intercepts navigation events and shows a custom confirmation dialog
  * when navigation is attempted during an exam or other critical process.
- * 
+ *
  * This component:
  * 1. Adds a window.beforeunload event listener to catch browser tab closes, refreshes, etc.
  * 2. Intercepts anchor tag clicks to show a custom confirmation dialog instead of browser's default
  * 3. Patches history.pushState and replaceState to catch programmatic navigation
- * 
+ *
  * Usage:
  * <ConfirmNavigation when={examInProgress} message="Custom message" />
- * 
+ *
  * To exclude certain links from confirmation:
  * <a href="/some-path" data-no-confirm>This won't trigger confirmation</a>
  */
@@ -32,13 +32,13 @@ const ConfirmNavigation: React.FC<ConfirmNavigationProps> = ({
   const pathname = usePathname();
   const [showDialog, setShowDialog] = useState(false);
   const [pendingPath, setPendingPath] = useState<string | null>(null);
-  
+
   // This is used to track if we're handling a navigation event
   const [isNavigating, setIsNavigating] = useState(false);
-  
+
   // Store the current pathname to compare with target path
   const [lastPathname, setLastPathname] = useState(pathname);
-  
+
   useEffect(() => {
     // Update last pathname when it changes
     if (pathname !== lastPathname) {
@@ -50,7 +50,7 @@ const ConfirmNavigation: React.FC<ConfirmNavigationProps> = ({
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (!when) return;
-      
+
       // Standard way to show a confirmation dialog
       e.preventDefault();
       e.returnValue = message;
@@ -74,18 +74,18 @@ const ConfirmNavigation: React.FC<ConfirmNavigationProps> = ({
       // Only intercept clicks on anchor tags
       const target = e.target as Element;
       const anchor = target.closest('a');
-      
+
       if (!anchor) return;
-      
+
       const href = anchor.getAttribute('href');
       if (!href) return;
-      
+
       // Skip internal hash navigation or same page navigation
       if (href.startsWith('#') || href === pathname) return;
-      
+
       // Skip if href has "data-no-confirm" attribute
       if (anchor.hasAttribute('data-no-confirm')) return;
-      
+
       // Check if navigation should be blocked
       if (when) {
         e.preventDefault();
@@ -101,39 +101,39 @@ const ConfirmNavigation: React.FC<ConfirmNavigationProps> = ({
       document.removeEventListener('click', interceptClicks, true);
     };
   }, [when, pathname]);
-  
+
   // Handle navigation events from Next.js router
   useEffect(() => {
     if (!when) return;
-    
+
     // For Next.js App Router, we need to patch the original pushState and replaceState
     const originalPushState = history.pushState;
     const originalReplaceState = history.replaceState;
-    
+
     // Override pushState to intercept programmatic navigation
-    history.pushState = function(state, title, url) {
+    history.pushState = function (state, title, url) {
       if (url && typeof url === 'string' && url !== location.pathname && when) {
         // Show the dialog
         setPendingPath(url);
         setShowDialog(true);
         return;
       }
-      
+
       return originalPushState.apply(this, [state, title, url]);
     };
-    
+
     // Override replaceState to intercept programmatic navigation
-    history.replaceState = function(state, title, url) {
+    history.replaceState = function (state, title, url) {
       if (url && typeof url === 'string' && url !== location.pathname && when) {
         // Show the dialog
         setPendingPath(url);
         setShowDialog(true);
         return;
       }
-      
+
       return originalReplaceState.apply(this, [state, title, url]);
     };
-    
+
     return () => {
       // Restore original methods
       history.pushState = originalPushState;
@@ -145,7 +145,7 @@ const ConfirmNavigation: React.FC<ConfirmNavigationProps> = ({
   const handleConfirmNavigation = useCallback(() => {
     setIsNavigating(true);
     setShowDialog(false);
-    
+
     // If we have a pending path, navigate to it
     if (pendingPath) {
       router.push(pendingPath);
