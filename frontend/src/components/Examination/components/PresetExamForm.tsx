@@ -10,11 +10,11 @@ import { env } from '@/env';
 interface PresetExamFormProps {
   selectedPresetId: string;
   handlePresetSelect: (preset: PresetExam) => void;
-  presetExams?: PresetExam[]; // Thêm prop mới để nhận danh sách bài thi từ parent
+  presetExams?: PresetExam[]; // Preset exam list received from parent component
 }
 
 /**
- * PresetExamForm hiển thị danh sách các bài thi mẫu từ API
+ * PresetExamForm displays a list of preset exams from API or props
  */
 const PresetExamForm: React.FC<PresetExamFormProps> = ({
   selectedPresetId,
@@ -25,10 +25,10 @@ const PresetExamForm: React.FC<PresetExamFormProps> = ({
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Sử dụng useCallback để tối ưu performance khi re-render
+  // Optimize performance with useCallback to prevent unnecessary re-renders
   const fetchPresetExams = useCallback(async () => {
     try {
-      // Nếu đã có danh sách từ props, sử dụng luôn
+      // Use preset exams from props if available
       if (propPresets && propPresets.length > 0) {
         console.log('Using preset exams from props:', propPresets);
         setPresetExams(propPresets);
@@ -39,7 +39,7 @@ const PresetExamForm: React.FC<PresetExamFormProps> = ({
 
       setLoading(true);
 
-      // Luôn sử dụng dữ liệu mẫu trong development nếu không có props
+      // Always use sample data in development mode if no props are provided
       if (env.isDevelopment) {
         console.log('Using sample preset exams in development mode (no props provided)');
         setPresetExams(samplePresetExams);
@@ -48,8 +48,8 @@ const PresetExamForm: React.FC<PresetExamFormProps> = ({
         return;
       }
 
-      // Kiểm tra xem user đã đăng nhập chưa (có token trong localStorage không)
-      // Sử dụng key token đúng với config trong API client
+      // Check if user is authenticated (token exists in localStorage)
+      // Use the correct token key based on API client configuration
       const token =
         localStorage.getItem('laten_auth_token') ||
         localStorage.getItem('token') ||
@@ -57,7 +57,7 @@ const PresetExamForm: React.FC<PresetExamFormProps> = ({
 
       if (!token) {
         console.warn('Authentication token not found. You need to log in to view preset exams.');
-        // Trong môi trường development, sử dụng dữ liệu mẫu thay vì hiển thị lỗi
+        // In development mode, use sample data instead of showing an error
         if (env.isDevelopment) {
           console.log('Using sample exam templates since no token is available');
           setPresetExams(sampleTemplates);
@@ -69,7 +69,7 @@ const PresetExamForm: React.FC<PresetExamFormProps> = ({
         return;
       }
 
-      // Gọi API để lấy danh sách bài thi
+      // Call API to get list of exam templates
       const response = await examinationAttemptService.getExamTemplates({ activeOnly: true });
       console.log('Preset exams response:', response);
 
@@ -78,7 +78,7 @@ const PresetExamForm: React.FC<PresetExamFormProps> = ({
         setError(null);
       } else {
         console.log('No exam templates returned from API, using sample data instead');
-        // Nếu API không trả về dữ liệu, sử dụng dữ liệu mẫu trong môi trường development
+        // If API returns no data, use sample data in development environment
         if (env.isDevelopment) {
           setPresetExams(sampleTemplates);
           setError(null);
@@ -89,11 +89,11 @@ const PresetExamForm: React.FC<PresetExamFormProps> = ({
     } catch (err: any) {
       console.error('Failed to fetch preset exams:', err);
 
-      // Hiển thị lỗi chi tiết hơn để dễ debug
+      // Show detailed errors for easier debugging
       if (err.response) {
         console.error('Response error:', err.response.status, err.response.data);
         if (err.response.status === 401) {
-          // Trong môi trường development, sử dụng dữ liệu mẫu thay vì hiển thị lỗi
+          // In development mode, use sample data instead of showing an error
           if (env.isDevelopment) {
             console.log('Using sample exam templates since authentication failed');
             setPresetExams(sampleTemplates);
@@ -102,7 +102,7 @@ const PresetExamForm: React.FC<PresetExamFormProps> = ({
             setError('Please log in to view preset exams.');
           }
         } else {
-          // Trong môi trường development, sử dụng dữ liệu mẫu thay vì hiển thị lỗi
+          // In development mode, use sample data instead of showing an error
           if (env.isDevelopment) {
             console.log('Using sample exam templates due to API error');
             setPresetExams(sampleTemplates);
@@ -112,7 +112,7 @@ const PresetExamForm: React.FC<PresetExamFormProps> = ({
           }
         }
       } else {
-        // Trong môi trường development, sử dụng dữ liệu mẫu thay vì hiển thị lỗi
+        // In development mode, use sample data instead of showing an error
         if (env.isDevelopment) {
           console.log('Using sample exam templates due to API error');
           setPresetExams(sampleTemplates);
@@ -132,19 +132,19 @@ const PresetExamForm: React.FC<PresetExamFormProps> = ({
 
   if (loading) {
     return (
-      <div className="mb-8 flex justify-center">
-        <span className="loading loading-spinner loading-lg text-primary"></span>
+      <div className="flex justify-center">
+        <span className="loading loading-spinner loading-md text-primary"></span>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="mb-8 text-center">
+      <div className="text-center">
         <div className="alert alert-error">
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            className="stroke-current shrink-0 h-6 w-6"
+            className="stroke-current shrink-0 h-5 w-5"
             fill="none"
             viewBox="0 0 24 24"
           >
@@ -163,15 +163,20 @@ const PresetExamForm: React.FC<PresetExamFormProps> = ({
 
   return (
     <>
-      <div className="mb-8">
-        <h3 className="text-lg font-medium mb-4">Select Preset Exam</h3>
+      <div className="mb-6">
+        <h3 className="text-lg font-medium mb-3 flex items-center">
+          <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-primary/20 text-primary mr-2 text-sm">
+            1
+          </span>
+          Select Preset Exam
+        </h3>
 
         {presetExams.length === 0 ? (
-          <div className="alert alert-info">
+          <div className="alert alert-info p-4 rounded-lg shadow-sm">
             <div className="flex items-center">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6 mr-2"
+                className="h-6 w-6 mr-3 text-info"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -187,31 +192,162 @@ const PresetExamForm: React.FC<PresetExamFormProps> = ({
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-3 exam-preset-grid">
             {presetExams.map((preset) => (
               <div
                 key={preset.id}
-                className={`flex items-center justify-between p-4 rounded-lg cursor-pointer transition-all duration-200 ${
+                className={`flex items-center p-3 rounded-lg cursor-pointer transition-all duration-300 ${
                   String(selectedPresetId) === String(preset.id)
-                    ? 'bg-primary text-primary-content shadow-lg border-2 border-primary-focus'
-                    : 'bg-base-200 hover:bg-base-300'
+                    ? 'bg-primary text-primary-content shadow-md ring-1 ring-primary/50'
+                    : 'bg-base-200 hover:bg-base-300 hover:shadow'
                 }`}
                 onClick={() => handlePresetSelect(preset)}
               >
-                <div className="flex flex-col">
-                  <div className="font-medium text-lg">{preset.title}</div>
-                  <div className="text-xs opacity-80">{preset.description}</div>
+                {/* Exam Icon/Visual */}
+                <div
+                  className={`w-10 h-10 rounded-full flex items-center justify-center mr-3 ${
+                    String(selectedPresetId) === String(preset.id) ? 'bg-primary-focus' : 'bg-base-300'
+                  }`}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                    />
+                  </svg>
                 </div>
-                <div className="flex flex-wrap gap-1">
-                  <span className="badge badge-sm badge-primary">{preset.totalQuestions} questions</span>
-                  <span className="badge badge-sm">{Math.ceil(preset.durationSeconds / 60)} min</span>
-                  {preset.config?.randomize && <span className="badge badge-sm">Random</span>}
+
+                {/* Exam Details */}
+                <div className="flex-1">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h4 className="font-medium">{preset.title}</h4>
+                      <p className="text-xs opacity-80 mt-1 line-clamp-2">{preset.description}</p>
+                    </div>
+
+                    {/* Selected Indicator */}
+                    {String(selectedPresetId) === String(preset.id) && (
+                      <div className="ml-2 text-primary-content bg-primary-focus rounded-full p-1">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-4 w-4"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Badges */}
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    <div className="badge badge-sm badge-primary gap-1">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-3 w-3"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                      </svg>
+                      {preset.totalQuestions} questions
+                    </div>
+                    <div className="badge badge-sm badge-secondary gap-1">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-3 w-3"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                      </svg>
+                      {Math.ceil(preset.durationSeconds / 60)} min
+                    </div>
+                    {preset.config?.randomize && (
+                      <div className="badge badge-sm">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-3 w-3 mr-1"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                          />
+                        </svg>
+                        Random
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}
           </div>
         )}
       </div>
+
+      {/* Guidance information with smaller size */}
+      <div className="mb-6 bg-base-200 p-4 rounded-lg shadow-sm">
+        <div className="flex items-start">
+          <div className="bg-primary/20 text-primary p-2 rounded-full mr-3">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+          </div>
+          <div>
+            <h4 className="font-medium mb-1">About Preset Exams</h4>
+            <p className="text-xs opacity-80">
+              Preset exams are pre-configured tests designed to match specific learning goals and provide a
+              comprehensive assessment of your skills.
+            </p>
+            <ul className="mt-2 list-disc list-inside text-xs opacity-80">
+              <li>Select a preset that matches your current level</li>
+              <li>Each preset has a specific number of questions and time limit</li>
+              <li>Results will help you identify areas for improvement</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      {/* Spacer for mobile view to ensure content isn't hidden behind fixed button */}
+      <div className="h-15vh md:hidden"></div>
     </>
   );
 };

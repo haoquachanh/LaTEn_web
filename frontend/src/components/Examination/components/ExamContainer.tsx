@@ -18,9 +18,16 @@ interface ExamContainerProps {
   };
   onSubmitExam: (answers: { [key: string]: string }) => void;
   onCancelExam: () => void;
+  onBackToSetup?: () => void; // Add new prop for navigation back to setup
 }
 
-const ExamContainer: React.FC<ExamContainerProps> = ({ questions, examConfig, onSubmitExam, onCancelExam }) => {
+const ExamContainer: React.FC<ExamContainerProps> = ({
+  questions,
+  examConfig,
+  onSubmitExam,
+  onCancelExam,
+  onBackToSetup,
+}) => {
   // State variables
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(0);
   const [userAnswers, setUserAnswers] = useState<{ [key: string]: string }>({});
@@ -62,16 +69,31 @@ const ExamContainer: React.FC<ExamContainerProps> = ({ questions, examConfig, on
   // Get exam state from context
   const { examInProgress, startExam, endExam, setShouldBlockNavigation } = useExamContext();
 
+  // Xử lý việc thoát bài kiểm tra
+  const handleExitExam = useCallback(() => {
+    setShowExitConfirm(true);
+  }, []);
+
   // Set exam in progress when component mounts
   useEffect(() => {
     startExam();
     setShouldBlockNavigation(true);
 
+    // Thêm event listener cho phím Escape để hiện dialog thoát
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        handleExitExam();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+
     return () => {
       endExam();
       setShouldBlockNavigation(false);
+      window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [startExam, endExam, setShouldBlockNavigation]);
+  }, [startExam, endExam, setShouldBlockNavigation, handleExitExam]);
 
   // Submit handlers
   const handleSubmitExam = useCallback(() => {
@@ -171,11 +193,9 @@ const ExamContainer: React.FC<ExamContainerProps> = ({ questions, examConfig, on
       <div className="flex justify-between items-center p-2 bg-base-100 border-b border-base-200 mb-2 w-full">
         <div className="flex items-center gap-2">
           <button
-            className="btn btn-sm btn-ghost"
-            onClick={() => {
-              // Use custom modal instead of window.confirm
-              setShowExitConfirm(true);
-            }}
+            className="btn btn-sm btn-ghost hover:bg-error hover:text-white"
+            onClick={handleExitExam}
+            title="Exit examination"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -332,14 +352,38 @@ const ExamContainer: React.FC<ExamContainerProps> = ({ questions, examConfig, on
       {showExitConfirm && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
           <div className="bg-base-100 p-6 rounded-box shadow-lg max-w-md w-full">
-            <h3 className="font-bold text-lg mb-2">Exit Exam</h3>
-            <p className="py-2">Are you sure you want to exit the exam? Your progress will be lost.</p>
-            <div className="flex justify-end gap-2 mt-4">
-              <button className="btn btn-outline" onClick={() => setShowExitConfirm(false)}>
-                Cancel
+            <h3 className="font-bold text-lg mb-2">Exit Examination?</h3>
+            <p className="py-2">
+              <span className="text-warning font-medium">Warning:</span> If you exit now, your progress will not be
+              saved.
+            </p>
+            <div className="flex flex-col md:flex-row justify-end gap-3 mt-6">
+              <button className="btn btn-primary" onClick={() => setShowExitConfirm(false)}>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5 mr-1"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                Continue Exam
               </button>
               <button className="btn btn-error" onClick={onCancelExam}>
-                Exit Exam
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5 mr-1"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+                Exit to Dashboard
               </button>
             </div>
           </div>

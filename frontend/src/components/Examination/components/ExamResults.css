@@ -1,0 +1,33 @@
+.exam-question-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.exam-question-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 4px 0;
+}
+
+.exam-question-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(155, 155, 155, 0.5);
+  border-radius: 20px;
+  border: none;
+}
+
+.exam-question-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(155, 155, 155, 0.8);
+}
+
+.exam-question-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(155, 155, 155, 0.5) transparent;
+}
+
+/* Khi hover vào container, thanh cuộn sẽ xuất hiện */
+.exam-question-scroll-container {
+  padding-right: 10px;
+  transition: padding-right 0.2s ease;
+}
+
+.exam-question-scroll-container:hover {
+  padding-right: 6px;
+}

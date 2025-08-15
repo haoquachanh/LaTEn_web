@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useExaminationApi } from '@/hooks/useExaminationApi';
+import { useExaminationApi, useStartExaminationApi } from '@/hooks/useExaminationApi';
 import LoadingState from '@/components/Common/LoadingState';
 import ErrorState from '@/components/Common/ErrorState';
 import { formatDuration, formatDate } from '@/utils/dataTransformers';
@@ -14,12 +14,13 @@ interface ExaminationDetailProps {
 
 const ExaminationDetail: React.FC<ExaminationDetailProps> = ({ id }) => {
   const router = useRouter();
-  const { examination, error, isLoading, startExamination } = useExaminationApi(id);
+  const { data: examination, error, isLoading } = useExaminationApi(id);
+  const { startExam } = useStartExaminationApi();
   const [isStarting, setIsStarting] = useState(false);
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center min-h-[300px]">
+      <div className="flex justify-center items-center min-h-[30%]">
         <LoadingState message="Loading examination details..." size="lg" variant="default" />
       </div>
     );
@@ -52,7 +53,7 @@ const ExaminationDetail: React.FC<ExaminationDetailProps> = ({ id }) => {
   const handleStartExam = async () => {
     try {
       setIsStarting(true);
-      const result = await startExamination.trigger();
+      const result = await startExam(id);
       // Navigate to the examination taking interface
       router.push(`/examination/${id}/take`);
     } catch (error) {
@@ -62,7 +63,7 @@ const ExaminationDetail: React.FC<ExaminationDetailProps> = ({ id }) => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="w-full">
       <div className="bg-base-200 rounded-lg shadow-lg p-6 mb-6">
         <h1 className="text-3xl font-bold mb-4">{examination.title}</h1>
 
@@ -70,7 +71,7 @@ const ExaminationDetail: React.FC<ExaminationDetailProps> = ({ id }) => {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           <div className="flex flex-col">
             <span className="text-sm opacity-70">Duration</span>
-            <span className="font-medium">{formatDuration(examination.duration)}</span>
+            <span className="font-medium">{examination.duration ? formatDuration(examination.duration) : 'N/A'}</span>
           </div>
           <div className="flex flex-col">
             <span className="text-sm opacity-70">Questions</span>
@@ -96,7 +97,10 @@ const ExaminationDetail: React.FC<ExaminationDetailProps> = ({ id }) => {
         <div className="mb-8">
           <h2 className="text-xl font-semibold mb-2">Instructions</h2>
           <ul className="list-disc list-inside space-y-2 text-base-content/80">
-            <li>You will have {formatDuration(examination.duration)} to complete this examination.</li>
+            <li>
+              You will have {examination.duration ? formatDuration(examination.duration) : 'the allocated time'} to
+              complete this examination.
+            </li>
             <li>There are {examination.questions?.length || 0} questions in total.</li>
             <li>Each question has only one correct answer.</li>
             <li>You can navigate between questions freely during the examination.</li>

@@ -14,22 +14,22 @@ interface ExaminationTakeProps {
 
 const ExaminationTake: React.FC<ExaminationTakeProps> = ({ id }) => {
   const router = useRouter();
-  const { examination, error: examError, isLoading: examLoading } = useExaminationApi(id);
-  const { questions, error: questionsError, isLoading: questionsLoading } = useExaminationQuestionsApi(id);
+  const { data: examination, error: examError, isLoading: examLoading } = useExaminationApi(id);
+  const { data: questions, error: questionsError, isLoading: questionsLoading } = useExaminationQuestionsApi(id);
 
   const isLoading = examLoading || questionsLoading;
   const error = examError || questionsError;
 
   // Redirect back to details if user tries to access this page directly
   useEffect(() => {
-    if (!isLoading && !error && (!examination || !questions.length)) {
+    if (!isLoading && !error && (!examination || !questions || questions.length === 0)) {
       router.push(`/examination/${id}`);
     }
   }, [examination, questions, isLoading, error, id, router]);
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center min-h-[500px]">
+      <div className="flex justify-center items-center min-h-[50%]">
         <LoadingState message="Setting up your examination..." size="lg" variant="default" />
       </div>
     );
@@ -46,7 +46,7 @@ const ExaminationTake: React.FC<ExaminationTakeProps> = ({ id }) => {
     );
   }
 
-  if (!examination || !questions.length) {
+  if (!examination || !questions || questions.length === 0) {
     return (
       <div className="text-center py-10">
         <div className="text-5xl mb-4">⚠️</div>

@@ -284,10 +284,14 @@ const ReviewModalContent: React.FC<ReviewModalContentProps> = ({
           </div>
         </div>
 
-        {/* Question list with overflow scrolling */}
+        {/* Question list with enhanced overflow scrolling */}
         <div
-          className="flex-1 overflow-y-auto pr-2 bg-base-100 rounded-lg p-2 border border-base-300 optimized-scroll"
-          style={{ height: 'calc(80vh - 180px)' }}
+          className="flex-1 overflow-y-auto pr-2 bg-base-100 rounded-lg p-2 border border-base-300 custom-scrollbar"
+          style={{
+            height: 'calc(80vh - 180px)',
+            scrollbarWidth: 'thin',
+            scrollbarColor: 'rgba(100, 116, 139, 0.5) rgba(241, 245, 249, 0.1)',
+          }}
         >
           {filteredQuestions.length > 0 ? (
             <div className="space-y-1">

@@ -345,21 +345,41 @@ const Examination: React.FC = () => {
           // Submit to API - use completeExamination from examinationAttemptService
           console.log('Submitting examination to API:', submission);
 
-          // Khi sử dụng dữ liệu mẫu, kiểm tra xem đây có phải là môi trường development không
+          // Môi trường development nhưng tính toán kết quả thực tế thay vì sử dụng dữ liệu mẫu
           if (env.isDevelopment && (process.env.NEXT_PUBLIC_USE_SAMPLE_DATA === 'true' || presetId === '1')) {
-            console.log('Using sample examination results in development mode');
+            console.log('Calculating actual results from user answers in development mode');
 
-            // Import dữ liệu kết quả mẫu
-            const { sampleExaminationResult } = await import('./data/sampleExamination');
+            // Tính toán kết quả thực tế từ câu trả lời
+            const totalQuestions = selectedQuestions.length;
+            const answeredQuestions = Object.keys(answers).length;
+            const skippedQuestions = totalQuestions - answeredQuestions;
 
-            // Đặt kết quả
+            // Tính toán số câu đúng bằng cách so sánh câu trả lời với đáp án đúng
+            const correctAnswers = selectedQuestions.reduce((count, question) => {
+              const userAnswer = answers[question.id];
+              // Nếu người dùng trả lời và đáp án đúng
+              if (
+                userAnswer &&
+                (userAnswer === question.correctAnswer ||
+                  userAnswer === question.correctOption ||
+                  (question.options && question.options.find((opt: any) => opt.id === userAnswer && opt.isCorrect)))
+              ) {
+                return count + 1;
+              }
+              return count;
+            }, 0);
+
+            const incorrectAnswers = answeredQuestions - correctAnswers;
+            const score = totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0;
+
+            // Đặt kết quả thực tế
             setExamResults({
-              score: sampleExaminationResult.score,
-              totalQuestions: sampleExaminationResult.totalQuestions,
-              correctAnswers: sampleExaminationResult.correctAnswers,
-              incorrectAnswers: sampleExaminationResult.incorrectAnswers,
-              skippedAnswers: sampleExaminationResult.skippedAnswers || 0,
-              timeSpent: sampleExaminationResult.timeSpent,
+              score: score,
+              totalQuestions: totalQuestions,
+              correctAnswers: correctAnswers,
+              incorrectAnswers: incorrectAnswers,
+              skippedAnswers: skippedQuestions,
+              timeSpent: timeSpent,
             });
 
             setExamState('results');
@@ -464,7 +484,7 @@ const Examination: React.FC = () => {
   };
 
   return (
-    <div className="container mx-auto p-4 flex flex-col items-center">
+    <div className="container mx-auto h-full overflow-hidden examination-content p-0">
       {examState === 'dashboard' && <ExaminationDashboard onStartTest={handleStartTest} />}
 
       {examState === 'setup' && (
@@ -485,6 +505,7 @@ const Examination: React.FC = () => {
           setSelectedPresetId={setSelectedPresetId}
           presetExams={presetExams}
           isLoading={isLoading}
+          onBackToDashboard={() => setExamState('dashboard')}
           handleStartExam={() => {
             // Start based on mode
             if (isCustomMode) {
@@ -535,6 +556,12 @@ const Examination: React.FC = () => {
           examConfig={examConfig}
           onSubmitExam={handleSubmitExam}
           onCancelExam={handleCancelExam}
+          onBackToSetup={() => {
+            // Reset to setup state
+            setExamState('setup');
+            endExam(); // End the current exam attempt in global context
+            setShouldBlockNavigation(false); // Allow navigation again
+          }}
         />
       )}
 
@@ -544,6 +571,8 @@ const Examination: React.FC = () => {
           questions={selectedQuestions}
           userAnswers={userAnswers}
           onRestartExam={handleRestartExam}
+          onBackToDashboard={() => setExamState('dashboard')}
+          examId={selectedPresetId}
         />
       )}
     </div>

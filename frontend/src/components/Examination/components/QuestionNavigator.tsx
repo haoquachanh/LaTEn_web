@@ -67,7 +67,7 @@ const QuestionNavigator: React.FC<QuestionNavigatorProps> = ({
           </div>
         </div>
 
-        <div className="grid grid-cols-5 gap-2 max-h-48 overflow-y-auto question-navigator-grid">
+        <div className="grid grid-cols-5 gap-2 max-h-48 overflow-y-auto question-navigator-grid custom-scrollbar">
           {navigatorButtons.map((btn) => (
             <button
               key={btn.id}

@@ -45,7 +45,7 @@ const ExaminationListPage: React.FC = () => {
 
   if (loading && !examinations.length) {
     return (
-      <div className="min-h-[400px] flex items-center justify-center">
+      <div className="min-h-[40%] flex items-center justify-center">
         <LoadingState message="Loading examinations..." size="lg" variant="default" />
       </div>
     );
@@ -168,7 +168,7 @@ const ExaminationListPage: React.FC = () => {
                 <div className="flex flex-wrap gap-2 mt-2 mb-3">
                   <span className="badge badge-primary">{exam.type}</span>
                   <span className="badge">{exam.level}</span>
-                  <span className="badge badge-outline">{formatDuration(exam.duration)}</span>
+                  <span className="badge badge-outline">{formatDuration(exam.duration || 0)}</span>
                   <span className="badge badge-outline">{exam.questions?.length || 0} questions</span>
                 </div>
 

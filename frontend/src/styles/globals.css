@@ -82,6 +82,38 @@
   display: none; /* Chrome, Safari, Opera */
 }
 
+/* Special styling for examination page only */
+.examination-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* Keep overflow hidden */
+}
+
+.examination-content {
+  height: 100%;
+  overflow: hidden; /* Keep overflow hidden */
+}
+
+/* The body class will be applied via JavaScript for better browser support */
+body.overflow-hidden {
+  overflow: hidden !important;
+  height: 100vh; /* Ensure body has fixed height */
+  position: fixed; /* Prevent body from scrolling */
+  width: 100%; /* Ensure full width */
+}
+
+/* Examination page spacing adjustments */
+.examination-page h1, .examination-page h2 {
+  margin-top: 0;
+  padding-top: 0;
+}
+
+/* Ensure adequate space at the top of exam content */
+.examination-content > div {
+  padding-top: 0.5rem;
+}
+
 /* Question navigator enhancements */
 .question-navigator-grid {
   scrollbar-width: thin;
@@ -103,6 +135,120 @@
 
 .question-navigator-grid::-webkit-scrollbar-thumb:hover {
   background-color: hsl(var(--bc) / 0.3);
+}
+
+/* Custom scrollbar for question review */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(100, 116, 139, 0.5) rgba(241, 245, 249, 0.1);
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(241, 245, 249, 0.1);
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(100, 116, 139, 0.5);
+  border-radius: 4px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(100, 116, 139, 0.7);
+}
+
+/* Exam Setup responsive styling - Modern design with vh for container, % for content */
+.exam-setup-container {
+  min-height: 85vh;
+  height: 90vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  max-width: 100%;
+  position: relative;
+}
+
+.exam-setup-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 8px;
+  background: linear-gradient(90deg, hsl(var(--p)), hsl(var(--s)), hsl(var(--a)));
+  z-index: 1;
+  opacity: 0.7;
+  border-top-left-radius: 0.75rem;
+  border-top-right-radius: 0.75rem;
+}
+
+@media (min-width: 768px) {
+  .exam-setup-container {
+    min-height: 70vh;
+    height: 80vh;
+    max-height: 85vh;
+    width: 100%;
+    max-width: 100%;
+    margin: 0 auto;
+  }
+}
+
+@media (min-width: 1024px) {
+  .exam-setup-container {
+    min-height: 75vh;
+    height: 85vh;
+    max-height: 90vh;
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
+@media (min-width: 1440px) {
+  .exam-setup-container {
+    min-height: 80vh;
+    height: 85vh;
+    max-height: 90vh;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .exam-preset-grid {
+    grid-template-columns: repeat(3, 1fr);
+    grid-gap: 3%;
+  }
+}
+
+@media (min-width: 1920px) {
+  .exam-setup-container {
+    min-height: 80vh;
+    width: 100%;
+    max-width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+/* Modern card hover effects */
+.exam-preset-grid > div {
+  transition: all 0.3s ease;
+  border: 1px solid transparent;
+}
+
+.exam-preset-grid > div:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+  border-color: hsl(var(--p)/0.2);
+}
+
+/* Ensure content isn't hidden behind fixed button on mobile */
+.fixed-bottom-button-spacer {
+  height: 15vh; 
 }
 
 /* Authentication loading animation */
