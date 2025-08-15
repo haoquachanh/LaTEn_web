@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
 import { useExaminationResultsApi } from '@/hooks/useExaminationApi';
 
 // Helper function to format time spent
@@ -27,6 +28,8 @@ interface ExaminationDashboardProps {
 }
 
 const ExaminationDashboard: React.FC<ExaminationDashboardProps> = ({ onStartTest }) => {
+  const t = useTranslations('Examination');
+  
   // Get past exams from API
   const [pastExams, setPastExams] = useState<PastExam[]>([]);
   const { data: resultsData, isLoading } = useExaminationResultsApi();
@@ -73,27 +76,27 @@ const ExaminationDashboard: React.FC<ExaminationDashboardProps> = ({ onStartTest
 
   return (
     <div className="container mx-auto p-4 md:p-6">
-      <h1 className="text-3xl font-bold mb-8">Examination Dashboard</h1>
+      <h1 className="text-3xl font-bold mb-8">{t('examinationDashboard')}</h1>
 
       {/* Dashboard Overview Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div className="card bg-base-100 shadow-lg">
           <div className="card-body">
-            <h2 className="card-title text-lg">Total Tests Taken</h2>
+            <h2 className="card-title text-lg">{t('totalExams')}</h2>
             <p className="text-4xl font-bold">{totalExams}</p>
           </div>
         </div>
 
         <div className="card bg-base-100 shadow-lg">
           <div className="card-body">
-            <h2 className="card-title text-lg">Average Score</h2>
+            <h2 className="card-title text-lg">{t('averageScore')}</h2>
             <p className={`text-4xl font-bold ${getScoreColor(averageScore)}`}>{averageScore}%</p>
           </div>
         </div>
 
         <div className="card bg-base-100 shadow-lg">
           <div className="card-body">
-            <h2 className="card-title text-lg">Best Score</h2>
+            <h2 className="card-title text-lg">{t('bestScore')}</h2>
             <p className={`text-4xl font-bold text-success`}>{bestScore}%</p>
           </div>
         </div>
@@ -116,10 +119,9 @@ const ExaminationDashboard: React.FC<ExaminationDashboardProps> = ({ onStartTest
             ></path>
           </svg>
           <div>
-            <h3 className="font-bold">Testing Guidelines</h3>
+            <h3 className="font-bold">{t('testingGuidelines')}</h3>
             <p className="text-sm">
-              Please do not navigate away during a test. If you need to leave, use the Cancel button to properly exit
-              your exam.
+              {t('doNotNavigateAwayMessage')}
             </p>
           </div>
         </div>
@@ -155,7 +157,7 @@ const ExaminationDashboard: React.FC<ExaminationDashboardProps> = ({ onStartTest
           >
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
           </svg>
-          Leaderboard
+          {t('leaderboard')}
         </Link>
 
         <Link href="/examination/statistics" className="btn btn-outline btn-lg">
@@ -173,7 +175,7 @@ const ExaminationDashboard: React.FC<ExaminationDashboardProps> = ({ onStartTest
               d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
             />
           </svg>
-          My Statistics
+          {t('myStatistics')}
         </Link>
       </div>
 

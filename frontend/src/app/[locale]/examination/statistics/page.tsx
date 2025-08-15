@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 
 export default function StatisticsPage() {
   return (
-    <div className="container mx-auto py-8">
+    <div className="container mx-auto p-4">
       <StatisticsContent />
     </div>
   );
