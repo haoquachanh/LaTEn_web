@@ -14,8 +14,12 @@ interface PageProps {
 
 export default function ExaminationPage({ params }: PageProps) {
   return (
-    <div className="container mx-auto py-8 px-4">
-      <ExaminationDetail id={params.id} />
+    <div className="min-h-screen bg-base-100">
+      <div className="py-8">
+        <div className="container mx-auto px-4">
+          <ExaminationDetail id={params.id} />
+        </div>
+      </div>
     </div>
   );
 }

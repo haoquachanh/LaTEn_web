@@ -1,12 +1,9 @@
 'use client';
 
-import { Metadata } from 'next';
 import ExaminationTake from '@/components/Examination/ExaminationTake';
 
-export const metadata: Metadata = {
-  title: 'Take Examination | LaTEn',
-  description: 'Taking a language examination',
-};
+// Metadata phải được định nghĩa trong file layout.tsx hoặc một file riêng không có 'use client'
+// hoặc sử dụng một phương pháp khác để đặt tiêu đề trang
 
 interface PageProps {
   params: {
