@@ -45,7 +45,7 @@ export default function SideBar() {
         )}
 
         {/* Navigation Menu */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto custom-scrollbar">
           <ul className="menu p-4 space-y-2">
             {navLinks.map((item, index) => (
               <li key={index}>

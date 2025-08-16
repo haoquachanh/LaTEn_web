@@ -50,7 +50,7 @@ export default function ChangeTheme() {
       </div>
       <div
         tabIndex={0}
-        className="top-px border-white/5 bg-base-200 shadow-2xl mt-16 border rounded-box w-56 h-[28.6rem] max-h-[calc(100vh-10rem)] text-base-content overflow-y-auto dropdown-content outline outline-1 outline-black/5"
+        className="top-px border-white/5 bg-base-200 shadow-2xl mt-16 border rounded-box w-56 h-[28.6rem] max-h-[calc(100vh-10rem)] text-base-content overflow-y-auto dropdown-content outline outline-1 outline-black/5 custom-scrollbar"
       >
         <div className="gap-3 grid grid-cols-1 p-3">
           {themes.map((itheme) => {

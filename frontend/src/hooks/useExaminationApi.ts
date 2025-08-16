@@ -31,14 +31,15 @@ export function useExaminationsApi(params: ExaminationQueryParams = {}, page: nu
  * Hook to fetch a single examination by ID
  */
 export function useExaminationApi(id: string | number | null) {
-  return useApiQuery<Examination>(id ? `${EXAMINATIONS_API}/${id}` : null);
+  const result = useApiQuery<Examination>(id ? `${EXAMINATIONS_API}/${id}` : null);
+  return result;
 }
 
 /**
  * Hook to start an examination
  */
 export function useStartExaminationApi() {
-  // Không có URL cụ thể vì sẽ tạo URL động dựa trên examinationId
+  // No specific URL because we create dynamic URLs based on examinationId
   const { trigger: triggerMutation } = useApiMutation<any, Examination>(`${EXAMINATIONS_API}/dummy-url`);
 
   const startExam = async (
@@ -52,7 +53,7 @@ export function useStartExaminationApi() {
     },
   ) => {
     try {
-      // Sử dụng service mới
+      // Use new service
       const examinationAttemptService = (await import('@/services/examination-attempt.service')).default;
       return await examinationAttemptService.startExamination(templateId);
     } catch (error) {

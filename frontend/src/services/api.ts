@@ -21,18 +21,46 @@ export interface ApiError {
  * Get API URL from multiple sources with precedence
  */
 function getApiUrl(): string {
+  console.log('🔍 Getting API URL from available sources...');
+
+  // 0. Check current origin for CORS compatibility
+  const currentOrigin = typeof window !== 'undefined' ? window.location.origin : '';
+  const isLocalhost127 = currentOrigin.includes('127.0.0.1');
+  console.log('🌐 Current origin:', currentOrigin);
+  console.log('🌐 Is using 127.0.0.1:', isLocalhost127);
+
   // 1. Runtime platform override (CDN, proxy configurations)
   if (typeof window !== 'undefined' && window.LATEN_CONFIG?.SERVER_URL) {
-    return window.LATEN_CONFIG.SERVER_URL;
+    const serverUrl = window.LATEN_CONFIG.SERVER_URL;
+    console.log('✅ Using runtime config SERVER_URL:', serverUrl);
+    return serverUrl;
   }
 
   // 2. Environment variables (from build or platform)
   if (process.env.NEXT_PUBLIC_SERVER_URL) {
-    return process.env.NEXT_PUBLIC_SERVER_URL;
+    let serverUrl = process.env.NEXT_PUBLIC_SERVER_URL;
+
+    // Adjust URL if using 127.0.0.1 to maintain CORS compatibility
+    if (isLocalhost127 && serverUrl.includes('localhost')) {
+      serverUrl = serverUrl.replace('localhost', '127.0.0.1');
+      console.log('✅ Adjusted NEXT_PUBLIC_SERVER_URL for 127.0.0.1:', serverUrl);
+    }
+
+    console.log('✅ Using NEXT_PUBLIC_SERVER_URL:', serverUrl);
+    return serverUrl;
   }
 
   // 3. Default from app config based on environment
-  return config.api.baseUrl;
+  let baseUrl = config.api.baseUrl;
+
+  // Adjust URL if using 127.0.0.1 to maintain CORS compatibility
+  if (isLocalhost127 && baseUrl.includes('localhost')) {
+    baseUrl = baseUrl.replace('localhost', '127.0.0.1');
+    console.log('✅ Adjusted config.api.baseUrl for 127.0.0.1:', baseUrl);
+  }
+
+  console.log('✅ Using default config.api.baseUrl:', baseUrl);
+  return baseUrl;
 }
 
 /**
@@ -116,7 +144,29 @@ api.interceptors.response.use(
         if (!refreshToken) throw new Error('No refresh token available');
 
         // Try to refresh token
-        const { data } = await axios.post(`${getApiUrl()}/auth/refresh`, { refreshToken });
+        // Xử lý URL một cách đúng đắn
+        let baseUrl = getApiUrl();
+        console.log('🔧 Refresh token baseUrl gốc:', baseUrl);
+        
+        // Đảm bảo sử dụng đúng đường dẫn API
+        let url;
+        if (baseUrl.includes('/api')) {
+          // Nếu baseUrl đã có /api thì tạo URL dưới dạng baseUrl/auth/refresh
+          if (baseUrl.endsWith('/api')) {
+            url = `${baseUrl}/auth/refresh`;
+          } else {
+            // Trường hợp baseUrl có dạng http://localhost:3001/api/v1
+            // Cần lấy phần trước /api
+            const baseRoot = baseUrl.substring(0, baseUrl.indexOf('/api'));
+            url = `${baseRoot}/api/auth/refresh`;
+          }
+        } else {
+          // Nếu baseUrl không có /api, thêm vào
+          url = `${baseUrl}/api/auth/refresh`;
+        }
+        console.log('🔧 Refresh token URL:', url);
+        
+        const { data } = await axios.post(url, { refreshToken });
 
         // Store new tokens
         localStorage.setItem(config.auth.storageKeys.token, data.accessToken);
