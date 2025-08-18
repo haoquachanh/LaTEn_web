@@ -56,12 +56,23 @@ const nextConfig = {
   images: {
     formats: ['image/webp', 'image/avif'],
     minimumCacheTTL: isProd ? 3600 : 60, // 1 hour in production, 1 minute in dev/staging
+    dangerouslyAllowSVG: true, // Allow SVG images from trusted sources
+    contentDispositionType: 'attachment', // Helps protect against XSS attacks with SVG
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
     remotePatterns: [
       {
         protocol: 'https',
         hostname: 'example.com',
       },
-    ], // Allow images from daisyui.com
+      {
+        protocol: 'https',
+        hostname: 'ui-avatars.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+      },
+    ],
   },
   
   

@@ -38,7 +38,7 @@ export default function ChangeLang() {
       </div>
       <div
         tabIndex={0}
-        className="top-px border-white/5 bg-base-200 shadow-2xl mt-16 border rounded-box w-56 max-h-[calc(100vh-10rem)] text-base-content overflow-y-auto dropdown-content outline outline-1 outline-black/5"
+        className="top-px border-white/5 bg-base-200 shadow-2xl mt-16 border rounded-box w-56 max-h-[calc(100vh-10rem)] text-base-content overflow-y-auto dropdown-content outline outline-1 outline-black/5 custom-scrollbar"
       >
         <ul className="gap-1 menu menu-sm">
           {langs.map((lang) => (
