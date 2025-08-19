@@ -21,12 +21,15 @@ import { CreateExamTemplateDto } from '../examination-attempt/dtos/template/crea
 import { UpdateExamTemplateDto } from '../examination-attempt/dtos/template/update-exam-template.dto';
 import { GetExamTemplatesDto } from '../examination-attempt/dtos/template/get-exam-templates.dto';
 import { ExaminationAttemptService } from '../examination-attempt/examination-attempt.service';
+import { LeaderboardService } from './services/leaderboard.service';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
 @Controller('examinations')
 export class ExaminationController {
   constructor(
     private readonly examinationService: ExaminationService,
     private readonly examinationAttemptService: ExaminationAttemptService,
+    private readonly leaderboardService: LeaderboardService,
   ) {}
 
   @UseGuards(JwtAuthGuard)
@@ -41,9 +44,24 @@ export class ExaminationController {
     return this.examinationService.submitAnswer(dto);
   }
 
+  @ApiOperation({ summary: 'Complete an examination and calculate score' })
+  @ApiResponse({ status: 200, description: 'Examination completed successfully', type: Examination })
+  @ApiResponse({ status: 404, description: 'Examination not found' })
   @Patch(':id/complete')
-  completeExam(@Param('id', ParseIntPipe) id: number) {
-    return this.examinationService.completeExamination(id);
+  async completeExam(@Param('id', ParseIntPipe) id: number) {
+    const exam = await this.examinationService.completeExamination(id);
+
+    // Update leaderboard scores
+    if (exam.user && exam.user.id) {
+      await this.leaderboardService.updateUserScores(
+        exam.user.id,
+        exam.score,
+        exam.correctAnswers,
+        exam.totalQuestions,
+      );
+    }
+
+    return exam;
   }
 
   @UseGuards(JwtAuthGuard)

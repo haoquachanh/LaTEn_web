@@ -41,7 +41,8 @@
     "db:stop:test": "docker-compose -f docker-compose.test.yml down",
     "seed:admin": "ts-node -r tsconfig-paths/register src/seeds/run-admin-seed.ts",
     "seed:question": "ts-node -r tsconfig-paths/register src/seeds/run-question-seed.ts",
-    "fix:question": "ts-node -r tsconfig-paths/register src/seeds/fix-question-seed.ts"
+    "fix:question": "ts-node -r tsconfig-paths/register src/seeds/fix-question-seed.ts",
+    "seed:posts": "ts-node -r tsconfig-paths/register src/seed-runner.ts"
   },
   "dependencies": {
     "@nestjs/common": "^8.4.7",

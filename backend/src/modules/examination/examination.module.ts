@@ -7,11 +7,16 @@ import { UserEntity } from '@entities/user.entity';
 import { ExaminationTemplate } from '@entities/examination-template.entity';
 import { ExaminationPreset } from '@entities/examination-preset.entity';
 import { QuestionCategory } from '@entities/question-category.entity';
+import { UserScore } from '@entities/user-score.entity';
 
 import { ExaminationService } from './examination.service';
 import { ExaminationController } from './examination.controller';
 import { ExaminationPresetService } from './examination-preset.service';
 import { ExaminationPresetController } from './examination-preset.controller';
+import { LeaderboardController } from './leaderboard.controller';
+import { LeaderboardService } from './services/leaderboard.service';
+import { ExaminationTemplateService } from './services/examination-template.service';
+import { DashboardController } from './dashboard.controller';
 import { ExaminationAttemptModule } from '../examination-attempt/examination-attempt.module';
 
 @Module({
@@ -24,11 +29,12 @@ import { ExaminationAttemptModule } from '../examination-attempt/examination-att
       Question,
       UserEntity,
       QuestionCategory,
+      UserScore,
     ]),
     forwardRef(() => ExaminationAttemptModule), // Import with forwardRef to resolve circular dependency
   ],
-  controllers: [ExaminationController, ExaminationPresetController],
-  providers: [ExaminationService, ExaminationPresetService],
-  exports: [ExaminationService, ExaminationPresetService],
+  controllers: [ExaminationController, ExaminationPresetController, LeaderboardController, DashboardController],
+  providers: [ExaminationService, ExaminationPresetService, LeaderboardService, ExaminationTemplateService],
+  exports: [ExaminationService, ExaminationPresetService, LeaderboardService, ExaminationTemplateService],
 })
 export class ExaminationModule {}
