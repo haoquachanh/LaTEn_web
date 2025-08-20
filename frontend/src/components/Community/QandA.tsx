@@ -57,7 +57,7 @@ export default function QandA() {
 
   // const [topic, setTopic] = useState('1');
   return (
-    <div className="flex flex-col w-[80%] overflow-auto">
+    <div className="flex flex-col w-full overflow-auto">
       <div className="flex flex-col space-y-3 w-full mb-5">
         <span className="label-text">You have any question?</span>
         <div className="flex w-full space-x-5">
@@ -72,7 +72,7 @@ export default function QandA() {
         <div className="collapse collapse-arrow bg-base-200 mb-8 overflow-hidden" key={index}>
           <input type="checkbox" className="peer" />
           <div className="collapse-title ">{topic.content}</div>
-          <div className="collapse-content overflow-y-auto">
+          <div className="collapse-content overflow-y-auto custom-scrollbar">
             {listPosts
               .filter((post) => post.topic === topic.index)
               .map((post, index) => (
