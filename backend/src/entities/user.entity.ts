@@ -42,7 +42,7 @@ export class UserEntity {
   @IsString()
   @Column({ nullable: true })
   birth: string;
-  
+
   @IsOptional()
   @IsString()
   @Column({ nullable: true })
@@ -69,4 +69,7 @@ export class UserEntity {
 
   @OneToMany('Question', 'createdBy')
   questions: any[];
+
+  @OneToMany('Post', 'author')
+  posts: any[];
 }

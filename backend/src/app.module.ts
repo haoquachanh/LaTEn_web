@@ -10,7 +10,9 @@ import { HealthModule } from '@modules/health/health.module';
 import { AppConfigService } from './config/app-config.service';
 import { ExaminationModule } from '@modules/examination/examination.module';
 import { ExaminationAttemptModule } from '@modules/examination-attempt/examination-attempt.module';
+import { PostModule } from '@modules/post/post.module';
 import { APP_INTERCEPTOR } from '@nestjs/core';
+import { SeedsModule } from './seeds/seeds.module';
 
 @Module({
   imports: [
@@ -26,6 +28,8 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
     ExaminationModule,
     CommentModule,
     ExaminationAttemptModule,
+    PostModule,
+    SeedsModule,
   ],
   controllers: [],
   providers: [

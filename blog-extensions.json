@@ -1,0 +1,15 @@
+{
+  "name": "laten-blog-extensions",
+  "version": "1.0.0",
+  "description": "Các dependencies cần thiết cho chức năng blog",
+  "main": "index.js",
+  "dependencies": {
+    "@tinymce/tinymce-react": "^4.3.0",
+    "tinymce": "^6.7.0"
+  },
+  "scripts": {
+    "install-deps": "npm install"
+  },
+  "author": "",
+  "license": "MIT"
+}
