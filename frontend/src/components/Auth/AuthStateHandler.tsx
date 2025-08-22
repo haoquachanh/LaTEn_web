@@ -39,7 +39,7 @@ export default function AuthStateHandler() {
         );
       }
     }
-  }, []);
+  }, [loading, loggedIn, refreshUser]);
 
   useEffect(() => {
     if (loading) return;

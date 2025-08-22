@@ -105,9 +105,9 @@ export default function PresetForm({ preset, onSave, onCancel, isEdit = false }:
         type: preset.type || 'multiple-choice',
         content: preset.content || 'reading',
         level: preset.level || 'medium',
-        totalQuestions: preset.totalQuestions,
-        durationSeconds: preset.durationSeconds,
-        isActive: preset.isActive,
+        totalQuestions: preset.totalQuestions || 10,
+        durationSeconds: preset.durationSeconds || 1800,
+        isActive: preset.isActive || true,
         isPublic: preset.isPublic || false,
         config: preset.config || {
           randomize: false,

@@ -5,6 +5,25 @@
  */
 
 /**
+ * Định nghĩa cấu trúc cho loại bài thi
+ */
+export interface ExamType {
+  id: string;
+  label: string;
+  icon: string;
+  description: string;
+}
+
+/**
+ * Định nghĩa cấu trúc cho môn học/chủ đề
+ */
+export interface Subject {
+  id: string;
+  label: string;
+  color: string;
+}
+
+/**
  * Định nghĩa cấu trúc cho một câu hỏi trong bài thi
  */
 export interface Question {
@@ -34,12 +53,12 @@ export interface PresetExam {
   id: string | number;
   title: string;
   description: string;
-  totalQuestions: number;
-  durationSeconds: number;
-  isActive: boolean;
+  totalQuestions?: number;
+  durationSeconds?: number;
+  isActive?: boolean;
   type?: string;
   content?: string;
-  questions?: number[] | any[];
+  questions?: number | number[] | any[];
   questionsCount?: number;
   time?: number;
   level?: string;

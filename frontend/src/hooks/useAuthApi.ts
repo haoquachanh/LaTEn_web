@@ -92,10 +92,10 @@ export function useRefreshToken() {
       const response = await trigger({ refreshToken: refreshTokenValue });
 
       // Update stored tokens
-      localStorage.setItem(TOKEN_KEY, response.accessToken);
+      localStorage.setItem(TOKEN_KEY, response.access_token);
 
-      if (response.refreshToken) {
-        localStorage.setItem(REFRESH_TOKEN_KEY, response.refreshToken);
+      if (response.refresh_token) {
+        localStorage.setItem(REFRESH_TOKEN_KEY, response.refresh_token);
       }
 
       return response;

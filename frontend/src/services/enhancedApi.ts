@@ -192,10 +192,19 @@ export const createEnhancedApiClient = (config: {
 
       // Convert to standardized error format
       const apiError: ApiErrorResponse = {
-        message: error.response?.data?.message || 'An unexpected error occurred',
+        message:
+          error.response?.data && typeof error.response.data === 'object' && 'message' in error.response.data
+            ? String(error.response.data.message)
+            : 'An unexpected error occurred',
         status: error.response?.status || 0,
-        code: error.response?.data?.code,
-        errors: error.response?.data?.errors,
+        code:
+          error.response?.data && typeof error.response.data === 'object' && 'code' in error.response.data
+            ? String(error.response.data.code)
+            : undefined,
+        errors:
+          error.response?.data && typeof error.response.data === 'object' && 'errors' in error.response.data
+            ? (error.response.data.errors as Record<string, string[]>)
+            : undefined,
       };
 
       // Determine error type
@@ -220,7 +229,7 @@ export const createEnhancedApiClient = (config: {
   // Wrap API methods with queue
   const originalRequest = apiClient.request;
   apiClient.request = function <T = any, R = AxiosResponse<T>>(config: AxiosRequestConfig): Promise<R> {
-    return requestQueue.add<R>(() => originalRequest.call(this, config));
+    return requestQueue.add(() => originalRequest.call(this, config)) as Promise<R>;
   };
 
   return apiClient;

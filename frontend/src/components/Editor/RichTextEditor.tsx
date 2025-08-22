@@ -23,9 +23,10 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   return (
     <Editor
       apiKey="your-api-key" // Đăng ký miễn phí tại https://www.tiny.cloud/
-      onInit={(evt, editor) => (editorRef.current = editor)}
+      onInit={(evt: any, editor: any) => (editorRef.current = editor)}
       initialValue={initialValue}
-      onEditorChange={(newContent) => onChange(newContent)}
+      onEditorChange={(newContent: string) => onChange(newContent)}
+      disabled={disabled}
       init={{
         height,
         menubar: true,
@@ -57,8 +58,8 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
           'removeformat | image media link codesample | help',
         content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }',
         placeholder,
-        images_upload_handler: function (blobInfo, progress) {
-          return new Promise((resolve, reject) => {
+        images_upload_handler: function (blobInfo: any, progress: (percent: number) => void) {
+          return new Promise<string>((resolve, reject) => {
             // Tại đây bạn có thể triển khai logic upload ảnh lên server
             // Và trả về URL của ảnh đã upload
 
@@ -71,7 +72,6 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         },
         file_picker_types: 'image',
         automatic_uploads: true,
-        readonly: disabled,
       }}
     />
   );

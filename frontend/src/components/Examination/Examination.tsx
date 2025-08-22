@@ -217,8 +217,8 @@ const Examination: React.FC = () => {
       const config = {
         type: preset.type || 'multiple',
         content: preset.content || 'reading',
-        timeInMinutes: preset.time || Math.ceil(preset.durationSeconds / 60),
-        questionsCount: preset.questions || preset.totalQuestions,
+        timeInMinutes: preset.time || (preset.durationSeconds ? Math.ceil(preset.durationSeconds / 60) : 30),
+        questionsCount: typeof preset.questions === 'number' ? preset.questions : preset.totalQuestions || 10,
         level: preset.level || 'medium', // Default level for presets
       };
 
@@ -241,9 +241,10 @@ const Examination: React.FC = () => {
         examination.id = Number(preset.id);
         examination.title = preset.title;
         examination.description = preset.description;
-        examination.duration = Math.ceil(preset.durationSeconds / 60);
-        examination.durationSeconds = preset.durationSeconds;
-        examination.totalQuestions = preset.totalQuestions;
+        examination.duration = preset.time || (preset.durationSeconds ? Math.ceil(preset.durationSeconds / 60) : 30);
+        examination.durationSeconds = preset.durationSeconds || (preset.time ? preset.time * 60 : 1800);
+        examination.totalQuestions =
+          preset.totalQuestions || (typeof preset.questions === 'number' ? preset.questions : 10);
       } else {
         // Sử dụng ID thực tế của preset để khởi tạo bài thi
         console.log('Using preset ID for examination:', preset.id);
