@@ -85,7 +85,6 @@ export function ExaminationProvider({ children }: Props) {
   const [answers, setAnswers] = useState<Record<string, string | number>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [result, setResult] = useState<ExaminationResult | null>(null);
-  const [timerId, setTimerId] = useState<NodeJS.Timeout | null>(null);
 
   // Hooks
   const router = useRouter();
@@ -118,31 +117,33 @@ export function ExaminationProvider({ children }: Props) {
   }, []);
 
   /**
-   * Countdown timer
+   * Countdown timer with proper cleanup
    */
   useEffect(() => {
+    let intervalId: NodeJS.Timeout | null = null;
+
     if (timeRemaining > 0 && currentExam && !result) {
-      const timer = setTimeout(() => setTimeRemaining(timeRemaining - 1), 1000);
-      setTimerId(timer);
-      return () => clearTimeout(timer);
+      intervalId = setInterval(() => {
+        setTimeRemaining((prev) => {
+          if (prev <= 1) {
+            // Timer reached zero, will trigger auto-submit in another effect
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
     }
 
+    // Cleanup function - always clear interval when dependencies change
     return () => {
-      if (timerId) clearTimeout(timerId);
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
     };
-  }, [timeRemaining, currentExam, result, timerId]);
+  }, [timeRemaining, currentExam, result]);
 
   /**
-   * Clean up timer when component unmounts
-   */
-  useEffect(() => {
-    return () => {
-      if (timerId) clearTimeout(timerId);
-    };
-  }, [timerId]);
-
-  /**
-   * Load examination details
+   * Auto-submit effect when time runs out
    */
   const loadExamination = useCallback(
     async (id: number | string) => {
@@ -357,12 +358,7 @@ export function ExaminationProvider({ children }: Props) {
     setAnswers({});
     setIsSubmitting(false);
     setResult(null);
-
-    if (timerId) {
-      clearTimeout(timerId);
-      setTimerId(null);
-    }
-  }, [timerId]);
+  }, []);
 
   const value = {
     currentExam,

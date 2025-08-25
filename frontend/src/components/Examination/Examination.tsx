@@ -78,36 +78,27 @@ const Examination: React.FC = () => {
   useEffect(() => {
     const fetchPresetExams = async () => {
       try {
-        console.log('Fetching preset exams from API...');
-
         // Sử dụng dữ liệu mẫu trong môi trường development nếu cần
         if (env.isDevelopment && process.env.NEXT_PUBLIC_USE_SAMPLE_DATA === 'true') {
-          console.log('Using sample exam templates in development mode');
           // Import từ sampleTemplates trong components/Examination/data/sampleTemplates
           const { sampleTemplates } = await import('./data/sampleTemplates');
-          console.log('Sample templates loaded:', sampleTemplates);
           setPresetExams(sampleTemplates);
           return;
         }
 
         // Import từ services/examination.service.ts
         const presets = await examinationService.getPresetExaminations();
-        console.log('Preset exams received:', presets);
 
         if (presets && presets.length > 0) {
           setPresetExams(presets);
         } else if (env.isDevelopment) {
           // Nếu không có dữ liệu thực, sử dụng dữ liệu mẫu trong development
-          console.log('No preset exams from API, using sample data instead');
           const { sampleTemplates } = await import('./data/sampleTemplates');
           setPresetExams(sampleTemplates);
         }
       } catch (error) {
-        console.error('Failed to fetch preset exams:', error);
-
         // Nếu lỗi trong development, sử dụng dữ liệu mẫu
         if (env.isDevelopment) {
-          console.log('Error fetching preset exams, using sample data instead');
           const { sampleTemplates } = await import('./data/sampleTemplates');
           setPresetExams(sampleTemplates);
         }
@@ -127,7 +118,6 @@ const Examination: React.FC = () => {
   }) => {
     try {
       setIsLoading(true);
-      console.log('Starting custom examination with config:', config);
 
       // Set exam in progress in the global context
       startExam();
@@ -143,7 +133,6 @@ const Examination: React.FC = () => {
       // For this implementation, use API at http://localhost:3001/api/examinations/11
       // as requested by the user
       const examinationId = '11'; // Using the ID from the API sample provided
-      console.log('Using examination ID:', examinationId);
 
       // Fetch examination from backend API
       const examination = await examinationService.startExamination(examinationId);
@@ -151,8 +140,6 @@ const Examination: React.FC = () => {
 
       // Use questions from the API response
       if (examination && examination.questions && examination.questions.length > 0) {
-        console.log('Questions received from API for custom exam:', examination.questions);
-
         // Transform API questions to frontend format
         const transformedQuestions = examination.questions.map((q: any) => {
           // Generate options based on question type
@@ -234,7 +221,6 @@ const Examination: React.FC = () => {
 
       // Trong môi trường development, sử dụng dữ liệu mẫu nếu cần
       if (env.isDevelopment && (process.env.NEXT_PUBLIC_USE_SAMPLE_DATA === 'true' || preset.id === '1')) {
-        console.log('Using sample examination data in development mode');
         examination = sampleExamination;
 
         // Cập nhật ID để khớp với preset được chọn
@@ -247,7 +233,6 @@ const Examination: React.FC = () => {
           preset.totalQuestions || (typeof preset.questions === 'number' ? preset.questions : 10);
       } else {
         // Sử dụng ID thực tế của preset để khởi tạo bài thi
-        console.log('Using preset ID for examination:', preset.id);
         // Fetch examination from backend API with the actual preset ID
         examination = await examinationService.startExamination(preset.id);
       }
@@ -256,8 +241,6 @@ const Examination: React.FC = () => {
 
       // Use questions from the examination
       if (examination && examination.questions && examination.questions.length > 0) {
-        console.log('Questions from examination:', examination.questions);
-
         // Kiểm tra xem questions đã có định dạng đúng chưa
         // Nếu là dữ liệu mẫu, có thể đã có định dạng đúng rồi
         const transformedQuestions = examination.questions.map((q: any) => {
@@ -324,7 +307,6 @@ const Examination: React.FC = () => {
   const handleSubmitExam = async (answers: { [key: string]: string }) => {
     try {
       setUserAnswers(answers);
-      console.log('Submitting exam with answers:', answers);
 
       // End exam in global context
       endExam();
@@ -344,12 +326,9 @@ const Examination: React.FC = () => {
 
         try {
           // Submit to API - use completeExamination from examinationAttemptService
-          console.log('Submitting examination to API:', submission);
 
           // Môi trường development nhưng tính toán kết quả thực tế thay vì sử dụng dữ liệu mẫu
           if (env.isDevelopment && (process.env.NEXT_PUBLIC_USE_SAMPLE_DATA === 'true' || presetId === '1')) {
-            console.log('Calculating actual results from user answers in development mode');
-
             // Tính toán kết quả thực tế từ câu trả lời
             const totalQuestions = selectedQuestions.length;
             const answeredQuestions = Object.keys(answers).length;
@@ -394,7 +373,6 @@ const Examination: React.FC = () => {
 
           // Complete the examination
           const result = await examinationService.completeExamination(presetId);
-          console.log('API submission result:', result);
 
           if (result) {
             // Set the results
@@ -424,7 +402,6 @@ const Examination: React.FC = () => {
         processExamLocally(answers);
       }
     } catch (error) {
-      console.error('Error in handleSubmitExam:', error);
       alert('An error occurred while submitting your exam. Please try again.');
     }
   };
@@ -513,34 +490,22 @@ const Examination: React.FC = () => {
               handleStartCustomExam(examConfig);
             } else {
               // Tìm preset đã chọn dựa trên ID, kiểm tra presetExams để đảm bảo dữ liệu đã được tải
-              console.log('Looking for preset ID:', selectedPresetId, 'in presetExams:', presetExams);
-
               if (!selectedPresetId) {
-                console.error('No preset ID selected');
                 alert('Please select a preset exam first');
                 return;
               }
 
               if (!presetExams || presetExams.length === 0) {
-                console.error('No preset exams loaded');
                 alert('No preset exams available. Please try again later.');
                 return;
               }
-
-              // In ra các ID trong presetExams để debug
-              console.log(
-                'Available preset IDs:',
-                presetExams.map((p) => ({ id: p.id, idType: typeof p.id })),
-              );
 
               // Sử dụng == thay vì === để so sánh giữa string và number
               const selectedPreset = presetExams.find((p) => String(p.id) === String(selectedPresetId));
 
               if (selectedPreset) {
-                console.log('Found selected preset:', selectedPreset);
                 handleStartPresetExam(selectedPreset);
               } else {
-                console.error(`No preset exam found with ID: ${selectedPresetId}`);
                 alert('Cannot find the selected preset exam. Please try again.');
               }
             }

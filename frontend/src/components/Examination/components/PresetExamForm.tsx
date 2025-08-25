@@ -30,7 +30,6 @@ const PresetExamForm: React.FC<PresetExamFormProps> = ({
     try {
       // Use preset exams from props if available
       if (propPresets && propPresets.length > 0) {
-        console.log('Using preset exams from props:', propPresets);
         setPresetExams(propPresets);
         setError(null);
         setLoading(false);
@@ -41,7 +40,6 @@ const PresetExamForm: React.FC<PresetExamFormProps> = ({
 
       // Always use sample data in development mode if no props are provided
       if (env.isDevelopment) {
-        console.log('Using sample preset exams in development mode (no props provided)');
         setPresetExams(samplePresetExams);
         setError(null);
         setLoading(false);
@@ -56,10 +54,8 @@ const PresetExamForm: React.FC<PresetExamFormProps> = ({
         localStorage.getItem('accessToken');
 
       if (!token) {
-        console.warn('Authentication token not found. You need to log in to view preset exams.');
         // In development mode, use sample data instead of showing an error
         if (env.isDevelopment) {
-          console.log('Using sample exam templates since no token is available');
           setPresetExams(sampleTemplates);
           setError(null);
         } else {
@@ -71,13 +67,11 @@ const PresetExamForm: React.FC<PresetExamFormProps> = ({
 
       // Call API to get list of exam templates
       const response = await examinationAttemptService.getExamTemplates({ activeOnly: true });
-      console.log('Preset exams response:', response);
 
       if (response.data && response.data.length > 0) {
         setPresetExams(response.data);
         setError(null);
       } else {
-        console.log('No exam templates returned from API, using sample data instead');
         // If API returns no data, use sample data in development environment
         if (env.isDevelopment) {
           setPresetExams(sampleTemplates);
@@ -87,15 +81,11 @@ const PresetExamForm: React.FC<PresetExamFormProps> = ({
         }
       }
     } catch (err: any) {
-      console.error('Failed to fetch preset exams:', err);
-
       // Show detailed errors for easier debugging
       if (err.response) {
-        console.error('Response error:', err.response.status, err.response.data);
         if (err.response.status === 401) {
           // In development mode, use sample data instead of showing an error
           if (env.isDevelopment) {
-            console.log('Using sample exam templates since authentication failed');
             setPresetExams(sampleTemplates);
             setError(null);
           } else {
@@ -104,7 +94,6 @@ const PresetExamForm: React.FC<PresetExamFormProps> = ({
         } else {
           // In development mode, use sample data instead of showing an error
           if (env.isDevelopment) {
-            console.log('Using sample exam templates due to API error');
             setPresetExams(sampleTemplates);
             setError(null);
           } else {
@@ -114,7 +103,6 @@ const PresetExamForm: React.FC<PresetExamFormProps> = ({
       } else {
         // In development mode, use sample data instead of showing an error
         if (env.isDevelopment) {
-          console.log('Using sample exam templates due to API error');
           setPresetExams(sampleTemplates);
           setError(null);
         } else {
