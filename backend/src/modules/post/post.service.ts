@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Post, PostType } from '../../entities/post.entity';
 import { PostTag } from '../../entities/post-tag.entity';
+import { PostLike } from '../../entities/post-like.entity';
 import { UserEntity } from '../../entities/user.entity';
 import { Comment, CommentType } from '../../entities/comment.entity';
 import { CreatePostDto } from './dtos/create-post.dto';
@@ -20,6 +21,8 @@ export class PostService {
     private postRepository: Repository<Post>,
     @InjectRepository(PostTag)
     private tagRepository: Repository<PostTag>,
+    @InjectRepository(PostLike)
+    private postLikeRepository: Repository<PostLike>,
     @InjectRepository(UserEntity)
     private userRepository: Repository<UserEntity>,
     @InjectRepository(Comment)
@@ -36,11 +39,11 @@ export class PostService {
       throw new NotFoundException('User not found');
     }
 
-    // Create post entity
     const post = this.postRepository.create({
       ...createPostDto,
       userId,
       author: user,
+      isActive: true,
     });
 
     // Handle tags if provided
@@ -56,18 +59,16 @@ export class PostService {
     return this.formatPostResponse(post);
   }
 
-  async getAllPosts(queryParams: GetPostsDto): Promise<PaginatedResponse<PostResponse>> {
+  async getAllPosts(queryParams: GetPostsDto, userId?: number): Promise<PaginatedResponse<PostResponse>> {
     const { page = 1, limit = 10, type, tagId, search } = queryParams;
     const skip = (page - 1) * limit;
 
-    // Build query
     const query = this.postRepository
       .createQueryBuilder('post')
       .leftJoinAndSelect('post.author', 'author')
       .leftJoinAndSelect('post.tags', 'tags')
       .where('post.isActive = :isActive', { isActive: true });
 
-    // Add filters if provided
     if (type) {
       query.andWhere('post.type = :type', { type });
     }
@@ -82,13 +83,10 @@ export class PostService {
       });
     }
 
-    // Get total count for pagination
     const total = await query.getCount();
 
-    // Get paginated posts
     const posts = await query.orderBy('post.createdAt', 'DESC').skip(skip).take(limit).getMany();
 
-    // Get comment counts for each post
     const postsWithCommentCounts = await Promise.all(
       posts.map(async (post) => {
         const commentCount = await this.commentRepository.count({
@@ -99,11 +97,18 @@ export class PostService {
           },
         });
 
-        return { ...post, commentCount };
+        let isLikedByCurrentUser = false;
+        if (userId) {
+          const existingLike = await this.postLikeRepository.findOne({
+            where: { userId, postId: post.id },
+          });
+          isLikedByCurrentUser = !!existingLike;
+        }
+
+        return { ...post, commentCount, isLikedByCurrentUser };
       }),
     );
 
-    // Format response
     const items = postsWithCommentCounts.map((post) => this.formatPostResponse(post));
 
     return {
@@ -115,7 +120,7 @@ export class PostService {
     };
   }
 
-  async getPostById(id: number): Promise<PostDetailResponse> {
+  async getPostById(id: number, userId?: number): Promise<PostDetailResponse> {
     const post = await this.postRepository.findOne({
       where: { id, isActive: true },
       relations: ['author', 'tags'],
@@ -125,7 +130,6 @@ export class PostService {
       throw new NotFoundException('Post not found');
     }
 
-    // Lấy comments theo targetId và type
     const comments = await this.commentRepository.find({
       where: {
         targetId: post.id,
@@ -136,15 +140,24 @@ export class PostService {
       order: { createdAt: 'DESC' },
     });
 
-    // Gán comments vào post
     post.comments = comments;
 
-    // Increment view count
     post.views += 1;
     await this.postRepository.save(post);
 
-    // Return formatted response
-    return this.formatPostDetailResponse(post);
+    let isLikedByCurrentUser = false;
+    if (userId) {
+      const like = await this.postLikeRepository.findOne({
+        where: { userId, postId: id },
+      });
+      isLikedByCurrentUser = !!like;
+    }
+
+    const detailResponse = this.formatPostDetailResponse(post);
+    return {
+      ...detailResponse,
+      isLikedByCurrentUser,
+    };
   }
 
   async updatePost(userId: number, postId: number, updatePostDto: UpdatePostDto): Promise<PostResponse> {
@@ -205,7 +218,7 @@ export class PostService {
     await this.postRepository.save(post);
   }
 
-  async likePost(userId: number, postId: number): Promise<{ likes: number }> {
+  async likePost(userId: number, postId: number): Promise<{ likes: number; isLiked: boolean; message: string }> {
     const post = await this.postRepository.findOne({
       where: { id: postId, isActive: true },
     });
@@ -214,13 +227,143 @@ export class PostService {
       throw new NotFoundException('Post not found');
     }
 
-    // Increment like count
-    // In a real application, you would track which users liked which posts
-    // to prevent multiple likes from the same user
+    const existingLike = await this.postLikeRepository.findOne({
+      where: { userId, postId },
+    });
+
+    if (existingLike) {
+      return {
+        likes: post.likes,
+        isLiked: true,
+        message: 'You already liked this post',
+      };
+    }
+
+    const like = this.postLikeRepository.create({
+      userId,
+      postId,
+    });
+    await this.postLikeRepository.save(like);
+
     post.likes += 1;
     await this.postRepository.save(post);
 
-    return { likes: post.likes };
+    return {
+      likes: post.likes,
+      isLiked: true,
+      message: 'Post liked successfully',
+    };
+  }
+
+  async unlikePost(userId: number, postId: number): Promise<{ likes: number; isLiked: boolean }> {
+    const post = await this.postRepository.findOne({
+      where: { id: postId, isActive: true },
+    });
+
+    if (!post) {
+      throw new NotFoundException('Post not found');
+    }
+
+    const existingLike = await this.postLikeRepository.findOne({
+      where: { userId, postId },
+    });
+
+    if (!existingLike) {
+      return {
+        likes: post.likes,
+        isLiked: false,
+      };
+    }
+
+    await this.postLikeRepository.remove(existingLike);
+
+    if (post.likes > 0) {
+      post.likes -= 1;
+      await this.postRepository.save(post);
+    }
+
+    return {
+      likes: post.likes,
+      isLiked: false,
+    };
+  }
+
+  async addComment(userId: number, postId: number, content: string): Promise<any> {
+    const post = await this.postRepository.findOne({
+      where: { id: postId, isActive: true },
+    });
+
+    if (!post) {
+      throw new NotFoundException('Post not found');
+    }
+
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const comment = this.commentRepository.create({
+      content,
+      type: CommentType.POST,
+      targetId: postId,
+      author: user,
+      isActive: true,
+    });
+
+    await this.commentRepository.save(comment);
+
+    return {
+      id: comment.id,
+      content: comment.content,
+      createdAt: comment.createdAt,
+      author: {
+        id: user.id,
+        fullname: user.fullname,
+        username: user.username,
+        email: user.email,
+      },
+      replies: [],
+    };
+  }
+
+  async getComments(postId: number): Promise<any[]> {
+    const comments = await this.commentRepository.find({
+      where: {
+        targetId: postId,
+        type: CommentType.POST,
+        isActive: true,
+      },
+      relations: ['author', 'replies', 'replies.author'],
+      order: { createdAt: 'DESC' },
+    });
+
+    return comments.map((comment) => ({
+      id: comment.id,
+      content: comment.content,
+      createdAt: comment.createdAt,
+      updatedAt: comment.updatedAt,
+      author: {
+        id: comment.author.id,
+        fullname: comment.author.fullname,
+        username: comment.author.username,
+        email: comment.author.email,
+      },
+      replies:
+        comment.replies?.map((reply) => ({
+          id: reply.id,
+          content: reply.content,
+          createdAt: reply.createdAt,
+          author: {
+            id: reply.author.id,
+            fullname: reply.author.fullname,
+            username: reply.author.username,
+            email: reply.author.email,
+          },
+        })) || [],
+    }));
   }
 
   // Tag management
@@ -298,6 +441,7 @@ export class PostService {
           name: tag.name,
         })) || [],
       commentCount: post.commentCount || post.comments?.length || 0,
+      isLikedByCurrentUser: post.isLikedByCurrentUser || false,
     };
   }
 

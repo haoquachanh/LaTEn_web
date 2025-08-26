@@ -1,5 +1,6 @@
 import { Controller, Get, Post, Patch, Delete, Body, Param, Query, UseGuards, Req, HttpStatus } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { JwtOptionalGuard } from '../auth/guards/jwt-optional.guard';
 import { CreatePostDto } from './dtos/create-post.dto';
 import { UpdatePostDto } from './dtos/update-post.dto';
 import { GetPostsDto } from './dtos/get-posts.dto';
@@ -26,8 +27,10 @@ export class PostController {
   }
 
   @Get()
-  async getAllPosts(@Query() queryParams: GetPostsDto): Promise<any> {
-    const posts = await this.postService.getAllPosts(queryParams);
+  @UseGuards(JwtOptionalGuard)
+  async getAllPosts(@Req() req, @Query() queryParams: GetPostsDto): Promise<any> {
+    const userId = req.user?.id;
+    const posts = await this.postService.getAllPosts(queryParams, userId);
     return {
       statusCode: HttpStatus.OK,
       message: 'Posts retrieved successfully',
@@ -36,8 +39,10 @@ export class PostController {
   }
 
   @Get(':id')
-  async getPostById(@Param('id') id: number): Promise<any> {
-    const post = await this.postService.getPostById(id);
+  @UseGuards(JwtOptionalGuard)
+  async getPostById(@Req() req, @Param('id') id: number): Promise<any> {
+    const userId = req.user?.id;
+    const post = await this.postService.getPostById(id, userId);
     return {
       statusCode: HttpStatus.OK,
       message: 'Post retrieved successfully',
@@ -75,8 +80,42 @@ export class PostController {
     const result = await this.postService.likePost(userId, id);
     return {
       statusCode: HttpStatus.OK,
-      message: 'Post liked successfully',
+      message: result.message,
       data: result,
+    };
+  }
+
+  @Delete(':id/like')
+  @UseGuards(JwtAuthGuard)
+  async unlikePost(@Req() req, @Param('id') id: number): Promise<any> {
+    const userId = req.user.id;
+    const result = await this.postService.unlikePost(userId, id);
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Post unliked successfully',
+      data: result,
+    };
+  }
+
+  @Post(':id/comments')
+  @UseGuards(JwtAuthGuard)
+  async addComment(@Req() req, @Param('id') id: number, @Body() body: { content: string }): Promise<any> {
+    const userId = req.user.id;
+    const comment = await this.postService.addComment(userId, id, body.content);
+    return {
+      statusCode: HttpStatus.CREATED,
+      message: 'Comment added successfully',
+      data: comment,
+    };
+  }
+
+  @Get(':id/comments')
+  async getComments(@Param('id') id: number): Promise<any> {
+    const comments = await this.postService.getComments(id);
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Comments retrieved successfully',
+      data: comments,
     };
   }
 

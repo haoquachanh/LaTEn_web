@@ -20,9 +20,11 @@ export interface PostResponse {
     name: string;
   }>;
   commentCount: number;
+  isLikedByCurrentUser?: boolean;
 }
 
 export interface PostDetailResponse extends PostResponse {
+  isLikedByCurrentUser?: boolean;
   comments: Array<{
     id: number;
     content: string;

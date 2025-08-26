@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
+import { useLocale } from 'next-intl';
 import Link from 'next/link';
 import Image from 'next/image';
-import { postApi, PostResponse, PaginatedPostsResponse } from '@/services/api/postApi';
+import { postService, type Post as PostType } from '@/services/api/post.service';
 
-// Adapter để chuyển đổi từ API response sang định dạng frontend
 interface PostUI {
   id: number;
   title: string;
@@ -17,81 +18,162 @@ interface PostUI {
   likes: number;
   comments: number;
   tags: string[];
+  isLikedByCurrentUser?: boolean;
 }
 
-export default function Posts() {
-  // State for managing posts
+interface PostsProps {
+  onRefresh?: () => void;
+}
+
+export default function Posts({ onRefresh }: PostsProps = {}) {
+  const router = useRouter();
+  const locale = useLocale();
+
   const [posts, setPosts] = useState<PostUI[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [initialLoading, setInitialLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState<number>(1);
-  const [totalPages, setTotalPages] = useState<number>(1);
+  const [hasMore, setHasMore] = useState<boolean>(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [likingPostId, setLikingPostId] = useState<number | null>(null);
 
-  // Fetch posts on component mount
-  useEffect(() => {
-    const fetchPosts = async () => {
+  const observerTarget = useRef<HTMLDivElement>(null);
+
+  const checkAuth = useCallback(() => {
+    const token = localStorage.getItem('access_token');
+    setIsLoggedIn(!!token);
+  }, []);
+
+  const fetchPosts = useCallback(
+    async (pageNumber: number, isInitial = false) => {
+      if (loading || (!hasMore && !isInitial)) return;
+
       try {
-        setLoading(true);
-        const response = await postApi.getPosts({ page, limit: 10 });
+        if (isInitial) {
+          setInitialLoading(true);
+        } else {
+          setLoading(true);
+        }
 
-        // Chuyển đổi từ API response sang định dạng UI
+        const response = await postService.getPosts({ page: pageNumber, limit: 10 });
+
         const uiPosts: PostUI[] = response.items.map((post) => ({
           id: post.id,
           title: post.title,
           content: post.content,
           img:
-            post.imageUrl ||
-            'https://images.unsplash.com/photo-1536440136628-849c177e76a1?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80',
+            post.imageUrl &&
+            post.imageUrl.trim().length > 3 &&
+            (post.imageUrl.startsWith('http://') || post.imageUrl.startsWith('https://'))
+              ? post.imageUrl
+              : '',
           created: new Date(post.createdAt),
           authorName: post.author.fullname || post.author.username,
-          authorAvatar: `https://ui-avatars.com/api/?name=${post.author.fullname || post.author.username}&background=random`,
+          authorAvatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(post.author.fullname || post.author.username)}&background=random`,
           likes: post.likes,
           comments: post.commentCount,
           tags: post.tags.map((tag) => tag.name),
+          isLikedByCurrentUser: post.isLikedByCurrentUser || false,
         }));
 
-        setPosts(uiPosts);
-        setTotalPages(response.totalPages);
+        if (isInitial) {
+          setPosts(uiPosts);
+        } else {
+          setPosts((prev) => [...prev, ...uiPosts]);
+        }
+
+        setHasMore(pageNumber < response.totalPages);
+        setError(null);
       } catch (err) {
         console.error('Failed to fetch posts:', err);
         setError('Failed to load posts. Please try again later.');
-
-        // Fallback to mock data if API fails
-        setPosts([
-          {
-            id: 1,
-            title: 'New movie is released!',
-            content:
-              'Click the button to watch on Jetflix app. Our latest movie features stunning visuals and an engaging storyline that will keep you at the edge of your seat!',
-            img: 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80',
-            authorName: 'Emma Johnson',
-            authorAvatar: 'https://ui-avatars.com/api/?name=Emma+Johnson&background=random',
-            created: new Date(),
-            likes: 24,
-            comments: 8,
-            tags: ['Movies', 'Entertainment'],
-          },
-          {
-            id: 2,
-            title: 'New language course available',
-            content:
-              'Enroll now to learn a new language with our interactive platform. Our courses are designed with cutting-edge pedagogy to ensure you learn effectively and efficiently.',
-            img: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80',
-            authorName: 'David Chen',
-            authorAvatar: 'https://ui-avatars.com/api/?name=David+Chen&background=random',
-            created: new Date(Date.now() - 86400000),
-            likes: 42,
-            comments: 15,
-            tags: ['Education', 'Languages', 'Learning'],
-          },
-        ]);
+        if (isInitial) {
+          setPosts([]);
+        }
       } finally {
         setLoading(false);
+        setInitialLoading(false);
+      }
+    },
+    [loading, hasMore],
+  );
+
+  useEffect(() => {
+    checkAuth();
+    fetchPosts(1, true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loading) {
+          setPage((prev) => {
+            const nextPage = prev + 1;
+            fetchPosts(nextPage);
+            return nextPage;
+          });
+        }
+      },
+      { threshold: 0.1 },
+    );
+
+    const currentTarget = observerTarget.current;
+    if (currentTarget) {
+      observer.observe(currentTarget);
+    }
+
+    return () => {
+      if (currentTarget) {
+        observer.unobserve(currentTarget);
       }
     };
+  }, [hasMore, loading, fetchPosts]);
 
-    fetchPosts();
-  }, [page]);
+  async function handleLikePost(postId: number, isLiked: boolean) {
+    if (!isLoggedIn) {
+      router.push(`/${locale}/login`);
+      return;
+    }
+
+    setLikingPostId(postId);
+
+    setPosts((prev) =>
+      prev.map((post) =>
+        post.id === postId
+          ? {
+              ...post,
+              isLikedByCurrentUser: !isLiked,
+              likes: isLiked ? post.likes - 1 : post.likes + 1,
+            }
+          : post,
+      ),
+    );
+
+    try {
+      if (isLiked) {
+        await postService.unlikePost(postId);
+      } else {
+        await postService.likePost(postId);
+      }
+    } catch (error) {
+      console.error('Error toggling like:', error);
+      setPosts((prev) =>
+        prev.map((post) =>
+          post.id === postId
+            ? {
+                ...post,
+                isLikedByCurrentUser: isLiked,
+                likes: isLiked ? post.likes + 1 : post.likes - 1,
+              }
+            : post,
+        ),
+      );
+    } finally {
+      setLikingPostId(null);
+    }
+  }
 
   // Format date for better display
   const formatDate = (date: Date) => {
@@ -121,8 +203,8 @@ export default function Posts() {
 
   return (
     <div className="flex flex-col w-full gap-4">
-      {loading ? (
-        // Loading skeleton
+      {initialLoading ? (
+        // Loading skeleton - only show on first load
         Array(3)
           .fill(0)
           .map((_, i) => (
@@ -189,7 +271,7 @@ export default function Posts() {
         // Post list
         posts.map((post: PostUI) => (
           <div
-            className="card bg-base-100 shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden"
+            className="card bg-base-100 shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden border border-base-300"
             key={`post-${post.id}`}
           >
             <div className="card-body p-4 lg:p-5">
@@ -238,7 +320,7 @@ export default function Posts() {
                     </div>
 
                     {/* Image section - responsive size based on screen width */}
-                    {post.img && (
+                    {post.img && post.img.length > 0 && (
                       <div className="flex-shrink-0">
                         <Image
                           src={post.img}
@@ -254,11 +336,19 @@ export default function Posts() {
                   {/* Actions */}
                   <div className="flex justify-between items-center mt-4">
                     <div className="flex items-center gap-3">
-                      <span className="flex items-center gap-1 text-sm lg:text-base text-base-content/60">
+                      <button
+                        onClick={() => handleLikePost(post.id, post.isLikedByCurrentUser || false)}
+                        disabled={likingPostId === post.id}
+                        className={`flex items-center gap-1 text-sm lg:text-base transition-colors ${
+                          post.isLikedByCurrentUser
+                            ? 'text-red-500 hover:text-red-600'
+                            : 'text-base-content/60 hover:text-red-500'
+                        } ${likingPostId === post.id ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                      >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
                           className="h-4 w-4 lg:h-5 lg:w-5"
-                          fill="none"
+                          fill={post.isLikedByCurrentUser ? 'currentColor' : 'none'}
                           viewBox="0 0 24 24"
                           stroke="currentColor"
                         >
@@ -270,7 +360,7 @@ export default function Posts() {
                           />
                         </svg>
                         {post.likes}
-                      </span>
+                      </button>
                       <span className="flex items-center gap-1 text-sm lg:text-base text-base-content/60">
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -289,7 +379,7 @@ export default function Posts() {
                         {post.comments}
                       </span>
                     </div>
-                    <Link href={`/community/posts/${post.id}`} className="btn btn-primary btn-xs lg:btn-sm">
+                    <Link href={`/${locale}/community/posts/${post.id}`} className="btn btn-primary btn-xs lg:btn-sm">
                       Read more
                     </Link>
                   </div>
@@ -300,30 +390,10 @@ export default function Posts() {
         ))
       )}
 
-      {/* Pagination controls */}
-      {!loading && !error && totalPages > 1 && (
-        <div className="flex justify-center mt-6">
-          <div className="join">
-            <button
-              className="join-item btn"
-              onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-              disabled={page === 1}
-            >
-              «
-            </button>
-            <button className="join-item btn">
-              Page {page} of {totalPages}
-            </button>
-            <button
-              className="join-item btn"
-              onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
-              disabled={page === totalPages}
-            >
-              »
-            </button>
-          </div>
-        </div>
-      )}
+      {/* Intersection Observer Target for Infinite Scroll */}
+      <div ref={observerTarget} className="flex justify-center py-8">
+        {loading && <span className="loading loading-spinner loading-lg text-primary"></span>}
+      </div>
     </div>
   );
 }

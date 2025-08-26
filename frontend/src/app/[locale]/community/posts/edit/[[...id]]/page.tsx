@@ -1,68 +1,62 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { PostEditorProvider } from '@/contexts/PostEditorContext';
 import { notFound } from 'next/navigation';
 import PostEditor from '@/components/Editor/PostEditor';
+import { postService } from '@/services/api/post.service';
 
 interface PostEditParams {
-  id?: string;
+  id?: string[];
 }
-
-type PostData = {
-  id: string;
-  title: string;
-  content: string;
-  fullContent: string;
-  coverImage: string;
-  tags: string[];
-  isDraft: boolean;
-};
 
 export default function EditPostPage() {
   const params = useParams();
-  const { id } = params as PostEditParams;
-  const [initialPost, setInitialPost] = useState<PostData | null>(null);
-  const [isLoading, setIsLoading] = useState(!!id);
+  const router = useRouter();
+  const { id } = params as unknown as PostEditParams;
+  const postId = id?.[0];
+
+  const [initialPost, setInitialPost] = useState<any | null>(null);
+  const [isLoading, setIsLoading] = useState(!!postId);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (id) {
-      // Fetch post data for editing
-      const fetchPost = async () => {
+    const checkAuthAndLoadPost = async () => {
+      const token = localStorage.getItem('access_token');
+      if (!token) {
+        router.push('/login?returnUrl=' + encodeURIComponent(window.location.pathname));
+        return;
+      }
+
+      if (postId) {
         try {
           setIsLoading(true);
-          // TODO: Replace with actual API call
-          // const response = await fetch(`/api/posts/${id}`);
-          // const data = await response.json();
+          const postData = await postService.getPostById(postId);
 
-          // Mock data for now
-          const mockData = {
-            id,
-            title: 'Bài viết mẫu để chỉnh sửa',
-            content: 'Đây là nội dung ngắn...',
-            fullContent:
-              '<h2>Đây là một bài viết mẫu</h2><p>Nội dung đầy đủ của bài viết sẽ được hiển thị ở đây với định dạng <strong>HTML</strong>.</p><p>Bạn có thể chỉnh sửa nội dung này.</p>',
-            coverImage: 'https://picsum.photos/800/400',
-            tags: ['mẫu', 'tutorial'],
+          setInitialPost({
+            id: postData.id.toString(),
+            title: postData.title,
+            content: postData.content,
+            fullContent: postData.fullContent || postData.content,
+            coverImage: postData.imageUrl || '',
+            tags: postData.tags.map((t) => t.name),
+            tagIds: postData.tags.map((t) => t.id),
             isDraft: false,
-          };
-
-          setInitialPost(mockData);
+          });
         } catch (err) {
           console.error('Error fetching post:', err);
           setError('Không thể tải bài viết. Vui lòng thử lại sau.');
         } finally {
           setIsLoading(false);
         }
-      };
+      }
+    };
 
-      fetchPost();
-    }
-  }, [id]);
+    checkAuthAndLoadPost();
+  }, [postId, router]);
 
-  if (id && error) {
+  if (postId && error) {
     return (
       <div className="container mx-auto p-4">
         <div className="alert alert-error">
@@ -72,7 +66,7 @@ export default function EditPostPage() {
     );
   }
 
-  if (id && isLoading) {
+  if (postId && isLoading) {
     return (
       <div className="container mx-auto p-4 flex justify-center">
         <div className="loading loading-spinner loading-lg"></div>
@@ -80,13 +74,13 @@ export default function EditPostPage() {
     );
   }
 
-  if (id && !initialPost && !isLoading) {
+  if (postId && !initialPost && !isLoading) {
     return notFound();
   }
 
   return (
     <PostEditorProvider initialPost={initialPost || undefined}>
-      <PostEditor isEditing={!!id} />
+      <PostEditor isEditing={!!postId} />
     </PostEditorProvider>
   );
 }
