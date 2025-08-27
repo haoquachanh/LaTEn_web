@@ -33,7 +33,7 @@ describe('AuthService', () => {
     verify: jest.fn(),
   };
 
-  const mockUser: UserEntity = {
+  const mockUser = {
     id: 1,
     fullname: 'Test User',
     email: 'test@example.com',
@@ -41,11 +41,11 @@ describe('AuthService', () => {
     role: UserRole.USER,
     phone: '1234567890',
     birth: '1990-01-01',
-    created: new Date(),
-    updated: new Date(),
+    createdAt: new Date(),
+    updatedAt: new Date(),
     refreshToken: 'refresh-token',
     refreshTokenExpires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
-  };
+  } as UserEntity;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -115,8 +115,8 @@ describe('AuthService', () => {
           role: mockUser.role,
           phone: mockUser.phone,
           birth: mockUser.birth,
-          created: mockUser.created,
-          updated: mockUser.updated,
+          createdAt: mockUser.createdAt,
+          updatedAt: mockUser.updatedAt,
           refreshToken: mockUser.refreshToken,
           refreshTokenExpires: mockUser.refreshTokenExpires,
         },
@@ -211,8 +211,8 @@ describe('AuthService', () => {
           role: mockUser.role,
           phone: mockUser.phone,
           birth: mockUser.birth,
-          created: mockUser.created,
-          updated: mockUser.updated,
+          createdAt: mockUser.createdAt,
+          updatedAt: mockUser.updatedAt,
           refreshToken: mockUser.refreshToken,
           refreshTokenExpires: mockUser.refreshTokenExpires,
         },
@@ -236,8 +236,8 @@ describe('AuthService', () => {
         role: mockUser.role,
         phone: mockUser.phone,
         birth: mockUser.birth,
-        created: mockUser.created,
-        updated: mockUser.updated,
+        createdAt: mockUser.createdAt,
+        updatedAt: mockUser.updatedAt,
         refreshToken: mockUser.refreshToken,
         refreshTokenExpires: mockUser.refreshTokenExpires,
       });

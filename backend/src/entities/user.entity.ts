@@ -72,4 +72,10 @@ export class UserEntity {
 
   @OneToMany('Post', 'author')
   posts: any[];
+
+  @OneToMany('QandAQuestion', 'author')
+  qandaQuestions: any[];
+
+  @OneToMany('QandAAnswer', 'author')
+  qandaAnswers: any[];
 }

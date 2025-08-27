@@ -70,19 +70,18 @@ export default function RegisterContent() {
       }
     } catch (error: any) {
       setError(error?.message || 'Network error. Please check your connection.');
-      console.error('Registration error:', error);
     } finally {
       setIsLoading(false);
     }
   }
 
   return (
-    <div className="hero min-h-screen bg-base-200">
-      <div className="hero-content flex-col lg:flex-row">
+    <div className="hero min-h-full bg-base-200 overflow-hidden pt-0">
+      <div className="hero-content flex-col lg:flex-row p-0 sm:p-4 overflow-hidden">
         {/* Hero Section */}
         <div className="text-center lg:text-left lg:mr-12">
-          <h1 className="text-5xl font-bold text-primary">Join LaTEn!</h1>
-          <p className="py-6 text-base-content/70 max-w-md">
+          <h1 className="text-4xl font-bold text-primary">Join LaTEn!</h1>
+          <p className="py-4 text-base-content/70 max-w-md">
             Start your learning journey today. Create an account to access interactive courses, track your progress, and
             connect with learners worldwide.
           </p>
@@ -103,11 +102,11 @@ export default function RegisterContent() {
         </div>
 
         {/* Register Form */}
-        <div className="card shrink-0 w-full max-w-md shadow-2xl bg-base-100">
-          <form className="card-body" onSubmit={handleSubmit}>
-            <div className="text-center mb-4">
-              <h2 className="text-3xl font-bold">Create Account</h2>
-              <p className="text-base-content/60">Join the LaTEn community</p>
+        <div className="card shrink-0 w-full max-w-md shadow-2xl bg-base-100 overflow-hidden">
+          <form className="card-body py-4 px-5" onSubmit={handleSubmit}>
+            <div className="text-center mb-2">
+              <h2 className="text-2xl font-bold">Create Account</h2>
+              <p className="text-base-content/60 text-sm">Join the LaTEn community</p>
             </div>
 
             {error && (
@@ -125,7 +124,7 @@ export default function RegisterContent() {
             )}
 
             <div className="form-control">
-              <label className="label">
+              <label className="label py-1">
                 <span className="label-text font-medium">Full Name</span>
               </label>
               <div className="relative">
@@ -150,7 +149,7 @@ export default function RegisterContent() {
             </div>
 
             <div className="form-control">
-              <label className="label">
+              <label className="label py-1">
                 <span className="label-text font-medium">Email Address</span>
               </label>
               <div className="relative">
@@ -175,7 +174,7 @@ export default function RegisterContent() {
             </div>
 
             <div className="form-control">
-              <label className="label">
+              <label className="label py-1">
                 <span className="label-text font-medium">Password</span>
               </label>
               <div className="relative">
@@ -226,7 +225,7 @@ export default function RegisterContent() {
             </div>
 
             <div className="form-control">
-              <label className="label">
+              <label className="label py-1">
                 <span className="label-text font-medium">Confirm Password</span>
               </label>
               <div className="relative">
@@ -266,13 +265,13 @@ export default function RegisterContent() {
               </label>
             </div>
 
-            <div className="form-control mt-6">
+            <div className="form-control mt-4">
               <button type="submit" className={`btn btn-primary ${isLoading ? 'loading' : ''}`} disabled={isLoading}>
                 {isLoading ? 'Creating Account...' : 'Create Account'}
               </button>
             </div>
 
-            <div className="divider">OR</div>
+            <div className="divider my-2">OR</div>
 
             <div className="text-center">
               <span className="text-base-content/60">Already have an account? </span>
