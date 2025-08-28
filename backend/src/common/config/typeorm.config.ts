@@ -7,7 +7,9 @@ export const getDatabaseConfig = (): TypeOrmModuleOptions => {
   const baseConfig: TypeOrmModuleOptions = {
     type: 'postgres',
     entities: [__dirname + '/../../entities/**/*.entity{.ts,.js}'],
-    synchronize: environment !== 'production', // Only in dev/test
+    migrations: [__dirname + '/../../migrations/**/*{.ts,.js}'],
+    synchronize: false, // DISABLED: Use migrations for schema changes
+    migrationsRun: true, // Auto-run pending migrations on startup
     logging: environment === 'development' ? ['query', 'error'] : false,
   };
 
@@ -31,9 +33,9 @@ export const getDatabaseConfig = (): TypeOrmModuleOptions => {
         username: process.env.DB_USERNAME || 'postgres',
         password: process.env.DB_PASSWORD || 'test_password_2024',
         database: process.env.DB_DATABASE || 'laten_test',
-        synchronize: true,
+        synchronize: false, // Use migrations for consistency
         dropSchema: false,
-        migrationsRun: false,
+        migrationsRun: true, // Run migrations in test
       };
 
     case 'production':
@@ -48,6 +50,7 @@ export const getDatabaseConfig = (): TypeOrmModuleOptions => {
           rejectUnauthorized: false, // For cloud databases
         },
         synchronize: false, // Never auto-sync in production
+        migrationsRun: false, // Manually run migrations in production
       };
 
     default:
