@@ -8,6 +8,7 @@ import {
   OneToMany,
   JoinColumn,
   Index,
+  VersionColumn,
 } from 'typeorm';
 import { UserEntity } from './user.entity';
 import { ExaminationQuestion } from './examination-question.entity';
@@ -67,6 +68,15 @@ export class Examination {
 
   @Column('text', { nullable: true })
   feedback: string;
+
+  @Column('varchar', { length: 255, nullable: true })
+  sessionId: string; // UUID để tracking phiên làm bài
+
+  @Column('timestamp', { nullable: true })
+  lastActivityAt: Date; // Thời gian hoạt động cuối cùng
+
+  @VersionColumn()
+  version: number; // Optimistic locking để tránh race condition
 
   @OneToMany(() => ExaminationQuestion, (examQuestion) => examQuestion.examination)
   examinationQuestions: ExaminationQuestion[];

@@ -9,6 +9,10 @@ import { QuestionCategory } from '@entities/question-category.entity';
 import { UserEntity } from '@entities/user.entity';
 import { ExaminationAttemptController } from './examination-attempt.controller';
 import { ExaminationAttemptService } from './examination-attempt.service';
+import { PermissionsService } from './services/permissions.service';
+import { IdempotencyService } from './services/idempotency.service';
+import { ScoreCalculatorService } from './services/score-calculator.service';
+import { QuestionValidatorService } from './services/question-validator.service';
 import { ExaminationModule } from '../examination/examination.module';
 
 @Module({
@@ -26,7 +30,13 @@ import { ExaminationModule } from '../examination/examination.module';
     forwardRef(() => ExaminationModule),
   ],
   controllers: [ExaminationAttemptController],
-  providers: [ExaminationAttemptService],
-  exports: [ExaminationAttemptService],
+  providers: [
+    ExaminationAttemptService,
+    PermissionsService,
+    IdempotencyService,
+    ScoreCalculatorService,
+    QuestionValidatorService,
+  ],
+  exports: [ExaminationAttemptService, PermissionsService],
 })
 export class ExaminationAttemptModule {}
