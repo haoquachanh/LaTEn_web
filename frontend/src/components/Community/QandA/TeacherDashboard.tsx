@@ -1,5 +1,26 @@
 import React from 'react';
-import { FiAlertCircle, FiCheckCircle, FiClock } from 'react-icons/fi';
+
+const IconClock: React.FC<{ size?: number }> = ({ size = 32 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" />
+    <path d="M12 6v6l4 2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
+const IconAlertCircle: React.FC<{ size?: number }> = ({ size = 32 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" />
+    <path d="M12 8v4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M12 16h.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
+const IconCheckCircle: React.FC<{ size?: number }> = ({ size = 32 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" />
+    <path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
 
 interface TeacherStats {
   totalQuestions: number;
@@ -17,7 +38,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ stats }) => 
       {/* Total Questions */}
       <div className="stat bg-base-200 rounded-lg shadow">
         <div className="stat-figure text-primary">
-          <FiClock size={32} />
+          <IconClock size={32} />
         </div>
         <div className="stat-title">Tổng câu hỏi</div>
         <div className="stat-value text-primary">{stats.totalQuestions}</div>
@@ -27,7 +48,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ stats }) => 
       {/* Unanswered Questions */}
       <div className="stat bg-base-200 rounded-lg shadow">
         <div className="stat-figure text-warning">
-          <FiAlertCircle size={32} />
+          <IconAlertCircle size={32} />
         </div>
         <div className="stat-title">Chưa trả lời</div>
         <div className="stat-value text-warning">{stats.unansweredCount}</div>
@@ -37,7 +58,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ stats }) => 
       {/* Answered Today */}
       <div className="stat bg-base-200 rounded-lg shadow">
         <div className="stat-figure text-success">
-          <FiCheckCircle size={32} />
+          <IconCheckCircle size={32} />
         </div>
         <div className="stat-title">Đã trả lời hôm nay</div>
         <div className="stat-value text-success">{stats.answeredToday}</div>
