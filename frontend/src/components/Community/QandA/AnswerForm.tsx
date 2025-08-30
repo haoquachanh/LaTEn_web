@@ -1,11 +1,4 @@
 import React, { useState } from 'react';
-
-const IconX: React.FC<{ size?: number }> = ({ size = 20 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
-    <path d="M18 6L6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-);
 import { toast } from 'react-hot-toast';
 import { qandaService } from '@/services/api/qanda.service';
 
@@ -59,7 +52,20 @@ export const AnswerForm: React.FC<AnswerFormProps> = ({ questionId, questionTitl
             <p className="text-sm text-base-content/70 mt-1 line-clamp-2">{questionTitle}</p>
           </div>
           <button onClick={handleClose} className="btn btn-sm btn-circle btn-ghost" disabled={isSubmitting}>
-            <IconX size={20} />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
           </button>
         </div>
 
