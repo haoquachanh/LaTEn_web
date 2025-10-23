@@ -2,7 +2,9 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { getSession } from '@/services/session';
+import { useLocale } from 'next-intl';
+import { postService } from '@/services/api/post.service';
+import { commentService } from '@/services/api/comment.service';
 
 interface Author {
   id: number;
@@ -35,6 +37,7 @@ interface PostCommentsProps {
 
 export default function PostComments({ postId, comments = [], onCommentAdded }: PostCommentsProps) {
   const router = useRouter();
+  const locale = useLocale();
   const [newComment, setNewComment] = useState('');
   const [replyingTo, setReplyingTo] = useState<number | null>(null);
   const [replyContent, setReplyContent] = useState('');
@@ -57,34 +60,16 @@ export default function PostComments({ postId, comments = [], onCommentAdded }: 
     if (!newComment.trim()) return;
 
     try {
-      const session = await getSession();
-      if (!session) {
-        router.push('/auth/login?returnUrl=' + encodeURIComponent(window.location.pathname));
+      const token = localStorage.getItem('access_token');
+      if (!token) {
+        router.push(`/${locale}/login?returnUrl=${encodeURIComponent(window.location.pathname)}`);
         return;
       }
 
       setIsSubmitting(true);
       setError(null);
 
-      // Sử dụng URL backend trực tiếp
-      const url = `http://localhost:3001/api/posts/${postId}/comments`;
-      console.log('🔧 Gọi API thêm bình luận trực tiếp:', url);
-      
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.accessToken}`,
-        },
-        body: JSON.stringify({
-          content: newComment,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to add comment');
-      }
+      await postService.addComment(postId, newComment);
 
       setNewComment('');
       if (onCommentAdded) {
@@ -102,34 +87,16 @@ export default function PostComments({ postId, comments = [], onCommentAdded }: 
     if (!replyContent.trim()) return;
 
     try {
-      const session = await getSession();
-      if (!session) {
-        router.push('/auth/login?returnUrl=' + encodeURIComponent(window.location.pathname));
+      const token = localStorage.getItem('access_token');
+      if (!token) {
+        router.push(`/${locale}/login?returnUrl=${encodeURIComponent(window.location.pathname)}`);
         return;
       }
 
       setIsSubmitting(true);
       setError(null);
 
-      // Sử dụng URL backend trực tiếp
-      const url = `http://localhost:3001/api/comments/${commentId}/replies`;
-      console.log('🔧 Gọi API thêm trả lời bình luận trực tiếp:', url);
-      
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.accessToken}`,
-        },
-        body: JSON.stringify({
-          content: replyContent,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to add reply');
-      }
+      await commentService.addReply(commentId, replyContent);
 
       setReplyContent('');
       setReplyingTo(null);

@@ -1,7 +1,5 @@
 import axios from 'axios';
-
-// Lấy base URL từ biến môi trường hoặc sử dụng địa chỉ mặc định
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+import { API_BASE_URL } from '@/config/apiRoutes';
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,

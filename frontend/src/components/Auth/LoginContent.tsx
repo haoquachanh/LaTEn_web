@@ -26,12 +26,12 @@ export default function LoginContent() {
   }
 
   return (
-    <div className="hero min-h-screen bg-base-200">
-      <div className="hero-content flex-col lg:flex-row-reverse">
+    <div className="hero min-h-full bg-base-200 overflow-hidden pt-0">
+      <div className="hero-content flex-col lg:flex-row-reverse p-0 sm:p-4 overflow-hidden">
         {/* Hero Section */}
         <div className="text-center lg:text-left lg:ml-12">
-          <h1 className="text-5xl font-bold text-primary">Welcome Back!</h1>
-          <p className="py-6 text-base-content/70 max-w-md">
+          <h1 className="text-4xl font-bold text-primary">Welcome Back!</h1>
+          <p className="py-4 text-base-content/70 max-w-md">
             Sign in to continue your learning journey with LaTEn. Access your courses, track progress, and join our
             learning community.
           </p>
@@ -52,7 +52,7 @@ export default function LoginContent() {
         </div>
 
         {/* Login Form */}
-        <div className="card shrink-0 w-full max-w-md shadow-2xl bg-base-100">
+        <div className="card shrink-0 w-full max-w-md shadow-2xl bg-base-100 overflow-hidden">
           <form className="card-body" onSubmit={handleSubmit}>
             <div className="text-center mb-4">
               <h2 className="text-3xl font-bold">Sign In</h2>

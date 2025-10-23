@@ -6,7 +6,10 @@ import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import PostComments from '@/components/Post/PostComments';
-import { getSession } from '@/services/session';
+import { postService } from '@/services/api/post.service';
+import LoadingState from '@/components/Common/LoadingState';
+import ErrorState from '@/components/Common/ErrorState';
+import { useApiRequest } from '@/hooks/useApiRequest';
 
 interface Author {
   id: number;
@@ -40,8 +43,8 @@ interface PostData {
   id: number;
   title: string;
   content: string;
-  fullContent: string;
-  imageUrl: string;
+  fullContent?: string;
+  imageUrl?: string;
   type: string;
   author: Author;
   tags: Tag[];
@@ -72,39 +75,25 @@ export default function PostDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isLiking, setIsLiking] = useState(false);
-  const [relatedPosts, setRelatedPosts] = useState<PostData[]>([]);
+  const [relatedPosts, setRelatedPosts] = useState<any[]>([]);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   // Check if user is logged in
   useEffect(() => {
-    const checkLoginStatus = async () => {
-      const session = await getSession();
-      setIsLoggedIn(!!session);
+    const checkLoginStatus = () => {
+      const token = localStorage.getItem('access_token');
+      setIsLoggedIn(!!token);
     };
     checkLoginStatus();
   }, []);
 
-  // Fetch related posts - định nghĩa trước với useCallback riêng
   const fetchRelatedPosts = useCallback(
     async (tagId: number) => {
       try {
-        // Sử dụng URL backend trực tiếp
-        const url = `http://localhost:3001/api/posts?tag=${tagId}&limit=3`;
-        console.log('🔧 Gọi API danh sách bài viết liên quan trực tiếp:', url);
-        
-        const response = await fetch(url);
-        if (!response.ok) {
-          console.error('❌ Lỗi khi lấy bài viết liên quan:', response.status);
-          return;
-        }
+        const result = await postService.getPosts({ tagId, limit: 3 });
+        console.log('🔍 Nhận được bài viết liên quan:', result);
 
-        const responseData = await response.json();
-        console.log('🔍 Nhận được bài viết liên quan:', responseData);
-        
-        const data = responseData.data ? responseData : { data: { items: responseData } };
-        
-        // Filter out the current post
-        const filtered = data.data.items.filter((p: PostData) => p.id.toString() !== postId);
+        const filtered = result.items.filter((p) => p.id.toString() !== postId);
         setRelatedPosts(filtered.slice(0, 3));
       } catch (error) {
         console.error('Error fetching related posts:', error);
@@ -113,7 +102,6 @@ export default function PostDetailPage() {
     [postId],
   );
 
-  // Fetch post data
   const fetchPostData = useCallback(async () => {
     if (!postId) {
       setError('Invalid post ID');
@@ -125,47 +113,20 @@ export default function PostDetailPage() {
       setLoading(true);
       console.log('🔍 Fetching post data for ID:', postId);
 
-      // Sử dụng URL backend trực tiếp thay vì qua API route Next.js
-      const url = `http://localhost:3001/api/posts/${postId}`;
-      console.log('🔧 Sử dụng URL trực tiếp tới backend:', url);
-      
-      const response = await fetch(url);
-      console.log('🔍 Response status:', response.status);
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error('API error response:', errorData);
-
-        if (response.status === 404) {
-          console.log('Post not found, redirecting to 404 page');
-          notFound();
-          return; // Ngăn thực thi code tiếp theo
-        }
-
-        throw new Error(`Failed to fetch post: ${errorData.error || response.statusText}`);
-      }
-
-      const responseData = await response.json();
-      console.log('🔍 Post data received:', responseData);
-
-      // Kiểm tra định dạng phản hồi từ backend
-      if (!responseData) {
-        console.error('❌ Invalid response format:', responseData);
-        throw new Error('Invalid response format from API');
-      }
-      
-      // Backend trả về dữ liệu có cấu trúc { data: postData }
-      const postData = responseData.data ? responseData.data : responseData;
-      console.log('Post data to display:', postData);
+      const postData = await postService.getPostById(postId);
+      console.log('🔍 Post data received:', postData);
 
       setPost(postData);
 
-      // Fetch related posts by tag or author
       if (postData && postData.tags && postData.tags.length > 0) {
         fetchRelatedPosts(postData.tags[0].id);
       }
     } catch (err) {
       console.error('Error fetching post:', err);
+      if (err instanceof Error && err.message.includes('404')) {
+        notFound();
+        return;
+      }
       setError(
         'Failed to load post details. The post might have been removed or you may not have permission to view it.',
       );
@@ -174,10 +135,9 @@ export default function PostDetailPage() {
     }
   }, [postId, fetchRelatedPosts]);
 
-  // Handle like post
   const handleLikePost = async () => {
     if (!isLoggedIn) {
-      router.push('/auth/login?returnUrl=' + encodeURIComponent(window.location.pathname));
+      router.push('/login?returnUrl=' + encodeURIComponent(window.location.pathname));
       return;
     }
 
@@ -185,38 +145,41 @@ export default function PostDetailPage() {
 
     try {
       setIsLiking(true);
-      // Sử dụng URL backend trực tiếp
-      const url = `http://localhost:3001/api/posts/${postId}/like`;
-      console.log('🔧 Gọi API like post trực tiếp:', url);
-      
-      const session = await getSession();
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session?.accessToken || ''}`,
-        },
-      });
 
-      if (!response.ok) {
-        throw new Error('Failed to like post');
+      let data;
+      if (post.isLikedByCurrentUser) {
+        data = await postService.unlikePost(postId);
+      } else {
+        data = await postService.likePost(postId);
       }
 
-      const data = await response.json();
-
-      // Update post with new like count
       setPost((prev) => {
         if (!prev) return prev;
         return {
           ...prev,
           likes: data.likes,
-          isLikedByCurrentUser: true,
+          isLikedByCurrentUser: data.isLiked,
         };
       });
     } catch (error) {
-      console.error('Error liking post:', error);
+      console.error('Error toggling like:', error);
+      setError('Failed to update like status. Please try again.');
     } finally {
       setIsLiking(false);
+    }
+  };
+
+  const handleDeletePost = async () => {
+    if (!confirm('Bạn có chắc chắn muốn xóa bài viết này?')) {
+      return;
+    }
+
+    try {
+      await postService.deletePost(postId);
+      router.push('/community');
+    } catch (error) {
+      console.error('Error deleting post:', error);
+      setError('Failed to delete post. Please try again.');
     }
   };
 
@@ -255,8 +218,8 @@ export default function PostDetailPage() {
           <span>{error || 'Không tìm thấy bài viết!'}</span>
         </div>
         <div className="mt-4">
-          <Link href="/community/posts" className="btn btn-primary">
-            Quay lại danh sách bài viết
+          <Link href="/community" className="btn btn-primary">
+            Quay lại Community
           </Link>
         </div>
       </div>
@@ -289,7 +252,7 @@ export default function PostDetailPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-4 flex justify-between items-center">
-        <Link href="/community/posts" className="btn btn-ghost gap-2">
+        <Link href="/community" className="btn btn-ghost gap-2">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             className="h-5 w-5"
@@ -299,7 +262,7 @@ export default function PostDetailPage() {
           >
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
           </svg>
-          Quay lại danh sách
+          Quay lại Community
         </Link>
 
         {isLoggedIn && post?.author?.id && (
@@ -307,6 +270,9 @@ export default function PostDetailPage() {
             <Link href={`/community/posts/edit/${post.id}`} className="btn btn-outline btn-sm">
               Chỉnh sửa
             </Link>
+            <button onClick={handleDeletePost} className="btn btn-error btn-outline btn-sm">
+              Xóa
+            </button>
           </div>
         )}
       </div>
@@ -374,7 +340,7 @@ export default function PostDetailPage() {
 
           {/* Post content */}
           <article
-            className="prose max-w-none"
+            className="post-content prose prose-lg max-w-none mb-8"
             dangerouslySetInnerHTML={{ __html: post.fullContent || post.content }}
           />
 

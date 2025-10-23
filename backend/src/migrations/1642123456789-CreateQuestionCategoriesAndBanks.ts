@@ -56,37 +56,71 @@ export class CreateQuestionCategoriesAndBanks1642123456789 implements MigrationI
     await addColumnIfNotExists('questions', 'categoryId', 'integer');
     await addColumnIfNotExists('questions', 'questionBankId', 'integer');
 
-    // Create foreign key constraints
+    // Create foreign key constraints (check if they exist first)
     await queryRunner.query(`
-      ALTER TABLE "question_banks" 
-      ADD CONSTRAINT "FK_question_banks_users" 
-      FOREIGN KEY ("createdBy") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE NO ACTION
+      DO $$ BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.table_constraints
+          WHERE constraint_name = 'FK_question_banks_users' 
+          AND table_name = 'question_banks'
+        ) THEN
+          ALTER TABLE "question_banks" 
+          ADD CONSTRAINT "FK_question_banks_users" 
+          FOREIGN KEY ("createdBy") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
+        END IF;
+      END $$;
     `);
 
     await queryRunner.query(`
-      ALTER TABLE "question_banks" 
-      ADD CONSTRAINT "FK_question_banks_categories" 
-      FOREIGN KEY ("categoryId") REFERENCES "question_categories"("id") ON DELETE SET NULL ON UPDATE NO ACTION
+      DO $$ BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.table_constraints
+          WHERE constraint_name = 'FK_question_banks_categories' 
+          AND table_name = 'question_banks'
+        ) THEN
+          ALTER TABLE "question_banks" 
+          ADD CONSTRAINT "FK_question_banks_categories" 
+          FOREIGN KEY ("categoryId") REFERENCES "question_categories"("id") ON DELETE SET NULL ON UPDATE NO ACTION;
+        END IF;
+      END $$;
     `);
 
     await queryRunner.query(`
-      ALTER TABLE "questions" 
-      ADD CONSTRAINT "FK_questions_categories" 
-      FOREIGN KEY ("categoryId") REFERENCES "question_categories"("id") ON DELETE SET NULL ON UPDATE NO ACTION
+      DO $$ BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.table_constraints
+          WHERE constraint_name = 'FK_questions_categories' 
+          AND table_name = 'questions'
+        ) THEN
+          ALTER TABLE "questions" 
+          ADD CONSTRAINT "FK_questions_categories" 
+          FOREIGN KEY ("categoryId") REFERENCES "question_categories"("id") ON DELETE SET NULL ON UPDATE NO ACTION;
+        END IF;
+      END $$;
     `);
 
     await queryRunner.query(`
-      ALTER TABLE "questions" 
-      ADD CONSTRAINT "FK_questions_banks" 
-      FOREIGN KEY ("questionBankId") REFERENCES "question_banks"("id") ON DELETE SET NULL ON UPDATE NO ACTION
+      DO $$ BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.table_constraints
+          WHERE constraint_name = 'FK_questions_banks' 
+          AND table_name = 'questions'
+        ) THEN
+          ALTER TABLE "questions" 
+          ADD CONSTRAINT "FK_questions_banks" 
+          FOREIGN KEY ("questionBankId") REFERENCES "question_banks"("id") ON DELETE SET NULL ON UPDATE NO ACTION;
+        END IF;
+      END $$;
     `);
 
     // Create indexes for better performance
-    await queryRunner.query(`CREATE INDEX "IDX_questions_type" ON "questions" ("type")`);
-    await queryRunner.query(`CREATE INDEX "IDX_questions_format" ON "questions" ("format")`);
-    await queryRunner.query(`CREATE INDEX "IDX_questions_difficulty" ON "questions" ("difficulty")`);
-    await queryRunner.query(`CREATE INDEX "IDX_question_banks_public" ON "question_banks" ("isPublic")`);
-    await queryRunner.query(`CREATE INDEX "IDX_question_categories_active" ON "question_categories" ("isActive")`);
+    await queryRunner.query(`CREATE INDEX IF NOT EXISTS "IDX_questions_type" ON "questions" ("type")`);
+    await queryRunner.query(`CREATE INDEX IF NOT EXISTS "IDX_questions_format" ON "questions" ("format")`);
+    await queryRunner.query(`CREATE INDEX IF NOT EXISTS "IDX_questions_difficulty" ON "questions" ("difficulty")`);
+    await queryRunner.query(`CREATE INDEX IF NOT EXISTS "IDX_question_banks_public" ON "question_banks" ("isPublic")`);
+    await queryRunner.query(
+      `CREATE INDEX IF NOT EXISTS "IDX_question_categories_active" ON "question_categories" ("isActive")`,
+    );
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {

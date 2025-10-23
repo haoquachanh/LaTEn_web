@@ -163,7 +163,7 @@ export default function PostEditor({ isEditing = false }: PostEditorProps) {
 
         {/* Buttons */}
         <div className="flex justify-between">
-          <Link href="/community/posts" className="btn btn-outline">
+          <Link href="/community" className="btn btn-outline">
             Hủy
           </Link>
           <button type="submit" className="btn btn-primary" disabled={isSaving}>

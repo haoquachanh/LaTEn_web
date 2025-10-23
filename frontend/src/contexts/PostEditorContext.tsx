@@ -1,6 +1,8 @@
 'use client';
 
 import React, { createContext, useContext, useState, ReactNode } from 'react';
+import { postService, type CreatePostDto, type UpdatePostDto } from '@/services/api/post.service';
+import { useRouter } from 'next/navigation';
 
 type PostFormState = {
   id?: string | null;
@@ -9,6 +11,7 @@ type PostFormState = {
   fullContent: string;
   coverImage: string;
   tags: string[];
+  tagIds: number[];
   isDraft: boolean;
 };
 
@@ -16,12 +19,14 @@ type PostEditorContextType = {
   post: PostFormState;
   isLoading: boolean;
   isSaving: boolean;
+  error: string | null;
   updateTitle: (title: string) => void;
   updateContent: (content: string) => void;
   updateFullContent: (fullContent: string) => void;
   updateCoverImage: (url: string) => void;
   addTag: (tag: string) => void;
   removeTag: (tag: string) => void;
+  setTagIds: (tagIds: number[]) => void;
   toggleDraft: () => void;
   resetForm: () => void;
   savePost: () => Promise<void>;
@@ -34,6 +39,7 @@ const defaultPost: PostFormState = {
   fullContent: '',
   coverImage: '',
   tags: [],
+  tagIds: [],
   isDraft: false,
 };
 
@@ -53,12 +59,14 @@ type PostEditorProviderProps = {
 };
 
 export const PostEditorProvider = ({ children, initialPost }: PostEditorProviderProps) => {
+  const router = useRouter();
   const [post, setPost] = useState<PostFormState>({
     ...defaultPost,
     ...initialPost,
   });
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const updateTitle = (title: string) => {
     setPost((prev) => ({ ...prev, title }));
@@ -89,51 +97,48 @@ export const PostEditorProvider = ({ children, initialPost }: PostEditorProvider
     }));
   };
 
+  const setTagIds = (tagIds: number[]) => {
+    setPost((prev) => ({ ...prev, tagIds }));
+  };
+
   const toggleDraft = () => {
     setPost((prev) => ({ ...prev, isDraft: !prev.isDraft }));
   };
 
   const resetForm = () => {
     setPost(defaultPost);
+    setError(null);
   };
 
   const savePost = async () => {
     try {
       setIsSaving(true);
-      // Tạo summary content từ fullContent
-      const contentSummary =
-        post.fullContent
-          .replace(/<[^>]*>/g, '') // Xóa tất cả HTML tags
-          .substring(0, 300) + '...'; // Giới hạn 300 ký tự
+      setError(null);
 
-      const postData = {
-        ...post,
-        content: contentSummary, // Content ngắn để hiển thị ở trang danh sách
-        status: post.isDraft ? 'draft' : 'published',
+      const contentSummary = post.fullContent.replace(/<[^>]*>/g, '').substring(0, 300) + '...';
+
+      const postData: CreatePostDto | UpdatePostDto = {
+        title: post.title,
+        content: contentSummary,
+        fullContent: post.fullContent,
+        imageUrl: post.coverImage || undefined,
+        tagIds: post.tagIds.length > 0 ? post.tagIds : undefined,
       };
 
-      const apiEndpoint = `/api/posts${post.id ? `/${post.id}` : ''}`;
-      const method = post.id ? 'PUT' : 'POST';
-
-      const response = await fetch(apiEndpoint, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(postData),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to save post');
+      let result;
+      if (post.id) {
+        result = await postService.updatePost(post.id, postData);
+      } else {
+        result = await postService.createPost(postData as CreatePostDto);
       }
 
-      const result = await response.json();
       console.log('Post saved:', result);
-      return result.data;
-    } catch (error) {
-      console.error('Error saving post:', error);
-      throw error;
+      router.push(`/community/posts/${result.id}`);
+    } catch (err) {
+      console.error('Error saving post:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Failed to save post';
+      setError(errorMessage);
+      throw err;
     } finally {
       setIsSaving(false);
     }
@@ -143,12 +148,14 @@ export const PostEditorProvider = ({ children, initialPost }: PostEditorProvider
     post,
     isLoading,
     isSaving,
+    error,
     updateTitle,
     updateContent,
     updateFullContent,
     updateCoverImage,
     addTag,
     removeTag,
+    setTagIds,
     toggleDraft,
     resetForm,
     savePost,

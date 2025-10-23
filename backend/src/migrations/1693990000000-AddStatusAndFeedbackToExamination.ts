@@ -4,27 +4,43 @@ export class AddStatusAndFeedbackToExamination1693990000000 implements Migration
   name = 'AddStatusAndFeedbackToExamination1693990000000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
+    // Thêm column status nếu chưa tồn tại
     await queryRunner.query(`
-      ALTER TABLE "examinations" 
-      ADD COLUMN "status" varchar DEFAULT 'created' NOT NULL
+      DO $$ BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns
+          WHERE table_name='examinations' AND column_name='status'
+        ) THEN
+          ALTER TABLE "examinations" 
+          ADD COLUMN "status" varchar DEFAULT 'created' NOT NULL;
+        END IF;
+      END $$;
     `);
 
+    // Thêm column feedback nếu chưa tồn tại
     await queryRunner.query(`
-      ALTER TABLE "examinations" 
-      ADD COLUMN "feedback" text
+      DO $$ BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns
+          WHERE table_name='examinations' AND column_name='feedback'
+        ) THEN
+          ALTER TABLE "examinations" 
+          ADD COLUMN "feedback" text;
+        END IF;
+      END $$;
     `);
 
     // Cập nhật dữ liệu cũ
     await queryRunner.query(`
       UPDATE "examinations" 
       SET "status" = 'completed' 
-      WHERE "completedAt" IS NOT NULL
+      WHERE "completedAt" IS NOT NULL AND "status" = 'created'
     `);
 
     await queryRunner.query(`
       UPDATE "examinations" 
       SET "status" = 'in_progress' 
-      WHERE "completedAt" IS NULL AND "startedAt" IS NOT NULL
+      WHERE "completedAt" IS NULL AND "startedAt" IS NOT NULL AND "status" = 'created'
     `);
   }
 

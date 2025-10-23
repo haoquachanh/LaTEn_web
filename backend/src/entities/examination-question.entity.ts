@@ -1,8 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, ManyToOne, JoinColumn, Column, Unique } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, ManyToOne, JoinColumn, Column, Unique, Index, VersionColumn } from 'typeorm';
 import { Examination } from './examination.entity';
 import { Question } from './question.entity';
 
 @Unique(['examination', 'question'])
+@Index(['examination', 'orderIndex']) // For ordering questions in examination
+@Index(['examination', 'isCorrect']) // For counting correct answers
 @Entity('examination_questions')
 export class ExaminationQuestion {
   @PrimaryGeneratedColumn()
@@ -33,4 +35,7 @@ export class ExaminationQuestion {
 
   @Column({ type: 'float', default: 0 })
   score: number; // Điểm số đạt được cho câu hỏi
+
+  @VersionColumn()
+  version: number; // Optimistic locking để tránh race condition
 }

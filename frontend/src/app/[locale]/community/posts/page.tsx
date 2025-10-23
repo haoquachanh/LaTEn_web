@@ -4,180 +4,32 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-
-interface Post {
-  id: string;
-  title: string;
-  content: string;
-  imageUrl: string;
-  createdAt: string;
-  author: {
-    fullname: string;
-    username: string;
-  };
-  tags: Array<{ id: string; name: string }>;
-  likes: number;
-  views: number;
-  commentCount: number;
-}
-
-interface PaginatedResponse {
-  data: Post[];
-  meta: {
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-  };
-}
+import { postService, type Post as PostType } from '@/services/api/post.service';
+import LoadingState from '@/components/Common/LoadingState';
+import ErrorState from '@/components/Common/ErrorState';
+import { useApiRequest } from '@/hooks/useApiRequest';
 
 export default function CommunityPostsPage() {
   const router = useRouter();
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [posts, setPosts] = useState<PostType[]>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  // Fetch posts from API
-  const fetchPosts = async (pageNum = 1) => {
-    try {
-      setLoading(true);
-      setError(null); // Clear any previous errors
-
-      console.log(`🔍 Fetching posts for page ${pageNum}...`);
-
-      // Thêm timestamp vào URL để tránh cache
-      const timestamp = new Date().getTime();
-      const currentOrigin = typeof window !== 'undefined' ? window.location.origin : '';
-      console.log(`🌐 Current origin: ${currentOrigin}`);
-
-      // Đảm bảo request có origin tương ứng với URL hiện tại
-      const response = await fetch(`/api/posts?page=${pageNum}&limit=10&_t=${timestamp}`, {
-        headers: {
-          'Cache-Control': 'no-cache',
-          Pragma: 'no-cache',
-          'X-Requested-From': currentOrigin,
-        },
-      });
-      console.log(`✅ Response received, status: ${response.status}`);
-
-      if (!response.ok) {
-        let errorMessage = `HTTP error ${response.status}`;
-        try {
-          const errorData = await response.text();
-          console.error('❌ Failed API response:', response.status, errorData);
-          errorMessage += `: ${errorData}`;
-        } catch (e) {
-          console.error('❌ Could not parse error response');
-        }
-        throw new Error(`Failed to fetch posts: ${errorMessage}`);
-      }
-
-      const responseData = await response.json();
-      console.log('🌟 API response data:', responseData);
-      console.log('🌟 Response data type:', typeof responseData);
-      console.log('🌟 Response structure:', Object.keys(responseData));
-
-      // Debug deeper structure
-      if (responseData.data) {
-        console.log('🔍 data property type:', typeof responseData.data);
-        console.log('🔍 data property keys:', Object.keys(responseData.data));
-
-        if (responseData.data.items) {
-          console.log('📚 items is present with', responseData.data.items.length, 'items');
-        }
-      }
-
-      // Handle different response formats with enhanced logging
-      // Our backend returns data in format: { statusCode, message, data: { items, total, page, limit, totalPages } }
-      // Or directly as { data, meta } from the frontend API route
-
-      let postsData: Post[] = [];
-      let metaData = { page: 1, totalPages: 1, limit: 10, total: 0 };
-
-      // Parse với nhiều format có thể có
-      if (responseData.data?.items && Array.isArray(responseData.data.items)) {
-        // Format chuẩn từ backend: { statusCode, message, data: { items, ... } }
-        console.log('✅ Sử dụng format: data.items array');
-        postsData = responseData.data.items;
-        metaData = {
-          page: responseData.data.page || 1,
-          totalPages: responseData.data.totalPages || 1,
-          limit: responseData.data.limit || 10,
-          total: responseData.data.total || 0,
-        };
-      } else if (responseData.items && Array.isArray(responseData.items)) {
-        // Format trực tiếp: { items, ... }
-        console.log('✅ Sử dụng format: direct items array');
-        postsData = responseData.items;
-        metaData = {
-          page: responseData.page || 1,
-          totalPages: responseData.totalPages || 1,
-          limit: responseData.limit || 10,
-          total: responseData.total || 0,
-        };
-      } else if (Array.isArray(responseData.data)) {
-        // Mảng trong property data: { data: [...] }
-        console.log('✅ Sử dụng format: data as array');
-        postsData = responseData.data;
-        metaData = responseData.meta || { page: 1, totalPages: 1, limit: 10, total: postsData.length };
-      } else if (Array.isArray(responseData)) {
-        // Trực tiếp là mảng: [...]
-        console.log('✅ Sử dụng format: direct array');
-        postsData = responseData;
-        metaData = { page: pageNum, totalPages: 1, limit: 10, total: postsData.length };
-      } else {
-        // Trường hợp format không khớp, thử kiểm tra sâu hơn
-        console.error('❌ Unexpected API response format:', responseData);
-
-        // Thử một số format khác có thể có
-        if (responseData.data && typeof responseData.data === 'object') {
-          console.log('⚠️ Thử parse data như object:', responseData.data);
-
-          // Kiểm tra nếu data chính là data posts
-          if (responseData.data.id || responseData.data.title) {
-            console.log('✅ Phát hiện single post object trong data');
-            postsData = [responseData.data];
-          } else {
-            throw new Error('Unexpected API response format: data object không chứa posts');
-          }
-        } else {
-          throw new Error('Unexpected API response format: Không có dữ liệu posts');
-        }
-      }
-
-      setPosts(postsData);
-      setTotalPages(metaData.totalPages || 1);
-      setPage(metaData.page || pageNum);
-
-      if (postsData.length === 0 && !responseData.error) {
-        console.log('No posts returned but API call was successful');
-      }
-    } catch (err) {
-      console.error('❌ Error fetching posts:', err);
-      // Hiển thị lỗi chi tiết hơn cho debug
-      let errorMessage = 'Failed to load posts. Please try again later.';
-      if (err instanceof Error) {
-        // Hiển thị message nhưng giới hạn độ dài để tránh lỗi quá dài
-        const truncatedMessage = err.message.length > 150 ? err.message.substring(0, 150) + '...' : err.message;
-        errorMessage += ' Error: ' + truncatedMessage;
-
-        // Log stack trace đầy đủ
-        console.error('❌ Stack trace:', err.stack);
-      }
-      setError(errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { loading, error, execute } = useApiRequest(async (pageNum: number) => {
+    const result = await postService.getPosts({ page: pageNum, limit: 10 });
+    setPosts(result.items);
+    setTotalPages(result.totalPages || 1);
+    setPage(result.page || pageNum);
+    return result;
+  });
 
   useEffect(() => {
-    fetchPosts();
+    execute(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handlePageChange = (newPage: number) => {
-    fetchPosts(newPage);
+    execute(newPage);
   };
 
   // Format date
@@ -192,8 +44,8 @@ export default function CommunityPostsPage() {
 
   if (loading && posts.length === 0) {
     return (
-      <div className="container mx-auto p-4 flex justify-center items-center h-64">
-        <div className="loading loading-spinner loading-lg"></div>
+      <div className="container mx-auto p-4">
+        <LoadingState message="Loading posts..." size="lg" variant="default" />
       </div>
     );
   }
@@ -201,43 +53,7 @@ export default function CommunityPostsPage() {
   if (error) {
     return (
       <div className="container mx-auto p-4">
-        <div className="alert alert-error">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="stroke-current shrink-0 h-6 w-6"
-            fill="none"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
-          <div>
-            <span className="font-bold">Error:</span> {error}
-          </div>
-        </div>
-
-        <div className="mt-4">
-          <button className="btn btn-primary mr-4" onClick={() => fetchPosts()}>
-            Thử lại
-          </button>
-
-          <button className="btn btn-outline" onClick={() => window.location.reload()}>
-            Tải lại trang
-          </button>
-
-          <div className="mt-4 p-4 bg-base-200 rounded-lg">
-            <h3 className="font-bold">Debug information:</h3>
-            <p>Thời gian: {new Date().toLocaleString()}</p>
-            <p>Đường dẫn: {window.location.pathname}</p>
-            <p>Origin: {typeof window !== 'undefined' ? window.location.origin : 'Not available'}</p>
-            <p>Server URL: {process.env.NEXT_PUBLIC_SERVER_URL || 'Not defined'}</p>
-            <p>Host: {typeof window !== 'undefined' ? window.location.host : 'Not available'}</p>
-          </div>
-        </div>
+        <ErrorState message={error.message} variant="card" type="general" onRetry={() => execute(page)} />
       </div>
     );
   }

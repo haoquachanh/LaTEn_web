@@ -30,7 +30,6 @@ export function buildApiUrl(baseUrl: string | undefined, path: string): string {
  */
 export function ensureValidUrl(url: string, fallbackUrl: string): string {
   if (!url || !isValidUrl(url)) {
-    console.warn(`Invalid URL: ${url}, falling back to ${fallbackUrl}`);
     return fallbackUrl;
   }
   return url;

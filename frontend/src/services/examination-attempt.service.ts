@@ -7,40 +7,24 @@
 import api from './api';
 import { ExaminationResult, Examination, Question } from './types/examination.types';
 import { PresetExam } from '@/components/Examination/types';
-
-/**
- * Interface cho API response của template
- */
-interface TemplateResponse {
-  data: TemplateDto[];
-  meta: {
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-  };
-}
-
-/**
- * Data transfer object cho template từ backend
- */
-interface TemplateDto {
-  id: number;
-  title: string;
-  description?: string;
-  totalQuestions: number;
-  durationSeconds: number;
-  isActive: boolean;
-  config?: {
-    randomize?: boolean;
-    showCorrectAnswers?: boolean;
-    passingScore?: number;
-    categoriesDistribution?: { categoryId: number; count: number }[];
-  };
-  createdAt: string;
-  updatedAt: string;
-  createdById?: number;
-}
+import { ExaminationError, ExaminationErrorCode, createExaminationError } from '@/utils/errors/ExaminationError';
+import {
+  TemplateApiResponse,
+  ExaminationApiResponse,
+  QuestionApiResponse,
+  ExaminationResultApiResponse,
+  PaginatedApiResponse,
+  StartExaminationRequest,
+  SubmitAnswerRequest,
+  ExaminationQuestionApiResponse,
+} from '@/types/examination-api.types';
+import {
+  normalizeScore,
+  parseId,
+  mapTemplateToPresetExam,
+  mapExaminationApiToExamination,
+  mapExaminationResultApiToResult,
+} from '@/utils/examination.helpers';
 
 /**
  * ExaminationAttemptService cung cấp các phương thức để tương tác với API làm bài thi
@@ -61,41 +45,22 @@ class ExaminationAttemptService {
     meta: { total: number; page: number; limit: number; totalPages: number };
   }> {
     try {
-      const response = await api.get<TemplateResponse>(this.templatePath, { params });
+      const response = await api.get<PaginatedApiResponse<TemplateApiResponse>>(this.templatePath, { params });
 
-      // Chuyển đổi dữ liệu từ backend sang định dạng frontend
-      const templates: PresetExam[] = response.data.data.map(this.mapTemplateToPresetExam);
+      // Chuyển đổi dữ liệu từ backend sang định dạng frontend (sử dụng helper)
+      const templates: PresetExam[] = response.data.data.map(mapTemplateToPresetExam);
 
-      return {
-        data: templates,
-        meta: response.data.meta,
-      };
+      return { data: templates, meta: response.data.meta };
     } catch (error) {
       console.error('Error fetching exam templates:', error);
-      throw error;
+      throw createExaminationError(error);
     }
   }
 
   /**
-   * Hàm helper để chuyển đổi từ TemplateDto sang PresetExam
+   * Hàm helper để chuyển đổi từ TemplateApiResponse sang PresetExam
    */
-  private mapTemplateToPresetExam(template: TemplateDto): PresetExam {
-    return {
-      id: template.id.toString(),
-      title: template.title,
-      description: template.description || '',
-      totalQuestions: template.totalQuestions,
-      durationSeconds: template.durationSeconds,
-      isActive: template.isActive,
-      // Các trường tương thích với UI cũ
-      type: 'multiple',
-      questionsCount: template.totalQuestions,
-      time: Math.ceil(template.durationSeconds / 60), // Chuyển từ giây sang phút
-      content: 'reading',
-      config: template.config,
-      createdAt: template.createdAt,
-    };
-  }
+  // mapping chuyển sang helper: mapTemplateToPresetExam
 
   /**
    * Lấy thông tin chi tiết của một template
@@ -105,11 +70,11 @@ class ExaminationAttemptService {
    */
   async getExamTemplateById(id: number | string): Promise<PresetExam> {
     try {
-      const response = await api.get<TemplateDto>(`${this.templatePath}/${id}`);
-      return this.mapTemplateToPresetExam(response.data);
+      const response = await api.get<TemplateApiResponse>(`${this.templatePath}/${parseId(id)}`);
+      return mapTemplateToPresetExam(response.data);
     } catch (error) {
       console.error(`Error fetching exam template ${id}:`, error);
-      throw error;
+      throw new ExaminationError(`Failed to fetch exam template ${id}`, ExaminationErrorCode.TEMPLATE_NOT_FOUND, 404);
     }
   }
 
@@ -121,14 +86,20 @@ class ExaminationAttemptService {
    */
   async startExamination(templateId: number | string): Promise<Examination> {
     try {
-      const response = await api.post(`${this.basePath}/start`, {
-        templateId: Number(templateId),
-      });
+      const requestData: StartExaminationRequest = {
+        templateId: parseId(templateId),
+      };
 
-      return this.mapResponseToExamination(response.data);
+      const response = await api.post<ExaminationApiResponse>(`${this.basePath}/start`, requestData);
+
+      return mapExaminationApiToExamination(response.data);
     } catch (error) {
       console.error(`Error starting examination with template ${templateId}:`, error);
-      throw error;
+      throw new ExaminationError(
+        `Failed to start examination with template ${templateId}`,
+        ExaminationErrorCode.START_EXAM_FAILED,
+        500,
+      );
     }
   }
 
@@ -138,52 +109,7 @@ class ExaminationAttemptService {
    * @param data Dữ liệu từ API
    * @returns Đối tượng Examination đã được chuyển đổi
    */
-  private mapResponseToExamination(data: any): Examination & { examinationQuestions?: any[] } {
-    if (!data) return {} as Examination & { examinationQuestions?: any[] };
-
-    // Chuyển đổi dữ liệu từ API sang model frontend
-    const examination: Examination & { examinationQuestions?: any[] } = {
-      id: data.id,
-      title: data.title,
-      description: data.description || '',
-      durationSeconds: data.durationSeconds || 3600,
-      duration: Math.ceil((data.durationSeconds || 3600) / 60), // Phút
-      totalQuestions: data.totalQuestions || 0,
-      type: data.type || 'multiple',
-      content: data.content || 'reading',
-      level: data.level || 'medium',
-      createdAt: data.createdAt || new Date().toISOString(),
-      updatedAt: data.updatedAt || new Date().toISOString(),
-      startedAt: data.startedAt,
-      completedAt: data.completedAt,
-      questions: [],
-      // Giữ lại dữ liệu gốc để xử lý trong context
-      examinationQuestions: data.examinationQuestions || [],
-    };
-
-    // Nếu có questions từ API, chuyển đổi sang format frontend
-    if (data.questions?.length > 0) {
-      examination.questions = data.questions.map((q: any) => ({
-        id: q.id.toString(),
-        question: q.content || q.question || '',
-        text: q.content || q.question || '',
-        content: q.content || q.question || '',
-        options: q.options || [],
-        correctOption: q.correctOption,
-        correctAnswer: q.correctAnswer,
-        explanation: q.explanation || '',
-        type: q.type || 'multiple_choice',
-        mode: q.mode || 'text',
-        format: q.format || 'text',
-        difficultyLevel: q.difficultyLevel || 'medium',
-        difficulty: q.difficulty || 'medium',
-        points: q.points || 1,
-        audioUrl: q.audioUrl || null,
-      }));
-    }
-
-    return examination;
-  }
+  // mapResponseToExamination moved to helper: mapExaminationApiToExamination
 
   /**
    * Gửi câu trả lời cho một câu hỏi trong bài thi
@@ -199,10 +125,15 @@ class ExaminationAttemptService {
     answer: string | number | boolean | Array<string | number>,
   ): Promise<{ success: boolean; isCorrect?: boolean }> {
     try {
-      const response = await api.post(`${this.basePath}/${examinationId}/submit`, {
-        questionId: Number(questionId),
+      const requestData: SubmitAnswerRequest = {
+        questionId: parseId(questionId),
         answer: answer,
-      });
+      };
+
+      const response = await api.post<{ isCorrect: boolean }>(
+        `${this.basePath}/${parseId(examinationId)}/submit`,
+        requestData,
+      );
 
       return {
         success: true,
@@ -210,7 +141,11 @@ class ExaminationAttemptService {
       };
     } catch (error) {
       console.error(`Error submitting answer for question ${questionId}:`, error);
-      throw error;
+      throw new ExaminationError(
+        `Failed to submit answer for question ${questionId}`,
+        ExaminationErrorCode.SUBMIT_ANSWER_FAILED,
+        500,
+      );
     }
   }
 
@@ -222,35 +157,17 @@ class ExaminationAttemptService {
    */
   async completeExamination(examinationId: number | string): Promise<ExaminationResult> {
     try {
-      const response = await api.post(`${this.basePath}/${examinationId}/complete`);
-
-      // Tính toán số câu hỏi bỏ qua (nếu API trả về)
-      const skippedAnswers = response.data.skippedAnswers !== undefined ? response.data.skippedAnswers : 0;
-
-      // Tính toán số câu trả lời sai dựa trên số câu đã trả lời, không tính câu bỏ qua
-      const answeredQuestions = response.data.totalQuestions - skippedAnswers;
-      const incorrectAnswers = answeredQuestions - response.data.correctAnswers;
-
-      // Chuyển đổi kết quả về định dạng ExaminationResult
-      const result: ExaminationResult = {
-        id: response.data.id,
-        score: response.data.score * 10, // Chuyển từ thang điểm 10 sang 100
-        totalQuestions: response.data.totalQuestions,
-        correctAnswers: response.data.correctAnswers,
-        incorrectAnswers: incorrectAnswers,
-        skippedAnswers: skippedAnswers,
-        timeSpent: response.data.timeSpent || 0,
-        completedAt: response.data.completedAt,
-        updatedAt: response.data.updatedAt || new Date().toISOString(),
-        // Thông tin bổ sung nếu có
-        percentage: response.data.score * 10,
-        isPassed: response.data.isPassed,
-      };
-
-      return result;
+      const response = await api.post<ExaminationResultApiResponse>(
+        `${this.basePath}/${parseId(examinationId)}/complete`,
+      );
+      return mapExaminationResultApiToResult(response.data);
     } catch (error) {
       console.error(`Error completing examination ${examinationId}:`, error);
-      throw error;
+      throw new ExaminationError(
+        `Failed to complete examination ${examinationId}`,
+        ExaminationErrorCode.SUBMIT_EXAM_FAILED,
+        500,
+      );
     }
   }
 
@@ -261,20 +178,20 @@ class ExaminationAttemptService {
    */
   async getCurrentExamination(): Promise<Examination | null> {
     try {
-      const response = await api.get(`${this.basePath}/current`);
+      const response = await api.get<ExaminationApiResponse>(`${this.basePath}/current`);
       if (!response.data) return null;
 
-      return this.mapResponseToExamination(response.data);
-    } catch (error) {
+      return mapExaminationApiToExamination(response.data);
+    } catch (error: any) {
       console.error('Error fetching current examination:', error);
 
       // Nếu không có bài thi đang làm dở, trả về null thay vì throw error
       // Kiểm tra lỗi 404 (không tìm thấy bài thi đang làm dở)
-      if (error instanceof Error && 'response' in (error as any) && (error as any).response?.status === 404) {
+      if (error.response?.status === 404) {
         return null;
       }
 
-      throw error;
+      throw createExaminationError(error);
     }
   }
 
@@ -293,33 +210,14 @@ class ExaminationAttemptService {
     meta: { total: number; page: number; limit: number; totalPages: number };
   }> {
     try {
-      const response = await api.get(`${this.basePath}/history`, {
+      const response = await api.get<PaginatedApiResponse<ExaminationResultApiResponse>>(`${this.basePath}/history`, {
         params: { page, limit },
       });
-
-      // Chuyển đổi kết quả thành định dạng frontend
-      const results: ExaminationResult[] = response.data.data.map((result: any) => ({
-        id: result.id,
-        score: result.score * 10, // Chuyển từ thang điểm 10 sang 100
-        totalQuestions: result.totalQuestions,
-        correctAnswers: result.correctAnswers,
-        incorrectAnswers: result.totalQuestions - result.correctAnswers,
-        skippedAnswers: 0,
-        timeSpent: result.timeSpent || 0,
-        isPassed: result.isPassed,
-        percentage: result.score * 10,
-        completedAt: result.completedAt,
-        updatedAt: result.updatedAt,
-        examination: result.examination,
-      }));
-
-      return {
-        data: results,
-        meta: response.data.meta,
-      };
+      const results: ExaminationResult[] = response.data.data.map(mapExaminationResultApiToResult);
+      return { data: results, meta: response.data.meta };
     } catch (error) {
       console.error('Error fetching examination history:', error);
-      throw error;
+      throw createExaminationError(error);
     }
   }
 
@@ -341,29 +239,43 @@ class ExaminationAttemptService {
     }
   > {
     try {
-      const response = await api.get(`${this.basePath}/${examinationId}`);
+      const response = await api.get<ExaminationResultApiResponse>(`${this.basePath}/${examinationId}`);
+      const mapped = mapExaminationResultApiToResult(response.data);
 
-      // Chuyển đổi kết quả thành định dạng frontend
+      // Normalize detailedResults to frontend shape: convert selectedOption/correctOption to numbers
+      const detailedResults = (response.data.detailedResults || []).map((d) => {
+        const parseOption = (opt: number | string | null | undefined): number => {
+          if (opt === null || opt === undefined) return -1;
+          if (typeof opt === 'number') return opt;
+          const n = Number(opt);
+          return Number.isNaN(n) ? -1 : n;
+        };
+
+        return {
+          questionId: d.questionId,
+          isCorrect: d.isCorrect,
+          selectedOption: parseOption(d.selectedOption) as number,
+          correctOption: parseOption(d.correctOption) as number,
+          question: d.question ? (mapExaminationApiToExamination as any) : undefined,
+        };
+      });
+
       const result: ExaminationResult & { detailedResults: any[] } = {
-        id: response.data.id,
-        score: response.data.score * 10,
-        totalQuestions: response.data.totalQuestions,
-        correctAnswers: response.data.correctAnswers,
-        incorrectAnswers: response.data.totalQuestions - response.data.correctAnswers,
-        skippedAnswers: 0,
-        timeSpent: response.data.timeSpent || 0,
-        isPassed: response.data.isPassed,
-        percentage: response.data.score * 10,
-        completedAt: response.data.completedAt,
-        updatedAt: response.data.updatedAt,
-        examination: this.mapResponseToExamination(response.data.examination),
-        detailedResults: response.data.detailedResults || [],
+        ...mapped,
+        examination: response.data.examination
+          ? mapExaminationApiToExamination(response.data.examination as ExaminationApiResponse)
+          : undefined,
+        detailedResults,
       };
 
       return result;
     } catch (error) {
       console.error(`Error fetching examination detail ${examinationId}:`, error);
-      throw error;
+      throw new ExaminationError(
+        `Failed to fetch examination detail ${examinationId}`,
+        ExaminationErrorCode.EXAM_NOT_FOUND,
+        404,
+      );
     }
   }
 }

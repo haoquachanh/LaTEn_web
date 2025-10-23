@@ -16,6 +16,7 @@ import { CommentService } from './comment.service';
 import { JwtAuthGuard } from '@common/security/jwt.guard';
 import { Comment, CommentType } from '../../entities/comment.entity';
 import { CommentReply } from '../../entities/comment-reply.entity';
+import { CreateReplyDto } from './dtos/create-reply.dto';
 
 @Controller('comments')
 export class CommentController {
@@ -91,7 +92,7 @@ export class CommentController {
   @Post(':id/replies')
   async createReply(
     @Param('id', ParseIntPipe) commentId: number,
-    @Body(ValidationPipe) replyData: Partial<CommentReply>,
+    @Body(ValidationPipe) replyData: CreateReplyDto,
     @Request() req,
   ): Promise<CommentReply> {
     return this.commentService.createReply(commentId, replyData, req.user.id);

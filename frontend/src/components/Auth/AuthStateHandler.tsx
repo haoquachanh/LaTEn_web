@@ -9,6 +9,7 @@
 import { useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePathname, useRouter } from 'next/navigation';
+import { useLocale } from 'next-intl';
 
 const protectedPaths = ['/profile', '/dashboard', '/my-courses', '/my-exams', '/settings'];
 
@@ -18,6 +19,7 @@ export default function AuthStateHandler() {
   const { loading, loggedIn, refreshUser } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
+  const locale = useLocale();
 
   useEffect(() => {
     if (loading) return;
@@ -57,10 +59,10 @@ export default function AuthStateHandler() {
       if (typeof window !== 'undefined') {
         sessionStorage.setItem('auth_redirect', pathname);
       }
-      router.replace('/auth/login');
+      router.replace(`/${locale}/login`);
       return;
     }
-  }, [pathname, loading, loggedIn, router]);
+  }, [pathname, loading, loggedIn, router, locale]);
 
   return null;
 }

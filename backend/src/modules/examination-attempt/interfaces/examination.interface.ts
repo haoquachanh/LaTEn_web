@@ -1,9 +1,12 @@
 export interface AnswerResponse {
   questionId: number;
-  isCorrect: boolean;
-  userAnswer: string | number | string[];
-  correctAnswer?: string | number | string[];
-  explanation?: string;
+  isCorrect: boolean | null;
+  userAnswer: string | number | string[] | null;
+  correctAnswer?: string | number | string[] | null;
+  explanation?: string | null;
+  examinationCompleted?: boolean;
+  message?: string;
+  summary?: ExaminationSummary;
 }
 
 export interface ExaminationSummary {
