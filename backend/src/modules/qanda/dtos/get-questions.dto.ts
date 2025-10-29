@@ -1,6 +1,6 @@
 import { IsOptional, IsString, IsNumber, IsEnum, Min } from 'class-validator';
 import { Type } from 'class-transformer';
-import { QuestionCategory } from '../../../entities/qanda-question.entity';
+import { QuestionCategory } from '@entities/qanda-question.entity';
 
 export class GetQuestionsDto {
   @IsOptional()

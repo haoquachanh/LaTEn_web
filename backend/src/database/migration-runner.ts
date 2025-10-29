@@ -111,7 +111,7 @@ if (require.main === module) {
 
   switch (command) {
     case 'run':
-      MigrationRunner.runMigrations();
+      MigrationRunner.runMigrations().then(() => process.exit(0)).catch(() => process.exit(1));
       break;
     case 'generate':
       if (!argument) {
@@ -119,15 +119,16 @@ if (require.main === module) {
         console.log('Usage: npm run migration:generate MyMigrationName');
         process.exit(1);
       }
-      MigrationRunner.generateMigration(argument);
+      MigrationRunner.generateMigration(argument).then(() => process.exit(0));
       break;
     case 'revert':
-      MigrationRunner.revertMigration();
+      MigrationRunner.revertMigration().then(() => process.exit(0)).catch(() => process.exit(1));
       break;
     default:
       console.log('Available commands:');
       console.log('  run     - Run pending migrations');
       console.log('  generate <name> - Generate new migration');
       console.log('  revert  - Revert last migration');
+      process.exit(0);
   }
 }

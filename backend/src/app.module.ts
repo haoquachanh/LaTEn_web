@@ -1,5 +1,5 @@
-import { ClassSerializerInterceptor, Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ClassSerializerInterceptor, Module, CacheModule } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { typeOrmConfig } from './common/config/typeorm.config';
@@ -15,10 +15,10 @@ import { PostModule } from '@modules/post/post.module';
 import { QandAModule } from '@modules/qanda/qanda.module';
 import { UploadModule } from '@modules/upload/upload.module';
 import { APP_INTERCEPTOR, APP_GUARD } from '@nestjs/core';
-import { SeedsModule } from './seeds/seeds.module';
 import { PerformanceInterceptor } from './common/interceptors/performance.interceptor';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 import { LoggerModule } from './common/logger/logger.module';
+import { CacheConfig } from './config/cache.config';
 
 @Module({
   imports: [
@@ -26,25 +26,31 @@ import { LoggerModule } from './common/logger/logger.module';
       isGlobal: true,
       envFilePath: '.env',
     }),
+    CacheModule.registerAsync({
+      isGlobal: true,
+      imports: [ConfigModule],
+      useClass: CacheConfig,
+      inject: [ConfigService],
+    }),
     TypeOrmModule.forRootAsync(typeOrmConfig),
     ThrottlerModule.forRoot([
       {
         name: 'short',
-        ttl: 1000, // 1 second
-        limit: 10, // 10 requests per second
+        ttl: 1000,
+        limit: 10,
       },
       {
         name: 'medium',
-        ttl: 60000, // 1 minute
-        limit: 100, // 100 requests per minute
+        ttl: 60000,
+        limit: 100,
       },
       {
         name: 'long',
-        ttl: 900000, // 15 minutes
-        limit: 500, // 500 requests per 15 minutes
+        ttl: 900000,
+        limit: 500,
       },
     ]),
-    LoggerModule, // Global module for AppLoggerService
+    LoggerModule,
     HealthModule,
     AuthModule,
     UserModule,
@@ -55,7 +61,6 @@ import { LoggerModule } from './common/logger/logger.module';
     PostModule,
     QandAModule,
     UploadModule,
-    SeedsModule,
   ],
   controllers: [],
   providers: [

@@ -3,7 +3,7 @@
 import { useState, memo } from 'react';
 import Image from 'next/image';
 import CustomExamForm from './CustomExamForm';
-import PresetExamForm from './PresetExamForm';
+import PresetExamPicker from './PresetExamPicker';
 import { PresetExam } from '../types';
 import { useExamination } from '@/hooks/useExamination';
 
@@ -254,7 +254,7 @@ const ExamSetup: React.FC<ExamSetupProps> = ({
                 }`}
               >
                 <div className="h-full overflow-y-auto overflow-x-hidden pr-3 py-3 custom-scrollbar flex-grow">
-                  <PresetExamForm
+                  <PresetExamPicker
                     selectedPresetId={selectedPresetId}
                     handlePresetSelect={handlePresetSelect}
                     presetExams={presetExams}

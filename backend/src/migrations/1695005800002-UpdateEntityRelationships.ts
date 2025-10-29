@@ -2,39 +2,48 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class UpdateEntityRelationships1695005800002 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    // Cập nhật các bảng để phù hợp với các thay đổi entity
-
-    // 1. Thêm trường cấu hình vào ExaminationTemplate
     await queryRunner.query(`
-      -- Tạo cấu trúc config mới (kết hợp cả questionFilters)
-      UPDATE examination_templates
-      SET config = COALESCE(config, '{}'::jsonb) || 
-                 jsonb_build_object('questionFilters', question_filters)
-      WHERE question_filters IS NOT NULL;
-      
-      -- Đảm bảo trường config tồn tại
       ALTER TABLE examination_templates
       ADD COLUMN IF NOT EXISTS config JSONB;
     `);
 
-    // 2. Thêm trường questionIds vào ExaminationTemplate (có thể được định nghĩa trong config)
     await queryRunner.query(`
-      ALTER TABLE examination_templates
-      ADD COLUMN question_ids INTEGER[];
+      DO $$ BEGIN
+        IF EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'examination_templates' 
+          AND column_name = 'question_filters'
+        ) THEN
+          UPDATE examination_templates
+          SET config = COALESCE(config, '{}'::jsonb) || 
+                     jsonb_build_object('questionFilters', question_filters)
+          WHERE question_filters IS NOT NULL;
+        END IF;
+      END $$;
     `);
 
-    // 3. Cập nhật examination.entity nếu cần
+    await queryRunner.query(`
+      ALTER TABLE examination_templates
+      ADD COLUMN IF NOT EXISTS question_ids INTEGER[];
+    `);
+
     await queryRunner.query(`
       ALTER TABLE examinations
       ADD COLUMN IF NOT EXISTS incorrect_answers INTEGER DEFAULT 0,
       ADD COLUMN IF NOT EXISTS skipped_questions INTEGER DEFAULT 0;
     `);
 
-    // 4. Thêm các trường cần thiết vào examination_questions
     await queryRunner.query(`
-      ALTER TABLE examination_questions
-      ADD COLUMN IF NOT EXISTS feedback TEXT,
-      ADD COLUMN IF NOT EXISTS order_index INTEGER DEFAULT 0;
+      DO $$ BEGIN
+        IF EXISTS (
+          SELECT 1 FROM information_schema.tables 
+          WHERE table_name = 'examination_questions'
+        ) THEN
+          ALTER TABLE examination_questions
+          ADD COLUMN IF NOT EXISTS feedback TEXT,
+          ADD COLUMN IF NOT EXISTS order_index INTEGER DEFAULT 0;
+        END IF;
+      END $$;
     `);
   }
 

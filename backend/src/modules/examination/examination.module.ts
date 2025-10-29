@@ -18,6 +18,8 @@ import { LeaderboardService } from './services/leaderboard.service';
 import { ExaminationTemplateService } from './services/examination-template.service';
 import { DashboardController } from './dashboard.controller';
 import { ExaminationAttemptModule } from '../examination-attempt/examination-attempt.module';
+import { HttpCacheInterceptor } from '@common/interceptors/cache.interceptor';
+import { CacheService } from '@common/services/cache.service';
 
 @Module({
   imports: [
@@ -34,7 +36,14 @@ import { ExaminationAttemptModule } from '../examination-attempt/examination-att
     forwardRef(() => ExaminationAttemptModule), // Import with forwardRef to resolve circular dependency
   ],
   controllers: [ExaminationController, ExaminationPresetController, LeaderboardController, DashboardController],
-  providers: [ExaminationService, ExaminationPresetService, LeaderboardService, ExaminationTemplateService],
+  providers: [
+    ExaminationService,
+    ExaminationPresetService,
+    LeaderboardService,
+    ExaminationTemplateService,
+    HttpCacheInterceptor,
+    CacheService,
+  ],
   exports: [ExaminationService, ExaminationPresetService, LeaderboardService, ExaminationTemplateService],
 })
 export class ExaminationModule {}

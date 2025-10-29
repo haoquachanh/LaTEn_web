@@ -12,7 +12,7 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
-import { JwtAuthGuard } from '@modules/auth/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '@common/security/jwt.guard';
 import { CurrentUser } from '@common/decorators/current-user.decorator';
 import { ExaminationPresetService } from './examination-preset.service';
 import { CreatePresetDto, UpdatePresetDto } from './dtos/preset-dto';

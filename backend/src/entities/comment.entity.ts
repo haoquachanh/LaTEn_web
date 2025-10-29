@@ -34,19 +34,9 @@ export class Comment {
   @Column({ default: true })
   isActive: boolean;
 
-  @Column({ default: 0 })
-  likes: number;
-
-  @Column({ default: 0 })
-  dislikes: number;
-
   @ManyToOne(() => UserEntity)
   @JoinColumn({ name: 'userId' })
   user: UserEntity;
-
-  @ManyToOne(() => UserEntity)
-  @JoinColumn({ name: 'authorId' })
-  author: UserEntity;
 
   @CreateDateColumn()
   createdAt: Date;

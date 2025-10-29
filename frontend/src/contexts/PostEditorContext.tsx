@@ -128,12 +128,11 @@ export const PostEditorProvider = ({ children, initialPost }: PostEditorProvider
       let result;
       if (post.id) {
         result = await postService.updatePost(post.id, postData);
+        router.push(`/community/posts/${result.id}`);
       } else {
         result = await postService.createPost(postData as CreatePostDto);
+        router.push('/community/posts?refresh=true');
       }
-
-      console.log('Post saved:', result);
-      router.push(`/community/posts/${result.id}`);
     } catch (err) {
       console.error('Error saving post:', err);
       const errorMessage = err instanceof Error ? err.message : 'Failed to save post';

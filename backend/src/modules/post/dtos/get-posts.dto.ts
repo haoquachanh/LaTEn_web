@@ -1,6 +1,6 @@
 import { IsOptional, IsEnum, IsString, IsNumber, IsPositive } from 'class-validator';
 import { Type } from 'class-transformer';
-import { PostType } from '../../../entities/post.entity';
+import { PostType } from '@entities/post.entity';
 
 export class GetPostsDto {
   @IsOptional()

@@ -1,12 +1,12 @@
 import { Controller, Get, UseGuards, Query, Req, HttpStatus, HttpException } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '@common/security/jwt.guard';
 import { Request } from 'express';
 import { ExaminationService } from './examination.service';
-import { ExaminationAttemptService } from '../examination-attempt/examination-attempt.service';
+import { ExaminationAttemptService } from '@modules/examination-attempt/examination-attempt.service';
 import { ExaminationTemplateService } from './services/examination-template.service';
 import { LeaderboardService } from './services/leaderboard.service';
-import { PaginationParams } from '../../common/typings/pagination-params';
+import { PaginationParams } from '@common/typings/pagination-params';
 
 @ApiTags('examination-dashboard')
 @Controller('examination/dashboard')

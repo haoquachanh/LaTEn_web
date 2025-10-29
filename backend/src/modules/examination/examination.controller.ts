@@ -11,6 +11,7 @@ import {
   UseGuards,
   Put,
   Delete,
+  UseInterceptors,
 } from '@nestjs/common';
 import { ExaminationService } from './examination.service';
 import { CreateExaminationDto } from './dtos/create-examination.dto';
@@ -23,6 +24,9 @@ import { GetExamTemplatesDto } from '../examination-attempt/dtos/template/get-ex
 import { ExaminationAttemptService } from '../examination-attempt/examination-attempt.service';
 import { LeaderboardService } from './services/leaderboard.service';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { HttpCacheInterceptor } from '@common/interceptors/cache.interceptor';
+import { CacheKey } from '@common/decorators/cache-key.decorator';
+import { CacheTTL } from '@common/decorators/cache-ttl.decorator';
 
 @Controller('examinations')
 export class ExaminationController {
@@ -84,12 +88,18 @@ export class ExaminationController {
 
   @UseGuards(JwtAuthGuard)
   @Get('stats/:userId')
+  @UseInterceptors(HttpCacheInterceptor)
+  @CacheKey('exam:stats')
+  @CacheTTL(300)
   getExaminationStats(@Param('userId', ParseIntPipe) userId: number) {
     return this.examinationService.getExaminationStats(userId);
   }
 
   @UseGuards(JwtAuthGuard)
   @Get(':id')
+  @UseInterceptors(HttpCacheInterceptor)
+  @CacheKey('exam:detail')
+  @CacheTTL(600)
   getExamination(@Param('id', ParseIntPipe) id: number) {
     return this.examinationService.getExaminationById(id);
   }
@@ -98,13 +108,19 @@ export class ExaminationController {
 
   // GET ALL PRESETS: Lấy danh sách các bài thi mẫu (public endpoint, không yêu cầu xác thực)
   @Get('presets')
+  @UseInterceptors(HttpCacheInterceptor)
+  @CacheKey('exam:presets')
+  @CacheTTL(1800)
   getExamPresets(@Query() query: GetExamTemplatesDto, @Request() req) {
-    const userId = req.user?.id || null; // userId sẽ là null nếu không có xác thực
+    const userId = req.user?.id || null;
     return this.examinationAttemptService.getExamTemplates(query, userId);
   }
 
   // GET PRESET BY ID: Lấy chi tiết một bài thi mẫu (public endpoint, không yêu cầu xác thực)
   @Get('presets/:id')
+  @UseInterceptors(HttpCacheInterceptor)
+  @CacheKey('exam:preset')
+  @CacheTTL(1800)
   getExamPresetById(@Param('id', ParseIntPipe) presetId: number) {
     return this.examinationAttemptService.getExamTemplateById(presetId);
   }

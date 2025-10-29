@@ -10,15 +10,19 @@ import {
   UseGuards,
   ParseIntPipe,
   Request,
+  UseInterceptors,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '@common/security/jwt.guard';
 import { QuestionService } from './question.service';
-import { RolesGuard } from '../../common/security/role.guard';
-import { Roles } from '../../common/decorators/roles.decorator';
-import { UserRole } from '../../common/typings/user-role.enum';
+import { RolesGuard } from '@common/security/role.guard';
+import { Roles } from '@common/decorators/roles.decorator';
+import { UserRole } from '@common/typings/user-role.enum';
 import { CreateQuestionDto } from './dtos/create-question.dto';
 import { Question } from '@entities/question.entity';
 import { UpdateQuestionDto } from './dtos/update-question.dto';
+import { HttpCacheInterceptor } from '@common/interceptors/cache.interceptor';
+import { CacheKey } from '@common/decorators/cache-key.decorator';
+import { CacheTTL } from '@common/decorators/cache-ttl.decorator';
 
 @Controller('questions')
 @UseGuards(JwtAuthGuard)
@@ -34,10 +38,17 @@ export class QuestionController {
   }
 
   @Get()
+  @UseInterceptors(HttpCacheInterceptor)
+  @CacheKey('question:list')
+  @CacheTTL(1800)
   findAll(): Promise<Question[]> {
     return this.questionService.findAll();
   }
+
   @Get(':id')
+  @UseInterceptors(HttpCacheInterceptor)
+  @CacheKey('question:detail')
+  @CacheTTL(900)
   async findOne(@Param('id', ParseIntPipe) id: number): Promise<Question> {
     return this.questionService.findOne(id);
   }

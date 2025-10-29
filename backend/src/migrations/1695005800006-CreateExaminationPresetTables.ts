@@ -19,8 +19,8 @@ export class CreateExaminationPresetTables1695005800006 implements MigrationInte
         "isActive" boolean NOT NULL DEFAULT true,
         "isPublic" boolean NOT NULL DEFAULT false,
         "createdById" integer,
-        "created_at" TIMESTAMP NOT NULL DEFAULT now(),
-        "updated_at" TIMESTAMP NOT NULL DEFAULT now(),
+        "createdAt" TIMESTAMP NOT NULL DEFAULT now(),
+        "updatedAt" TIMESTAMP NOT NULL DEFAULT now(),
         CONSTRAINT "PK_examination_presets" PRIMARY KEY ("id")
       )
     `);
@@ -87,7 +87,7 @@ export class CreateExaminationPresetTables1695005800006 implements MigrationInte
     `);
 
     await queryRunner.query(`
-      CREATE INDEX "IDX_examination_presets_created_at" ON "examination_presets" ("created_at")
+      CREATE INDEX "IDX_examination_presets_created_at" ON "examination_presets" ("createdAt")
     `);
 
     await queryRunner.query(`

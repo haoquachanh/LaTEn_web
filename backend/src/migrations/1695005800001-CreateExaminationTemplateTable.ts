@@ -11,13 +11,13 @@ export class CreateExaminationTemplateTable1695005800001 implements MigrationInt
         type VARCHAR(50),
         content VARCHAR(50),
         level VARCHAR(50),
-        total_questions INTEGER NOT NULL DEFAULT 0,
-        duration_seconds INTEGER NOT NULL DEFAULT 3600,
-        question_filters JSONB,
-        is_active BOOLEAN NOT NULL DEFAULT true,
-        created_by_id INTEGER REFERENCES users(id),
-        created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-        updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+        "totalQuestions" INTEGER NOT NULL DEFAULT 0,
+        "durationSeconds" INTEGER NOT NULL DEFAULT 3600,
+        "questionFilters" JSONB,
+        "isActive" BOOLEAN NOT NULL DEFAULT true,
+        "createdById" INTEGER REFERENCES users(id),
+        "createdAt" TIMESTAMP NOT NULL DEFAULT NOW(),
+        "updatedAt" TIMESTAMP NOT NULL DEFAULT NOW()
       );
     `);
 
@@ -33,10 +33,10 @@ export class CreateExaminationTemplateTable1695005800001 implements MigrationInt
     // Tạo index cho các trường thường xuyên tìm kiếm
     await queryRunner.query(`
       CREATE INDEX IDX_exam_template_active_type_level 
-      ON examination_templates (is_active, type, level);
+      ON examination_templates ("isActive", type, level);
       
       CREATE INDEX IDX_exam_template_created_at
-      ON examination_templates (created_at);
+      ON examination_templates ("createdAt");
       
       CREATE INDEX IDX_exam_template_title
       ON examination_templates (title);

@@ -1,28 +1,24 @@
-version: '3.8'
-
 services:
-  # PostgreSQL Database
   postgres:
     container_name: laten-database
     image: postgres:15-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: '578722'
-      POSTGRES_DB: laten
+      POSTGRES_USER: ${DB_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_DATABASE:-laten}
       POSTGRES_INITDB_ARGS: "--encoding=UTF8"
     ports:
-      - '5432:5432'
+      - '5435:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-postgres}"]
       interval: 10s
       timeout: 5s
       retries: 5
 
-  # Backend API
   backend:
     container_name: laten-backend
     build:
@@ -32,16 +28,8 @@ services:
     restart: unless-stopped
     ports:
       - '3001:3001'
-    environment:
-      - NODE_ENV=production
-      - DB_HOST=postgres
-      - DB_PORT=5432
-      - DB_USERNAME=postgres
-      - DB_PASSWORD=578722
-      - DB_DATABASE=laten
-      - JWT_SECRET=your_production_jwt_secret_here
-      - JWT_EXPIRES_IN=24h
-      - PORT=3001
+    env_file:
+      - .env.prod
     depends_on:
       postgres:
         condition: service_healthy

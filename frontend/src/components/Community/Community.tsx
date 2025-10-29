@@ -279,7 +279,7 @@ export default function Community() {
         </div>
 
         {/* Stats - Only visible to admin users */}
-        {loggedIn && user?.role === 'admin' && (
+        {/* {loggedIn && user?.role === 'admin' && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div className="stats bg-base-100 shadow-xl">
               <div className="stat">
@@ -353,7 +353,7 @@ export default function Community() {
               </div>
             </div>
           </div>
-        )}
+        )} */}
 
         {/* Community Guidelines */}
         {/* <div className="mb-8 grid grid-cols-1 md:grid-cols-3 gap-6">

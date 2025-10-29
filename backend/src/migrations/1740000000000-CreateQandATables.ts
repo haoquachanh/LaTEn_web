@@ -305,17 +305,17 @@ export class CreateQandATables1740000000000 implements MigrationInterface {
     );
 
     // Add indexes
-    await queryRunner.query(`CREATE INDEX IDX_qanda_questions_userId ON qanda_questions(userId)`);
+    await queryRunner.query(`CREATE INDEX IDX_qanda_questions_userId ON qanda_questions("userId")`);
     await queryRunner.query(`CREATE INDEX IDX_qanda_questions_category ON qanda_questions(category)`);
-    await queryRunner.query(`CREATE INDEX IDX_qanda_questions_isAnswered ON qanda_questions(isAnswered)`);
-    await queryRunner.query(`CREATE INDEX IDX_qanda_questions_createdAt ON qanda_questions(createdAt)`);
-    await queryRunner.query(`CREATE INDEX IDX_qanda_answers_questionId ON qanda_answers(questionId)`);
-    await queryRunner.query(`CREATE INDEX IDX_qanda_answers_userId ON qanda_answers(userId)`);
+    await queryRunner.query(`CREATE INDEX IDX_qanda_questions_isAnswered ON qanda_questions("isAnswered")`);
+    await queryRunner.query(`CREATE INDEX IDX_qanda_questions_createdAt ON qanda_questions("createdAt")`);
+    await queryRunner.query(`CREATE INDEX IDX_qanda_answers_questionId ON qanda_answers("questionId")`);
+    await queryRunner.query(`CREATE INDEX IDX_qanda_answers_userId ON qanda_answers("userId")`);
     await queryRunner.query(
-      `CREATE UNIQUE INDEX IDX_qanda_question_likes_userId_questionId ON qanda_question_likes(userId, questionId)`,
+      `CREATE UNIQUE INDEX IDX_qanda_question_likes_userId_questionId ON qanda_question_likes("userId", "questionId")`,
     );
     await queryRunner.query(
-      `CREATE UNIQUE INDEX IDX_qanda_answer_likes_userId_answerId ON qanda_answer_likes(userId, answerId)`,
+      `CREATE UNIQUE INDEX IDX_qanda_answer_likes_userId_answerId ON qanda_answer_likes("userId", "answerId")`,
     );
   }
 

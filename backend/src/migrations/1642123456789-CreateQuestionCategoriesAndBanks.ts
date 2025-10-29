@@ -34,27 +34,34 @@ export class CreateQuestionCategoriesAndBanks1642123456789 implements MigrationI
     `);
 
     // Add new columns to questions table only if they do not exist
-    const addColumnIfNotExists = async (table: string, column: string, type: string) => {
-      await queryRunner.query(`
-        DO $$ BEGIN
-          IF NOT EXISTS (
-            SELECT 1 FROM information_schema.columns 
-            WHERE table_name='${table}' AND column_name='${column}'
-          ) THEN
-            ALTER TABLE "${table}" ADD COLUMN ${column} ${type};
-          END IF;
-        END $$;
-      `);
-    };
-
-    await addColumnIfNotExists('questions', 'format', "character varying NOT NULL DEFAULT 'reading'");
-    await addColumnIfNotExists('questions', 'difficulty', 'integer NOT NULL DEFAULT 1');
-    await addColumnIfNotExists('questions', 'acceptableAnswers', 'json');
-    await addColumnIfNotExists('questions', 'passage', 'text');
-    await addColumnIfNotExists('questions', 'timeLimit', 'integer');
-    await addColumnIfNotExists('questions', 'metadata', 'json');
-    await addColumnIfNotExists('questions', 'categoryId', 'integer');
-    await addColumnIfNotExists('questions', 'questionBankId', 'integer');
+    await queryRunner.query(`
+      DO $$ BEGIN
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='questions' AND column_name='format') THEN
+          ALTER TABLE "questions" ADD COLUMN "format" character varying NOT NULL DEFAULT 'reading';
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='questions' AND column_name='difficulty') THEN
+          ALTER TABLE "questions" ADD COLUMN "difficulty" integer NOT NULL DEFAULT 1;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='questions' AND column_name='acceptableAnswers') THEN
+          ALTER TABLE "questions" ADD COLUMN "acceptableAnswers" json;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='questions' AND column_name='passage') THEN
+          ALTER TABLE "questions" ADD COLUMN "passage" text;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='questions' AND column_name='timeLimit') THEN
+          ALTER TABLE "questions" ADD COLUMN "timeLimit" integer;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='questions' AND column_name='metadata') THEN
+          ALTER TABLE "questions" ADD COLUMN "metadata" json;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='questions' AND column_name='categoryId') THEN
+          ALTER TABLE "questions" ADD COLUMN "categoryId" integer;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='questions' AND column_name='questionBankId') THEN
+          ALTER TABLE "questions" ADD COLUMN "questionBankId" integer;
+        END IF;
+      END $$;
+    `);
 
     // Create foreign key constraints (check if they exist first)
     await queryRunner.query(`

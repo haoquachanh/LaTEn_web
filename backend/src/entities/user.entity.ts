@@ -24,7 +24,7 @@ export class UserEntity {
   @Column({
     type: 'enum',
     enum: UserRole,
-    default: UserRole.ADMIN,
+    default: UserRole.USER,
   })
   role: UserRole;
 
@@ -48,10 +48,10 @@ export class UserEntity {
   @Column({ nullable: true })
   username: string;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ name: 'created' })
   createdAt: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ name: 'updated' })
   updatedAt: Date;
 
   @IsOptional()

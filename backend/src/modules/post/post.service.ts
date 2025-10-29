@@ -1,16 +1,16 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Post, PostType } from '../../entities/post.entity';
-import { PostTag } from '../../entities/post-tag.entity';
-import { PostLike } from '../../entities/post-like.entity';
-import { UserEntity } from '../../entities/user.entity';
-import { Comment, CommentType } from '../../entities/comment.entity';
+import { Post, PostType } from '@entities/post.entity';
+import { PostTag } from '@entities/post-tag.entity';
+import { PostLike } from '@entities/post-like.entity';
+import { UserEntity } from '@entities/user.entity';
+import { Comment, CommentType } from '@entities/comment.entity';
 import { CreatePostDto } from './dtos/create-post.dto';
 import { UpdatePostDto } from './dtos/update-post.dto';
 import { GetPostsDto } from './dtos/get-posts.dto';
 import { CreateTagDto } from './dtos/create-tag.dto';
-import { PaginatedResponse } from './interfaces/paginated-response.interface';
+import { PaginatedResponse } from '@common/typings/paginated-response.interface';
 import { PostResponse, PostDetailResponse } from './interfaces/post-response.interface';
 import { TagResponse } from './interfaces/tag-response.interface';
 
@@ -136,7 +136,7 @@ export class PostService {
         type: CommentType.POST,
         isActive: true,
       },
-      relations: ['author', 'replies', 'replies.author'],
+      relations: ['user', 'replies', 'replies.user'],
       order: { createdAt: 'DESC' },
     });
 
@@ -309,7 +309,7 @@ export class PostService {
       content,
       type: CommentType.POST,
       targetId: postId,
-      author: user,
+      user,
       isActive: true,
     });
 
@@ -336,7 +336,7 @@ export class PostService {
         type: CommentType.POST,
         isActive: true,
       },
-      relations: ['author', 'replies', 'replies.author'],
+      relations: ['user', 'replies', 'replies.user'],
       order: { createdAt: 'DESC' },
     });
 
@@ -346,10 +346,10 @@ export class PostService {
       createdAt: comment.createdAt,
       updatedAt: comment.updatedAt,
       author: {
-        id: comment.author.id,
-        fullname: comment.author.fullname,
-        username: comment.author.username,
-        email: comment.author.email,
+        id: comment.user.id,
+        fullname: comment.user.fullname,
+        username: comment.user.username,
+        email: comment.user.email,
       },
       replies:
         comment.replies?.map((reply) => ({
@@ -357,10 +357,10 @@ export class PostService {
           content: reply.content,
           createdAt: reply.createdAt,
           author: {
-            id: reply.author.id,
-            fullname: reply.author.fullname,
-            username: reply.author.username,
-            email: reply.author.email,
+            id: reply.user.id,
+            fullname: reply.user.fullname,
+            username: reply.user.username,
+            email: reply.user.email,
           },
         })) || [],
     }));
@@ -457,10 +457,10 @@ export class PostService {
           createdAt: comment.createdAt,
           updatedAt: comment.updatedAt,
           author: {
-            id: comment.author.id,
-            fullname: comment.author.fullname,
-            username: comment.author.username,
-            email: comment.author.email,
+            id: comment.user.id,
+            fullname: comment.user.fullname,
+            username: comment.user.username,
+            email: comment.user.email,
           },
           replies:
             comment.replies?.map((reply) => ({
@@ -468,10 +468,10 @@ export class PostService {
               content: reply.content,
               createdAt: reply.createdAt,
               author: {
-                id: reply.author.id,
-                fullname: reply.author.fullname,
-                username: reply.author.username,
-                email: reply.author.email,
+                id: reply.user.id,
+                fullname: reply.user.fullname,
+                username: reply.user.username,
+                email: reply.user.email,
               },
             })) || [],
         })) || [],

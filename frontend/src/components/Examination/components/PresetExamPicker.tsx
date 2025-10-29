@@ -7,16 +7,13 @@ import { sampleTemplates } from '../data/sampleTemplates';
 import { samplePresetExams } from '../data/samplePresetExams';
 import { env } from '@/env';
 
-interface PresetExamFormProps {
+interface PresetExamPickerProps {
   selectedPresetId: string;
   handlePresetSelect: (preset: PresetExam) => void;
-  presetExams?: PresetExam[]; // Preset exam list received from parent component
+  presetExams?: PresetExam[];
 }
 
-/**
- * PresetExamForm displays a list of preset exams from API or props
- */
-const PresetExamForm: React.FC<PresetExamFormProps> = ({
+const PresetExamPicker: React.FC<PresetExamPickerProps> = ({
   selectedPresetId,
   handlePresetSelect,
   presetExams: propPresets,
@@ -25,10 +22,8 @@ const PresetExamForm: React.FC<PresetExamFormProps> = ({
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Optimize performance with useCallback to prevent unnecessary re-renders
   const fetchPresetExams = useCallback(async () => {
     try {
-      // Use preset exams from props if available
       if (propPresets && propPresets.length > 0) {
         setPresetExams(propPresets);
         setError(null);
@@ -38,7 +33,6 @@ const PresetExamForm: React.FC<PresetExamFormProps> = ({
 
       setLoading(true);
 
-      // Always use sample data in development mode if no props are provided
       if (env.isDevelopment) {
         setPresetExams(samplePresetExams);
         setError(null);
@@ -46,15 +40,12 @@ const PresetExamForm: React.FC<PresetExamFormProps> = ({
         return;
       }
 
-      // Check if user is authenticated (token exists in localStorage)
-      // Use the correct token key based on API client configuration
       const token =
         localStorage.getItem('laten_auth_token') ||
         localStorage.getItem('token') ||
         localStorage.getItem('accessToken');
 
       if (!token) {
-        // In development mode, use sample data instead of showing an error
         if (env.isDevelopment) {
           setPresetExams(sampleTemplates);
           setError(null);
@@ -65,14 +56,12 @@ const PresetExamForm: React.FC<PresetExamFormProps> = ({
         return;
       }
 
-      // Call API to get list of exam templates
       const response = await examinationAttemptService.getExamTemplates({ activeOnly: true });
 
       if (response.data && response.data.length > 0) {
         setPresetExams(response.data);
         setError(null);
       } else {
-        // If API returns no data, use sample data in development environment
         if (env.isDevelopment) {
           setPresetExams(sampleTemplates);
           setError(null);
@@ -81,10 +70,8 @@ const PresetExamForm: React.FC<PresetExamFormProps> = ({
         }
       }
     } catch (err: any) {
-      // Show detailed errors for easier debugging
       if (err.response) {
         if (err.response.status === 401) {
-          // In development mode, use sample data instead of showing an error
           if (env.isDevelopment) {
             setPresetExams(sampleTemplates);
             setError(null);
@@ -92,7 +79,6 @@ const PresetExamForm: React.FC<PresetExamFormProps> = ({
             setError('Please log in to view preset exams.');
           }
         } else {
-          // In development mode, use sample data instead of showing an error
           if (env.isDevelopment) {
             setPresetExams(sampleTemplates);
             setError(null);
@@ -101,7 +87,6 @@ const PresetExamForm: React.FC<PresetExamFormProps> = ({
           }
         }
       } else {
-        // In development mode, use sample data instead of showing an error
         if (env.isDevelopment) {
           setPresetExams(sampleTemplates);
           setError(null);
@@ -191,7 +176,6 @@ const PresetExamForm: React.FC<PresetExamFormProps> = ({
                 }`}
                 onClick={() => handlePresetSelect(preset)}
               >
-                {/* Exam Icon/Visual */}
                 <div
                   className={`w-10 h-10 rounded-full flex items-center justify-center mr-3 ${
                     String(selectedPresetId) === String(preset.id) ? 'bg-primary-focus' : 'bg-base-300'
@@ -213,7 +197,6 @@ const PresetExamForm: React.FC<PresetExamFormProps> = ({
                   </svg>
                 </div>
 
-                {/* Exam Details */}
                 <div className="flex-1">
                   <div className="flex justify-between items-start">
                     <div>
@@ -221,7 +204,6 @@ const PresetExamForm: React.FC<PresetExamFormProps> = ({
                       <p className="text-xs opacity-80 mt-1 line-clamp-2">{preset.description}</p>
                     </div>
 
-                    {/* Selected Indicator */}
                     {String(selectedPresetId) === String(preset.id) && (
                       <div className="ml-2 text-primary-content bg-primary-focus rounded-full p-1">
                         <svg
@@ -237,7 +219,6 @@ const PresetExamForm: React.FC<PresetExamFormProps> = ({
                     )}
                   </div>
 
-                  {/* Badges */}
                   <div className="flex flex-wrap gap-2 mt-2">
                     <div className="badge badge-sm badge-primary gap-1">
                       <svg
@@ -300,7 +281,6 @@ const PresetExamForm: React.FC<PresetExamFormProps> = ({
         )}
       </div>
 
-      {/* Guidance information with smaller size */}
       <div className="mb-6 bg-base-200 p-4 rounded-lg shadow-sm">
         <div className="flex items-start">
           <div className="bg-primary/20 text-primary p-2 rounded-full mr-3">
@@ -334,10 +314,9 @@ const PresetExamForm: React.FC<PresetExamFormProps> = ({
         </div>
       </div>
 
-      {/* Spacer for mobile view to ensure content isn't hidden behind fixed button */}
       <div className="h-15vh md:hidden"></div>
     </>
   );
 };
 
-export default memo(PresetExamForm);
+export default memo(PresetExamPicker);

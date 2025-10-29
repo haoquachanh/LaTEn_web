@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { JwtAuthGuard } from '../../common/security/jwt.guard';
-import { UserRole } from '../../common/typings/user-role.enum';
+import { JwtAuthGuard } from '@common/security/jwt.guard';
+import { UserRole } from '@common/typings/user-role.enum';
 import { RegisterDto } from './dtos/register.dto';
 import { LoginDto } from './dtos/login.dto';
 import { ConflictException, UnauthorizedException } from '@nestjs/common';

@@ -1,26 +1,42 @@
-version: '3.8'
-
 services:
-  # PostgreSQL Database for Development
   postgres-dev:
     container_name: laten-database-dev
     image: postgres:15-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: '578722'
-      POSTGRES_DB: laten_dev
+      POSTGRES_USER: ${DB_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-dev_password}
+      POSTGRES_DB: ${DB_DATABASE:-laten_dev}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8"
     ports:
       - '5433:5432'
     volumes:
       - postgres_dev_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-postgres}"]
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - laten-network
 
-  # Backend Development Server
+  redis-dev:
+    container_name: laten-redis-dev
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --requirepass ${REDIS_PASSWORD:-redis_password} --maxmemory 256mb --maxmemory-policy allkeys-lru
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_dev_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - laten-network
+
   backend-dev:
     container_name: laten-backend-dev
     build:
@@ -29,29 +45,27 @@ services:
     restart: unless-stopped
     ports:
       - '3001:3001'
-      - '9229:9229'  # Debug port
-    environment:
-      - NODE_ENV=development
-      - DB_HOST=postgres-dev
-      - DB_PORT=5432
-      - DB_USERNAME=postgres
-      - DB_PASSWORD=578722
-      - DB_DATABASE=laten_dev
-      - JWT_SECRET=dev_jwt_secret_key
-      - JWT_EXPIRES_IN=24h
-      - PORT=3001
+      - '9229:9229'
+    env_file:
+      - .env.dev
     volumes:
       - .:/app
       - /app/node_modules
     depends_on:
       postgres-dev:
         condition: service_healthy
+      redis-dev:
+        condition: service_healthy
     command: npm run start:dev
+    networks:
+      - laten-network
 
 volumes:
   postgres_dev_data:
-    driver: local
+  redis_dev_data:
 
 networks:
+  laten-network:
+    driver: bridge
   default:
     name: laten-dev-network

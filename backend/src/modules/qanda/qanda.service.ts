@@ -1,18 +1,18 @@
 import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { QandAQuestion } from '../../entities/qanda-question.entity';
-import { QandAAnswer } from '../../entities/qanda-answer.entity';
-import { PostTag } from '../../entities/post-tag.entity';
-import { UserEntity } from '../../entities/user.entity';
+import { QandAQuestion } from '@entities/qanda-question.entity';
+import { QandAAnswer } from '@entities/qanda-answer.entity';
+import { PostTag } from '@entities/post-tag.entity';
+import { UserEntity } from '@entities/user.entity';
 import { CreateQuestionDto } from './dtos/create-question.dto';
 import { UpdateQuestionDto } from './dtos/update-question.dto';
 import { GetQuestionsDto } from './dtos/get-questions.dto';
 import { CreateAnswerDto } from './dtos/create-answer.dto';
 import { UpdateAnswerDto } from './dtos/update-answer.dto';
-import { PaginatedResponse } from './interfaces/paginated-response.interface';
+import { PaginatedResponse } from '@common/typings/paginated-response.interface';
 import { QuestionResponse, QuestionDetailResponse, AnswerResponse } from './interfaces/question-response.interface';
-import { UserRole } from '../../common/typings/user-role.enum';
+import { UserRole } from '@common/typings/user-role.enum';
 
 @Injectable()
 export class QandAService {

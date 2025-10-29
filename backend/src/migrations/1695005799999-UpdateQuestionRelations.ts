@@ -27,12 +27,31 @@ export class UpdateQuestionRelations1695005799999 implements MigrationInterface 
       );
     `);
 
-    // Thêm indexes cho questions
-    await queryRunner.query(`
-      CREATE INDEX IF NOT EXISTS "IDX_questions_type_difficulty" ON questions (type, difficulty_level);
-      CREATE INDEX IF NOT EXISTS "IDX_questions_created_at" ON questions (created_at);
-      CREATE INDEX IF NOT EXISTS "IDX_questions_mode" ON questions (mode);
-    `);
+    // Thêm indexes cho questions (với check column tồn tại)
+    const table = await queryRunner.getTable('questions');
+    if (table) {
+      const hasDifficulty = table.columns.some((col) => col.name === 'difficulty');
+      const hasCreatedAt = table.columns.some((col) => col.name === 'createdAt');
+      const hasMode = table.columns.some((col) => col.name === 'mode');
+
+      if (hasDifficulty) {
+        await queryRunner.query(`
+          CREATE INDEX IF NOT EXISTS "IDX_questions_type_difficulty" ON questions (type, difficulty);
+        `);
+      }
+
+      if (hasCreatedAt) {
+        await queryRunner.query(`
+          CREATE INDEX IF NOT EXISTS "IDX_questions_created_at" ON questions ("createdAt");
+        `);
+      }
+
+      if (hasMode) {
+        await queryRunner.query(`
+          CREATE INDEX IF NOT EXISTS "IDX_questions_mode" ON questions (mode);
+        `);
+      }
+    }
 
     // Thêm các trường mới vào question_categories
     await queryRunner.query(`
@@ -46,13 +65,19 @@ export class UpdateQuestionRelations1695005799999 implements MigrationInterface 
       CREATE INDEX IF NOT EXISTS "IDX_question_categories_name" ON question_categories (name);
     `);
 
-    // Sao chép dữ liệu từ mối quan hệ cũ sang mối quan hệ mới
-    await queryRunner.query(`
-      INSERT INTO question_categories_relations ("questionId", "categoryId")
-      SELECT q.id, q.category_id FROM questions q
-      WHERE q.category_id IS NOT NULL
-      ON CONFLICT DO NOTHING;
-    `);
+    // Sao chép dữ liệu từ mối quan hệ cũ sang mối quan hệ mới (nếu có)
+    const questionsTable = await queryRunner.getTable('questions');
+    if (questionsTable) {
+      const hasCategoryId = questionsTable.columns.some((col) => col.name === 'categoryId' || col.name === 'category_id');
+      if (hasCategoryId) {
+        await queryRunner.query(`
+          INSERT INTO question_categories_relations ("questionId", "categoryId")
+          SELECT q.id, q."categoryId" FROM questions q
+          WHERE q."categoryId" IS NOT NULL
+          ON CONFLICT DO NOTHING;
+        `);
+      }
+    }
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {

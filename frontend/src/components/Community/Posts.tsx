@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useLocale } from 'next-intl';
-import Link from 'next/link';
+import { Link } from '@/navigation';
 import Image from 'next/image';
 import { postService, type Post as PostType } from '@/services/api/post.service';
 
@@ -379,7 +379,10 @@ export default function Posts({ onRefresh }: PostsProps = {}) {
                         {post.comments}
                       </span>
                     </div>
-                    <Link href={`/${locale}/community/posts/${post.id}`} className="btn btn-primary btn-xs lg:btn-sm">
+                    <Link 
+                      href={`/community/posts/${post.id}`} 
+                      className="btn btn-primary btn-xs lg:btn-sm"
+                    >
                       Read more
                     </Link>
                   </div>

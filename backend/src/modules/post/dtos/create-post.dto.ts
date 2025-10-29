@@ -1,5 +1,5 @@
 import { IsNotEmpty, IsOptional, IsEnum, IsString, IsNumber, IsArray } from 'class-validator';
-import { PostType } from '../../../entities/post.entity';
+import { PostType } from '@entities/post.entity';
 
 export class CreatePostDto {
   @IsNotEmpty()

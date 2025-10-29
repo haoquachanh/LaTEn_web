@@ -30,18 +30,29 @@ export class AddStatusAndFeedbackToExamination1693990000000 implements Migration
       END $$;
     `);
 
-    // Cập nhật dữ liệu cũ
-    await queryRunner.query(`
-      UPDATE "examinations" 
-      SET "status" = 'completed' 
-      WHERE "completedAt" IS NOT NULL AND "status" = 'created'
-    `);
+    // Cập nhật dữ liệu cũ (với check column tồn tại trước)
+    const tableExists = await queryRunner.hasTable('examinations');
+    if (tableExists) {
+      const table = await queryRunner.getTable('examinations');
+      const hasCompletedAt = table?.columns.some((col) => col.name === 'completedAt');
+      const hasStartedAt = table?.columns.some((col) => col.name === 'startedAt');
 
-    await queryRunner.query(`
-      UPDATE "examinations" 
-      SET "status" = 'in_progress' 
-      WHERE "completedAt" IS NULL AND "startedAt" IS NOT NULL AND "status" = 'created'
-    `);
+      if (hasCompletedAt) {
+        await queryRunner.query(`
+          UPDATE "examinations" 
+          SET "status" = 'completed' 
+          WHERE "completedAt" IS NOT NULL AND "status" = 'created'
+        `);
+      }
+
+      if (hasStartedAt && hasCompletedAt) {
+        await queryRunner.query(`
+          UPDATE "examinations" 
+          SET "status" = 'in_progress' 
+          WHERE "completedAt" IS NULL AND "startedAt" IS NOT NULL AND "status" = 'created'
+        `);
+      }
+    }
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {

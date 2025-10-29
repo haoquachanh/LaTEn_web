@@ -18,16 +18,16 @@ export class UpdateQuestionBankCategories1695005800003 implements MigrationInter
     // Sao chép dữ liệu từ quan hệ one-to-many cũ vào quan hệ many-to-many mới
     await queryRunner.query(`
       INSERT INTO question_bank_categories (bank_id, category_id)
-      SELECT id, category_id FROM question_banks
-      WHERE category_id IS NOT NULL
+      SELECT id, "categoryId" FROM question_banks
+      WHERE "categoryId" IS NOT NULL
       ON CONFLICT DO NOTHING;
     `);
 
     // Tạo thêm index cho question_banks để hỗ trợ tìm kiếm
     await queryRunner.query(`
       CREATE INDEX IF NOT EXISTS IDX_question_banks_name ON question_banks (name);
-      CREATE INDEX IF NOT EXISTS IDX_question_banks_is_public ON question_banks (is_public);
-      CREATE INDEX IF NOT EXISTS IDX_question_banks_is_active ON question_banks (is_active);
+      CREATE INDEX IF NOT EXISTS IDX_question_banks_is_public ON question_banks ("isPublic");
+      CREATE INDEX IF NOT EXISTS IDX_question_banks_is_active ON question_banks ("isActive");
     `);
   }
 

@@ -46,11 +46,12 @@ const AuthService = {
    */
   register: async (userData: RegisterData): Promise<AuthUser> => {
     try {
-      const response = await api.post<AuthResponse>('/auth/register', userData);
-      if (response.data && response.data.access_token) {
-        storeAuthData(response.data);
+      const response = await api.post<{ data: AuthResponse }>('/auth/register', userData);
+      const authData = response.data.data;
+      if (authData && authData.access_token) {
+        storeAuthData(authData);
       }
-      return response.data.user;
+      return authData.user;
     } catch (error: any) {
       const errorMessage = error?.response?.data?.message || 'Registration failed';
       const errorCode = error?.response?.status || 500;
@@ -66,11 +67,12 @@ const AuthService = {
    */
   login: async ({ email, password }: LoginCredentials): Promise<AuthResponse> => {
     try {
-      const response = await api.post<AuthResponse>('/auth/login', { email, password });
-      if (response.data && response.data.access_token) {
-        storeAuthData(response.data);
+      const response = await api.post<{ data: AuthResponse }>('/auth/login', { email, password });
+      const authData = response.data.data;
+      if (authData && authData.access_token) {
+        storeAuthData(authData);
       }
-      return response.data;
+      return authData;
     } catch (error: any) {
       console.error('Login failed:', error);
       const errorMessage = error?.response?.data?.message || 'Login failed';

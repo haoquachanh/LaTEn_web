@@ -21,12 +21,6 @@ export class CommentReply {
   @Column({ default: true })
   isActive: boolean;
 
-  @Column({ default: 0 })
-  likes: number;
-
-  @Column({ default: 0 })
-  dislikes: number;
-
   @ManyToOne(() => Comment, (comment) => comment.replies, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'commentId' })
   comment: Comment;
@@ -34,10 +28,6 @@ export class CommentReply {
   @ManyToOne(() => UserEntity)
   @JoinColumn({ name: 'userId' })
   user: UserEntity;
-
-  @ManyToOne(() => UserEntity)
-  @JoinColumn({ name: 'authorId' })
-  author: UserEntity;
 
   @CreateDateColumn()
   createdAt: Date;

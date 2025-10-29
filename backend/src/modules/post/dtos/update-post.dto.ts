@@ -1,5 +1,5 @@
 import { IsOptional, IsEnum, IsString, IsArray } from 'class-validator';
-import { PostType } from '../../../entities/post.entity';
+import { PostType } from '@entities/post.entity';
 
 export class UpdatePostDto {
   @IsOptional()
